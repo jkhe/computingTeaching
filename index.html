@@ -212,10 +212,6 @@
         .reward-icon { font-size: 100px; color: var(--success-color); margin-bottom: 20px; }
         .dojo-title { font-size: 48px; color: var(--success-color); margin-bottom: 20px; }
 
-        /* Debug Skip */
-        .debug-skip { position: fixed; bottom: 10px; right: 10px; opacity: 0.3; background: #ccc; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; z-index: 1000; }
-        .debug-skip:hover { opacity: 1; }
-
         @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
         .footer { margin-top: 30px; font-size: 18px; color: #94a3b8; font-weight: bold; }
 
@@ -345,7 +341,7 @@
             <p>Match the parts to earn Tick #4!</p>
         </div>
 
-        <div class="lab-grid">
+        <div class="lab-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%;">
             <div class="lab-card">
                 <div class="lab-img">💾</div>
                 <h3>SSD / Hard Drive</h3>
@@ -499,8 +495,6 @@
         <button class="btn btn-back" onclick="showPage('page-dojo')">← Back</button>
     </div>
 
-    <button class="debug-skip" onclick="skipToDefine()">Debug: Skip to Final Steps</button>
-
     <div class="footer">Computing</div>
 
     <script>
@@ -523,12 +517,6 @@
             if(id === 'page-chaos') startChaos();
             if(id === 'page-puzzle') initPuzzle();
             window.scrollTo(0,0);
-        }
-
-        function skipToDefine() {
-            ticks = 4;
-            updateTicks();
-            showPage('page-define');
         }
 
         function markExplored(idx, el) {
