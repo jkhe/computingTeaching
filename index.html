@@ -619,9 +619,12 @@
         const btns = document.querySelectorAll('#page-chaos .chaos-btn');
         if (idx === chaosTasks[currentChaos].a) {
             btns[idx].classList.add('correct');
-            const willEarnTick = ticks < 2 && currentChaos >= 2;
-            if (willEarnTick) { ticks = 2; updateTicks(); }
-            else playCorrect();
+            if (ticks < 2 && currentChaos >= 2) {
+                ticks = 2; prevTicks = 2;
+                document.getElementById('tick-2').classList.add('earned');
+            } else {
+                playCorrect();
+            }
             setTimeout(() => { currentChaos++; renderChaos(); }, 800);
         } else {
             btns[idx].classList.add('wrong');
