@@ -57,7 +57,13 @@
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             flex-shrink: 0; font-size: 16px; font-weight: 900; color: transparent;
         }
-        .tick.earned { background: var(--success-color); color: white; transform: scale(1.2); }
+        @keyframes tickPop {
+            0%   { transform: scale(1); }
+            45%  { transform: scale(1.5); }
+            75%  { transform: scale(1.1); }
+            100% { transform: scale(1.2); }
+        }
+        .tick.earned { background: var(--success-color); color: white; animation: tickPop 0.33s ease forwards; }
         .tick.gold { background: #b45309; }
         .goal-banner {
             background: #f0f9ff; color: #0369a1;
@@ -95,7 +101,7 @@
             100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
         }
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 35px; width: 100%; perspective: 1200px; }
-        .card { height: 280px; cursor: pointer; position: relative; transform-style: preserve-3d; transition: transform 0.6s ease; }
+        .card { height: 320px; cursor: pointer; position: relative; transform-style: preserve-3d; transition: transform 0.6s ease; }
         .card.flipped { transform: rotateY(180deg); }
         .card-face {
             position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
@@ -105,8 +111,8 @@
         }
         .card-back { transform: rotateY(180deg); background: white !important; border: 2px solid #e2e8f0 !important; color: #0f172a !important; }
         .icon { font-size: 56px; margin-bottom: 16px; }
-        .card-title { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
-        .card-desc { font-size: 15px; line-height: 1.6; }
+        .card-title { font-size: 26px; font-weight: 800; margin-bottom: 12px; }
+        .card-desc { font-size: 18px; line-height: 1.6; }
         .os-card .card-face { background: #f0fdfa; border-color: #99f6e4; color: #134e4a; }
         .cpu-card .card-face { background: #fff1f2; border-color: #fecdd3; color: #881337; }
         .ram-card .card-face { background: #fff7ed; border-color: #ffedd5; color: #7c2d12; }
@@ -124,6 +130,7 @@
         .chaos-btn:hover:not(.correct):not(.wrong) { background: #f1f5f9; transform: translateY(-2px); }
         .chaos-btn.correct { background: var(--success-color); border-color: #166534; color: white; }
         .chaos-btn.wrong { background: #fee2e2; border-color: #ef4444; animation: shake 0.4s; }
+        .chaos-btn.reveal { background: #e0f2fe; border-color: #0369a1; color: #0369a1; font-weight: 900; }
         @keyframes shake { 0%,100%{ transform: translateX(0); } 25%{ transform: translateX(-6px); } 75%{ transform: translateX(6px); } }
         .lab-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 35px; width: 100%; }
         .lab-card { background: white; padding: 40px; border-radius: 32px; border: 2px solid #f1f5f9; text-align: center; }
@@ -132,6 +139,7 @@
         .lab-select { width: 100%; padding: 15px; border-radius: 12px; border: 2px solid #e2e8f0; font-family: inherit; font-size: 16px; background-color: white; }
         .logo-display { min-height: 220px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
         .logo-display svg { width: 180px; height: 180px; }
+        .logo-display img { width: 180px; height: 180px; object-fit: contain; }
         .logo-counter { font-size: 15px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
         .puzzle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; }
         .puzzle-column { display: flex; flex-direction: column; gap: 20px; }
@@ -163,9 +171,8 @@
         .key-combo { display: flex; align-items: center; gap: 16px; }
         .key { background: #fff; border: 2px solid #94a3b8; border-bottom: 6px solid #64748b; border-radius: 12px; padding: 10px 24px; font-weight: 800; font-size: 22px; color: #1e293b; min-width: 80px; display: flex; align-items: center; justify-content: center; font-family: inherit; }
         .complete-banner { background: #f0fdf4; color: #166534; padding: 24px; border-radius: 28px; font-weight: 800; margin-bottom: 50px; border: 1px solid #bbf7d0; display: none; width: 100%; text-align: center; font-size: 20px; }
-        .skip-btn { position: fixed; bottom: 20px; right: 20px; background: white; color: #64748b; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 50px; font-size: 12px; font-weight: bold; cursor: pointer; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.05); font-family: inherit; }
-        .skip-btn:hover { background: #f8fafc; }
         .footer { margin-top: 80px; font-size: 18px; color: #cbd5e1; font-weight: 800; text-transform: uppercase; letter-spacing: 3px; }
+        .bridge-sentence { font-size: 18px; color: #64748b; font-style: italic; text-align: center; margin-bottom: 16px; display: none; width: 100%; animation: fadeIn 0.5s ease; }
         @media (max-width: 600px) {
             .grid, .lab-grid, .chaos-options, .puzzle-grid { grid-template-columns: 1fr; }
             .card { height: 300px; }
@@ -174,8 +181,6 @@
     </style>
 </head>
 <body>
-
-<button class="skip-btn" onclick="skipSection()">⏩ Skip to next section</button>
 
 <div class="status-bar" id="master-status">
     <span class="status-label">PROGRESS</span>
@@ -247,6 +252,7 @@
         </div>
     </div>
     <div class="nav-buttons">
+        <p id="bridge-chaos" class="bridge-sentence">You've met the kitchen team. Now let's see what happens when things go wrong.</p>
         <button id="btn-chaos" class="btn" onclick="showPage('page-chaos')" disabled>🚨 Kitchen Chaos (Locked)</button>
     </div>
 </div>
@@ -267,6 +273,7 @@
         <div id="chaos-msg" style="margin-top:30px;font-weight:bold;font-size:20px;min-height:28px;"></div>
     </div>
     <div class="nav-buttons">
+        <p id="bridge-hardware" class="bridge-sentence">Good work under pressure. Now let's match the real hardware to the analogy.</p>
         <button id="btn-hardware" class="btn" onclick="showPage('page-hardware')" disabled>🛠️ Hardware Lab (Locked)</button>
     </div>
 </div>
@@ -341,6 +348,7 @@
         </div>
     </div>
     <div class="nav-buttons">
+        <p id="bridge-logos" class="bridge-sentence">You know the parts. Can you recognise the real operating systems?</p>
         <button id="btn-logos" class="btn" onclick="showPage('page-logos')" disabled>🖥️ Spot the OS (Locked)</button>
     </div>
 </div>
@@ -360,6 +368,7 @@
         <div id="logo-msg" style="margin-top:30px;font-weight:bold;font-size:22px;min-height:30px;"></div>
     </div>
     <div class="nav-buttons">
+        <p id="bridge-puzzle" class="bridge-sentence">Nearly there. Connect everything you've learned in the final match.</p>
         <button id="btn-puzzle" class="btn" onclick="showPage('page-puzzle')" disabled>🧠 Final Knowledge Match (Locked)</button>
     </div>
 </div>
@@ -373,6 +382,7 @@
         <div class="puzzle-column" id="col-tech"></div>
     </div>
     <div class="nav-buttons">
+        <p id="bridge-define" class="bridge-sentence">Perfect. Now put it into your own words.</p>
         <button id="btn-goto-define" class="btn btn-unlocked" style="display:none;" onclick="showPage('page-define')">Continue to Definition →</button>
     </div>
 </div>
@@ -466,7 +476,7 @@
     </div>
     <div class="scenario-card">
         <div style="background:#1e293b;color:var(--gold-color);padding:12px;border-radius:12px;margin-bottom:40px;font-weight:900;text-align:center;">
-            QUESTION <span id="boss-q-num">1</span> / 3
+            QUESTION <span id="boss-q-num">1</span> / 7
         </div>
         <div id="boss-q-text" style="font-size:22px;font-weight:bold;min-height:100px;margin-bottom:40px;line-height:1.6;"></div>
         <div class="chaos-options" id="boss-options"></div>
@@ -480,6 +490,7 @@
 
 <script>
     let ticks = 0;
+    let prevTicks = 0;
     let explored = [false, false, false, false];
     let currentChaos = 0;
     let labScores = [false, false, false, false];
@@ -490,54 +501,28 @@
 
     const logoTasks = [
         {
-            svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <rect x="4" y="4" width="44" height="44" fill="#F25022"/>
-                <rect x="52" y="4" width="44" height="44" fill="#7FBA00"/>
-                <rect x="4" y="52" width="44" height="44" fill="#00A4EF"/>
-                <rect x="52" y="52" width="44" height="44" fill="#FFB900"/>
-            </svg>`,
+            img: "windows.png",
             q: "Which OS is this?",
             options: ["Windows", "macOS", "Chrome OS", "Android"],
             a: 0
         },
         {
-            svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="46" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
-                <path d="M50 4 A46 46 0 0 1 93.8 34 L50 50 Z" fill="#EA4335"/>
-                <path d="M93.8 34 A46 46 0 0 1 93.8 66 L50 50 Z" fill="#FBBC05"/>
-                <path d="M93.8 66 A46 46 0 0 1 50 96 L50 50 Z" fill="#34A853"/>
-                <path d="M50 96 A46 46 0 0 1 6.2 66 L50 50 Z" fill="#34A853"/>
-                <path d="M6.2 66 A46 46 0 0 1 6.2 34 L50 50 Z" fill="#4285F4"/>
-                <path d="M6.2 34 A46 46 0 0 1 50 4 L50 50 Z" fill="#EA4335"/>
-                <circle cx="50" cy="50" r="17" fill="#4285F4"/>
-                <circle cx="50" cy="50" r="11" fill="white"/>
-            </svg>`,
+            img: "chrome.png",
             q: "Which OS is this?",
-            options: ["Firefox", "Chrome OS", "Android", "Windows"],
+            options: ["Firefox OS", "Chrome OS", "Android", "Windows"],
             a: 1
         },
         {
-            svg: `<svg viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
-                <line x1="32" y1="30" x2="22" y2="14" stroke="#3DDC84" stroke-width="6" stroke-linecap="round"/>
-                <line x1="68" y1="30" x2="78" y2="14" stroke="#3DDC84" stroke-width="6" stroke-linecap="round"/>
-                <rect x="15" y="32" width="70" height="48" rx="12" fill="#3DDC84"/>
-                <circle cx="35" cy="56" r="6" fill="white"/>
-                <circle cx="65" cy="56" r="6" fill="white"/>
-                <rect x="10" y="46" width="8" height="28" rx="4" fill="#3DDC84"/>
-                <rect x="82" y="46" width="8" height="28" rx="4" fill="#3DDC84"/>
-            </svg>`,
+            img: "android.png",
             q: "Which OS is this?",
             options: ["iOS", "Android", "Linux", "Chrome OS"],
             a: 1
         },
         {
-            svg: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <path d="M72 28 C72 17 62 10 52 13 C46 6 36 7 31 15 C20 17 13 27 18 38 C11 44 11 57 20 62 C22 75 35 82 46 77 C50 82 58 82 62 77 C73 82 84 73 83 62 C91 56 90 42 81 36 C79 32 75 29 72 28 Z" fill="#888"/>
-                <ellipse cx="66" cy="17" rx="5" ry="9" fill="#34A853" transform="rotate(-30 66 17)"/>
-            </svg>`,
+            img: "linux.png",
             q: "Which OS is this?",
-            options: ["iOS", "macOS", "Windows", "Android"],
-            a: 1
+            options: ["macOS", "Windows", "Linux", "Android"],
+            a: 2
         }
     ];
 
@@ -550,9 +535,13 @@
     ];
 
     const bossTasks = [
-        { q: "You load a massive game on a PS5. The OS needs to move the game data somewhere much faster so it runs smoothly. Where does it go?", options: ["To the Controller", "To the Countertop (RAM)", "Back into the Pantry", "To the Disc Case"], a: 1, hint: "Think about where active ingredients are kept when the chef is using them." },
-        { q: "Your Switch says 'System Update Required.' In our kitchen analogy, what is actually happening?", options: ["Buying a bigger Pantry", "Cleaning the Countertop", "Giving the Head Chef a new manual", "Getting a faster Oven"], a: 2, hint: "An update improves how the software manages hardware." },
-        { q: "You are playing Fortnite while Minecraft is downloading in the background. Who is coordinating the kitchen to handle both at once?", options: ["The Wi-Fi Router", "The Game Disc", "The Operating System", "The Power Cable"], a: 2, hint: "Who decides which task gets processed at what time?" }
+        { q: "You start up Spider-Man on your PS5. The game is stored in the pantry but runs too slowly from there. The head chef moves it somewhere else so the chefs can work with it quickly. Where does it go?", options: ["The countertop", "Back into the pantry", "Into the bin", "Onto the menu board"], a: 0, hint: "The chefs need ingredients on the countertop to work fast — not running back to the pantry every time." },
+        { q: "Your Switch says System Update Required. In our kitchen analogy, what is actually happening?", options: ["Buying a bigger pantry", "Cleaning the countertop", "Giving the head chef a new manual", "Getting a faster oven"], a: 2, hint: "An update changes how the manager runs things — not the equipment itself." },
+        { q: "You are playing Fortnite while Minecraft is downloading in the background. Who is making sure both orders get handled without the kitchen grinding to a halt?", options: ["The head chef", "The countertop", "The pantry", "The delivery driver"], a: 0, hint: "Only one part of the kitchen decides what gets done and when." },
+        { q: "A PS5 game needs 100GB of storage but the console only has 50GB free. Which component is the problem and what type is it?", options: ["RAM — it has run out of temporary memory", "CPU — it is too slow to process the game", "Storage — there is not enough permanent space", "OS — it is blocking the installation"], a: 2, hint: "This is about where files live permanently, not what is running right now." },
+        { q: "You open YouTube, start a Spotify playlist, and load a game all at once on your PC. The computer slows down badly. Which explanation is most likely correct?", options: ["The storage is full so nothing can be saved", "The CPU has no instructions to follow", "All three programs are competing for RAM and it is running out of space", "The operating system has crashed"], a: 2, hint: "Think about what holds everything that is currently running." },
+        { q: "A computer boots up in 3 seconds using an SSD but takes 40 seconds with an HDD. The OS is the same on both machines. What explains the difference?", options: ["The SSD has more RAM available", "The SSD loads the OS from storage into RAM much faster than an HDD", "The HDD has a slower CPU", "The OS is a different size on each machine"], a: 1, hint: "Think about the journey the OS makes every time the computer starts." },
+        { q: "A developer writes a program that accidentally runs forever without stopping. The OS detects it is using 100 percent of the CPU. What should the OS do?", options: ["Delete the program from storage permanently", "Move the program from RAM to storage", "Force the program to stop and free up the CPU for other tasks", "Restart the RAM"], a: 2, hint: "The head chef's job includes stopping one chef from hogging every oven indefinitely." }
     ];
 
     const puzzleData = [
@@ -578,6 +567,11 @@
             if (i <= ticks) el.classList.add('earned');
             else el.classList.remove('earned');
         }
+        if (ticks > prevTicks) {
+            if (ticks === 7) playGameComplete();
+            else playTickEarned();
+        }
+        prevTicks = ticks;
     }
 
     function unlock(btnId, newText) {
@@ -595,6 +589,7 @@
                 ticks = 1; updateTicks();
                 unlock('btn-chaos', '🚨 Kitchen Chaos (Unlocked!)');
                 document.getElementById('banner-diagram').style.display = 'block';
+                document.getElementById('bridge-chaos').style.display = 'block';
             }
         }
     }
@@ -606,13 +601,14 @@
     }
 
     function renderChaos() {
-        document.querySelectorAll('#page-chaos .chaos-btn').forEach(b => b.classList.remove('correct','wrong'));
+        document.querySelectorAll('#page-chaos .chaos-btn').forEach(b => { b.classList.remove('correct','wrong','reveal'); b.disabled = false; });
         if (currentChaos >= chaosTasks.length) {
             document.getElementById('chaos-q').innerText = "✅ Service Complete!";
             document.querySelector('#page-chaos .chaos-options').style.display = 'none';
             if (ticks < 3) { ticks = 3; updateTicks(); }
             unlock('btn-hardware', '🛠️ Hardware Lab (Unlocked!)');
             document.getElementById('banner-chaos').style.display = 'block';
+            document.getElementById('bridge-hardware').style.display = 'block';
             return;
         }
         document.getElementById('chaos-q').innerText = chaosTasks[currentChaos].q;
@@ -623,10 +619,13 @@
         const btns = document.querySelectorAll('#page-chaos .chaos-btn');
         if (idx === chaosTasks[currentChaos].a) {
             btns[idx].classList.add('correct');
-            if (ticks < 2 && currentChaos >= 2) { ticks = 2; updateTicks(); }
+            const willEarnTick = ticks < 2 && currentChaos >= 2;
+            if (willEarnTick) { ticks = 2; updateTicks(); }
+            else playCorrect();
             setTimeout(() => { currentChaos++; renderChaos(); }, 800);
         } else {
             btns[idx].classList.add('wrong');
+            playWrong();
             document.getElementById('chaos-msg').innerText = 'Try again!';
         }
     }
@@ -640,6 +639,7 @@
                 ticks = 4; updateTicks();
                 unlock('btn-logos', '🖥️ Spot the OS (Unlocked!)');
                 document.getElementById('banner-hardware').style.display = 'block';
+                document.getElementById('bridge-logos').style.display = 'block';
             }
         } else {
             select.style.borderColor = '#ef4444';
@@ -661,11 +661,12 @@
             if (ticks < 5) { ticks = 5; updateTicks(); }
             unlock('btn-puzzle', '🧠 Final Knowledge Match (Unlocked!)');
             document.getElementById('banner-logos').style.display = 'block';
+            document.getElementById('bridge-puzzle').style.display = 'block';
             return;
         }
         const task = logoTasks[currentLogoRound];
         document.getElementById('logo-counter').innerText = `Question ${currentLogoRound + 1} of ${logoTasks.length}`;
-        document.getElementById('logo-q-display').innerHTML = task.svg;
+        document.getElementById('logo-q-display').innerHTML = `<img src="${task.img}" alt="OS logo">`;
         document.getElementById('logo-q-text').innerText = task.q;
         document.getElementById('logo-msg').innerText = '';
         const optBox = document.getElementById('logo-options');
@@ -677,9 +678,11 @@
             btn.onclick = () => {
                 if (i === task.a) {
                     btn.classList.add('correct');
+                    playCorrect();
                     setTimeout(() => { currentLogoRound++; renderLogoQ(); }, 800);
                 } else {
                     btn.classList.add('wrong');
+                    playWrong();
                     document.getElementById('logo-msg').innerText = 'Try again!';
                 }
             };
@@ -728,6 +731,7 @@
                 if (matched === 4) {
                     if (ticks < 6) { ticks = 6; updateTicks(); }
                     document.getElementById('banner-puzzle').style.display = 'block';
+                    document.getElementById('bridge-define').style.display = 'block';
                     document.getElementById('btn-goto-define').style.display = 'flex';
                 }
             }
@@ -762,22 +766,25 @@
         const task = bossTasks[currentBossIdx];
         document.getElementById('boss-q-num').innerText = currentBossIdx + 1;
         document.getElementById('boss-q-text').innerText = task.q;
+        const bossOptBox = document.getElementById('boss-options');
         task.options.forEach((opt, i) => {
             const btn = document.createElement('button');
             btn.className = 'chaos-btn'; btn.innerText = opt;
             btn.onclick = () => {
                 if (i === task.a) {
                     btn.classList.add('correct');
+                    playCorrect();
                     setTimeout(() => { currentBossIdx++; bossMistakes = 0; renderBoss(); }, 800);
                 } else {
                     btn.classList.add('wrong'); bossMistakes++;
+                    playWrong();
                     if (bossMistakes >= 2) {
                         document.getElementById('boss-hint').innerText = '💡 HINT: ' + task.hint;
                         document.getElementById('boss-hint').style.display = 'block';
                     }
                 }
             };
-            document.getElementById('boss-options').appendChild(btn);
+            bossOptBox.appendChild(btn);
         });
     }
 
@@ -791,17 +798,166 @@
         showPage('page-dojo');
     }
 
-    function skipSection() {
-        const pages = ['page-diagram','page-chaos','page-hardware','page-logos','page-puzzle','page-define','page-dojo'];
-        const currentIdx = pages.findIndex(id => document.getElementById(id).classList.contains('active'));
-        const nextIdx = (currentIdx + 1) % pages.length;
-        ticks = Math.min(nextIdx + 1, 7); updateTicks();
-        ['btn-chaos','btn-hardware','btn-logos','btn-puzzle'].forEach(id => {
-            document.getElementById(id).disabled = false;
-        });
-        document.getElementById('btn-goto-define').style.display = 'flex';
-        showPage(pages[nextIdx]);
+    // ===================== AUDIO =====================
+    let audioCtx = null;
+
+    function getAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        return audioCtx;
     }
+
+    function playCorrect() {
+        const ctx = getAudio();
+        const freqs = [261.63, 329.63, 392];
+        const pans = [-0.3, 0, 0.3];
+        const now = ctx.currentTime;
+        function makeChord(delayTime, gainScale) {
+            freqs.forEach((freq, i) => {
+                const osc = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                const panner = ctx.createStereoPanner();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, now);
+                panner.pan.setValueAtTime(pans[i], now);
+                gainNode.gain.setValueAtTime(0, now + delayTime);
+                gainNode.gain.linearRampToValueAtTime(0.3 * gainScale, now + delayTime + 0.08);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, now + delayTime + 1.28);
+                osc.connect(gainNode);
+                gainNode.connect(panner);
+                panner.connect(ctx.destination);
+                osc.start(now + delayTime);
+                osc.stop(now + delayTime + 1.4);
+            });
+        }
+        makeChord(0, 1);
+        makeChord(0.18, 0.3);
+    }
+
+    function playWrong() {
+        const ctx = getAudio();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const oscGain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(120, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.2);
+        oscGain.gain.setValueAtTime(0.4, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+        osc.connect(oscGain);
+        oscGain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.5);
+        const bufferSize = Math.floor(ctx.sampleRate * 0.4);
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(200, now);
+        const noiseGain = ctx.createGain();
+        noiseGain.gain.setValueAtTime(0.1, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+        noise.connect(filter);
+        filter.connect(noiseGain);
+        noiseGain.connect(ctx.destination);
+        noise.start(now);
+        noise.stop(now + 0.35);
+    }
+
+    function playTickEarned() {
+        const ctx = getAudio();
+        const freqs = [261.63, 329.63, 392, 523.25];
+        const now = ctx.currentTime;
+        const step = 0.12;
+        freqs.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            const t = now + i * step;
+            gainNode.gain.setValueAtTime(0, t);
+            gainNode.gain.linearRampToValueAtTime(0.4, t + 0.02);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, t + 0.62);
+            osc.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.7);
+        });
+        const chordStart = now + freqs.length * step + 0.05;
+        freqs.forEach((freq) => {
+            const osc = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            gainNode.gain.setValueAtTime(0.0001, chordStart);
+            gainNode.gain.exponentialRampToValueAtTime(0.15, chordStart + 0.06);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, chordStart + 2.1);
+            osc.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            osc.start(chordStart);
+            osc.stop(chordStart + 2.2);
+            const oscR = ctx.createOscillator();
+            const gainR = ctx.createGain();
+            oscR.type = 'sine';
+            oscR.frequency.setValueAtTime(freq, now);
+            gainR.gain.setValueAtTime(0.0001, chordStart + 0.18);
+            gainR.gain.exponentialRampToValueAtTime(0.045, chordStart + 0.24);
+            gainR.gain.exponentialRampToValueAtTime(0.0001, chordStart + 2.28);
+            oscR.connect(gainR);
+            gainR.connect(ctx.destination);
+            oscR.start(chordStart + 0.18);
+            oscR.stop(chordStart + 2.4);
+        });
+    }
+    function playGameComplete() {
+        const ctx = getAudio();
+        const now = ctx.currentTime;
+        const arpFreqs = [261.63, 329.63, 392, 523.25, 659.25, 783.99];
+        const step = 0.08;
+        arpFreqs.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            const t = now + i * step;
+            gainNode.gain.setValueAtTime(0, t);
+            gainNode.gain.linearRampToValueAtTime(0.38, t + 0.015);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, t + 0.75);
+            osc.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.85);
+        });
+        const chordStart = now + arpFreqs.length * step + 0.06;
+        [261.63, 329.63, 392, 523.25].forEach((freq) => {
+            const osc = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, now);
+            gainNode.gain.setValueAtTime(0.0001, chordStart);
+            gainNode.gain.exponentialRampToValueAtTime(0.22, chordStart + 0.08);
+            gainNode.gain.exponentialRampToValueAtTime(0.0001, chordStart + 3.2);
+            osc.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            osc.start(chordStart);
+            osc.stop(chordStart + 3.4);
+            const oscR = ctx.createOscillator();
+            const gainR = ctx.createGain();
+            oscR.type = 'sine';
+            oscR.frequency.setValueAtTime(freq, now);
+            gainR.gain.setValueAtTime(0.0001, chordStart + 0.18);
+            gainR.gain.exponentialRampToValueAtTime(0.07, chordStart + 0.25);
+            gainR.gain.exponentialRampToValueAtTime(0.0001, chordStart + 3.38);
+            oscR.connect(gainR);
+            gainR.connect(ctx.destination);
+            oscR.start(chordStart + 0.18);
+            oscR.stop(chordStart + 3.6);
+        });
+    }
+    // ===================== END AUDIO =====================
+
 </script>
 </body>
 </html>
