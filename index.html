@@ -531,7 +531,7 @@
         { q: "A customer wants a cake recipe from 1995. It hasn't been used in years. Where is it kept?", a: 3 },
         { q: "The food is taking hours to process. What do we need more of?", a: 1 },
         { q: "Orders are coming in from every table at once, but nobody knows which ones to cook first. The kitchen is grinding to a halt. What is missing?", a: 0 },
-        { q: "The Head Chef can't talk. What has crashed?", a: 0 }
+        { q: "The kitchen has ten orders all coming in at once. The head chef decides which ones to cook first, which chefs to assign, and in what order. Everything runs smoothly. Which part of the kitchen is doing this?", a: 0 }
     ];
 
     const bossTasks = [
@@ -622,9 +622,8 @@
             if (ticks < 2 && currentChaos >= 2) {
                 ticks = 2; prevTicks = 2;
                 document.getElementById('tick-2').classList.add('earned');
-            } else {
-                playCorrect();
             }
+            if (currentChaos < chaosTasks.length - 1) playCorrect();
             setTimeout(() => { currentChaos++; renderChaos(); }, 800);
         } else {
             btns[idx].classList.add('wrong');
