@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Algorithm Starter</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+    background: #ffffff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+  }
+
+  h1 {
+    font-size: 2rem;
+    color: #111;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+
+  .activity-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 30px;
+  }
+
+  .tab {
+    padding: 10px 28px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: bold;
+    border: 3px solid #111;
+    background: #fff;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .tab.active {
+    background: #111;
+    color: #fff;
+  }
+
+  .activity {
+    display: none;
+    width: 100%;
+    max-width: 680px;
+  }
+
+  .activity.active {
+    display: block;
+  }
+
+  .instruction {
+    font-size: 1.15rem;
+    color: #333;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+
+  .drag-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .drag-item {
+    background: #f5f5f5;
+    border: 2.5px solid #ccc;
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 1.05rem;
+    color: #111;
+    cursor: grab;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  }
+
+  .drag-item:active {
+    cursor: grabbing;
+  }
+
+  .drag-item.dragging {
+    opacity: 0.4;
+    border-color: #111;
+  }
+
+  .drag-item.over {
+    border-color: #111;
+    background: #ececec;
+    transform: scale(1.01);
+  }
+
+  .drag-item.correct {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+  }
+
+  .drag-item.incorrect {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+  }
+
+  .step-number {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #888;
+    min-width: 28px;
+    text-align: center;
+  }
+
+  .drag-item.correct .step-number { color: #28a745; }
+  .drag-item.incorrect .step-number { color: #dc3545; }
+
+  .drag-handle {
+    color: #bbb;
+    font-size: 1.1rem;
+    margin-left: auto;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  button {
+    padding: 12px 32px;
+    font-size: 1rem;
+    font-family: inherit;
+    font-weight: bold;
+    border: 3px solid #111;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .btn-check {
+    background: #111;
+    color: #fff;
+  }
+
+  .btn-check:hover {
+    background: #333;
+  }
+
+  .btn-reset {
+    background: #fff;
+    color: #111;
+  }
+
+  .btn-reset:hover {
+    background: #f0f0f0;
+  }
+
+  .btn-reveal {
+    background: #fff;
+    color: #111;
+    border-color: #888;
+    color: #555;
+  }
+
+  .btn-reveal:hover {
+    background: #f0f0f0;
+  }
+
+  .result-msg {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-top: 18px;
+    min-height: 32px;
+  }
+
+  .result-msg.success { color: #28a745; }
+  .result-msg.partial { color: #856404; }
+
+  .footer {
+    margin-top: 40px;
+    font-size: 0.85rem;
+    color: #aaa;
+  }
+</style>
+</head>
+<body>
+
+<h1>Algorithm Starter</h1>
+<p class="subtitle">Drag the steps into the correct order</p>
+
+<div class="activity-tabs">
+  <button class="tab active" onclick="switchTab('trainers', this)">New Trainers</button>
+  <button class="tab" onclick="switchTab('lobby', this)">Game Lobby</button>
+</div>
+
+<div class="activity active" id="trainers">
+  <p class="instruction">You have just bought a new pair of trainers. Put these steps in the right order.</p>
+  <ul class="drag-list" id="trainers-list"></ul>
+  <div class="buttons">
+    <button class="btn-check" onclick="checkOrder('trainers')">Check order</button>
+    <button class="btn-reset" onclick="resetActivity('trainers')">Reset</button>
+    <button class="btn-reveal" onclick="revealOrder('trainers')">Reveal answer</button>
+  </div>
+  <div class="result-msg" id="trainers-result"></div>
+</div>
+
+<div class="activity" id="lobby">
+  <p class="instruction">You want to play online with your friends. Put these steps in the right order.</p>
+  <ul class="drag-list" id="lobby-list"></ul>
+  <div class="buttons">
+    <button class="btn-check" onclick="checkOrder('lobby')">Check order</button>
+    <button class="btn-reset" onclick="resetActivity('lobby')">Reset</button>
+    <button class="btn-reveal" onclick="revealOrder('lobby')">Reveal answer</button>
+  </div>
+  <div class="result-msg" id="lobby-result"></div>
+</div>
+
+<p class="footer">Coding and Programming — T5 L1</p>
+
+<script>
+const activities = {
+  trainers: {
+    correct: [
+      "Open the box",
+      "Remove the tissue paper",
+      "Take out the trainers",
+      "Remove any stuffing inside",
+      "Thread the laces properly",
+      "Put them on",
+      "Tie the laces",
+      "Walk out in them"
+    ]
+  },
+  lobby: {
+    correct: [
+      "Turn on the console",
+      "Sign in to your account",
+      "Open the game",
+      "Wait for it to load",
+      "Go to multiplayer",
+      "Find your friend's lobby or create one",
+      "Invite friends",
+      "Wait for everyone to join",
+      "Start the match"
+    ]
+  }
+};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  // Make sure shuffled is different from correct
+  if (JSON.stringify(a) === JSON.stringify(arr)) return shuffle(arr);
+  return a;
+}
+
+function buildList(activityId) {
+  const list = document.getElementById(activityId + '-list');
+  list.innerHTML = '';
+  const shuffled = shuffle(activities[activityId].correct);
+  shuffled.forEach((text, i) => {
+    const li = document.createElement('li');
+    li.className = 'drag-item';
+    li.draggable = true;
+    li.dataset.text = text;
+    li.innerHTML = `
+      <span class="step-number">${i + 1}</span>
+      <span class="step-text">${text}</span>
+      <span class="drag-handle">⠿</span>
+    `;
+    addDragEvents(li, list);
+    list.appendChild(li);
+  });
+}
+
+function addDragEvents(item, list) {
+  item.addEventListener('dragstart', () => {
+    item.classList.add('dragging');
+  });
+  item.addEventListener('dragend', () => {
+    item.classList.remove('dragging');
+    document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('over'));
+    updateNumbers(list);
+  });
+  item.addEventListener('dragover', e => {
+    e.preventDefault();
+    const dragging = document.querySelector('.dragging');
+    if (dragging && dragging !== item) {
+      document.querySelectorAll('.drag-item').forEach(i => i.classList.remove('over'));
+      item.classList.add('over');
+      const rect = item.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      if (e.clientY < midY) {
+        list.insertBefore(dragging, item);
+      } else {
+        list.insertBefore(dragging, item.nextSibling);
+      }
+    }
+  });
+  item.addEventListener('dragleave', () => {
+    item.classList.remove('over');
+  });
+}
+
+function updateNumbers(list) {
+  const items = list.querySelectorAll('.drag-item');
+  items.forEach((item, i) => {
+    item.querySelector('.step-number').textContent = i + 1;
+    item.classList.remove('correct', 'incorrect');
+  });
+}
+
+function checkOrder(activityId) {
+  const list = document.getElementById(activityId + '-list');
+  const items = list.querySelectorAll('.drag-item');
+  const correct = activities[activityId].correct;
+  let score = 0;
+  items.forEach((item, i) => {
+    item.classList.remove('correct', 'incorrect');
+    if (item.dataset.text === correct[i]) {
+      item.classList.add('correct');
+      score++;
+    } else {
+      item.classList.add('incorrect');
+    }
+  });
+  const result = document.getElementById(activityId + '-result');
+  if (score === correct.length) {
+    result.textContent = 'Perfect — every step in the right order.';
+    result.className = 'result-msg success';
+  } else {
+    result.textContent = `${score} out of ${correct.length} in the right place.`;
+    result.className = 'result-msg partial';
+  }
+}
+
+function resetActivity(activityId) {
+  document.getElementById(activityId + '-result').textContent = '';
+  document.getElementById(activityId + '-result').className = 'result-msg';
+  buildList(activityId);
+}
+
+function revealOrder(activityId) {
+  const list = document.getElementById(activityId + '-list');
+  list.innerHTML = '';
+  activities[activityId].correct.forEach((text, i) => {
+    const li = document.createElement('li');
+    li.className = 'drag-item correct';
+    li.innerHTML = `
+      <span class="step-number">${i + 1}</span>
+      <span class="step-text">${text}</span>
+      <span class="drag-handle">⠿</span>
+    `;
+    list.appendChild(li);
+  });
+  const result = document.getElementById(activityId + '-result');
+  result.textContent = 'Correct order revealed.';
+  result.className = 'result-msg success';
+}
+
+function switchTab(activityId, tabEl) {
+  document.querySelectorAll('.activity').forEach(a => a.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(activityId).classList.add('active');
+  tabEl.classList.add('active');
+}
+
+// Init
+buildList('trainers');
+buildList('lobby');
+</script>
+</body>
+</html>
