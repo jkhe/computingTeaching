@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L3 Starter — Lists and Randomness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #1e1b4b;
+    --accent: #4338ca;
+    --accent-h: #3730a3;
+    --accent-light: #ede9fe;
+    --bg: #f0f2ff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --success: #15803d;
+    --success-bg: #f0fdf4;
+    --success-border: #86efac;
+    --error: #b91c1c;
+    --error-bg: #fef2f2;
+    --error-border: #fca5a5;
+    --hint-bg: #fffbeb;
+    --hint-text: #78350f;
+    --hint-border: #f59e0b;
+    --code-bg: #1e293b;
+    --code-text: #e2e8f0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lexend', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; font-size: 18px; line-height: 1.7; }
+header { background: var(--primary); color: white; padding: 28px 40px; }
+.lesson-tag { font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #a5b4fc; margin-bottom: 8px; }
+header h1 { font-size: 30px; font-weight: 800; }
+main { flex: 1; padding: 40px; max-width: 860px; width: 100%; margin: 0 auto; }
+.instruction { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 24px 32px; margin-bottom: 32px; font-size: 20px; font-weight: 500; line-height: 1.6; }
+.progress { display: flex; gap: 12px; align-items: center; margin-bottom: 28px; }
+.dot { width: 16px; height: 16px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
+.dot.done { background: var(--success); }
+.dot.current { background: var(--accent); }
+.question-label { font-size: 15px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-left: 6px; }
+.code-block { background: var(--code-bg); border-radius: 14px; padding: 20px 28px; margin-bottom: 16px; font-family: 'Courier New', monospace; font-size: 18px; color: var(--code-text); line-height: 1.9; }
+.randint-box { background: white; border: 2px solid var(--accent); border-radius: 12px; padding: 16px 24px; margin-bottom: 28px; font-size: 18px; font-weight: 700; color: var(--accent); display: flex; align-items: center; gap: 12px; }
+.randint-box .label { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 700; }
+.options { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+.opt-btn { background: white; border: 3px solid var(--border); border-radius: 14px; padding: 20px 28px; font-family: 'Lexend', sans-serif; font-size: 19px; font-weight: 600; cursor: pointer; text-align: left; transition: all 0.15s; color: var(--text); }
+.opt-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-light); transform: translateX(4px); }
+.opt-btn:disabled { cursor: default; }
+.opt-btn.correct { background: var(--success-bg); border-color: var(--success); color: var(--success); }
+.opt-btn.wrong { background: var(--error-bg); border-color: var(--error); color: var(--error); }
+.feedback-box { border-radius: 14px; padding: 20px 24px; font-size: 18px; font-weight: 600; display: none; line-height: 1.5; margin-bottom: 20px; }
+.feedback-correct { background: var(--success-bg); border: 2px solid var(--success-border); color: var(--success); }
+.feedback-wrong { background: var(--error-bg); border: 2px solid var(--error-border); color: var(--error); }
+.btn { display: inline-flex; align-items: center; padding: 16px 32px; border-radius: 12px; font-family: 'Lexend', sans-serif; font-size: 18px; font-weight: 700; cursor: pointer; border: 3px solid transparent; transition: background 0.15s, transform 0.1s; }
+.btn:active { transform: scale(0.97); }
+.btn-next { background: var(--success); color: white; border-color: var(--success); display: none; }
+.btn-next:hover { background: #166534; }
+.btn-hint { background: var(--hint-bg); color: var(--hint-text); border-color: var(--hint-border); }
+.hint-box { background: var(--hint-bg); border: 2px solid var(--hint-border); border-radius: 12px; padding: 20px 24px; color: var(--hint-text); font-size: 17px; font-weight: 500; margin-top: 20px; display: none; }
+.actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.complete-box { background: var(--success-bg); border: 2px solid var(--success-border); border-radius: 16px; padding: 32px; text-align: center; display: none; }
+.complete-box h2 { font-size: 26px; font-weight: 800; color: var(--success); margin-bottom: 12px; }
+.complete-box p { font-size: 18px; color: #166634; font-weight: 500; }
+footer { background: var(--primary); color: #a5b4fc; text-align: center; padding: 18px; font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-top: auto; }
+</style>
+</head>
+<body>
+<header>
+    <div class="lesson-tag">Lesson 3 — Starter</div>
+    <h1>Lists and Randomness</h1>
+</header>
+<main>
+    <div class="instruction">
+        Look at the list and the randint value. Which answer gets displayed?
+    </div>
+    <div class="progress">
+        <div class="dot current" id="dot-0"></div>
+        <div class="dot" id="dot-1"></div>
+        <div class="dot" id="dot-2"></div>
+        <span class="question-label" id="q-label">Round 1 of 3</span>
+    </div>
+    <div id="question-area"></div>
+    <div class="complete-box" id="complete-box">
+        <h2>All done!</h2>
+        <p>You understand how lists and random slot numbers work. Ready for today.</p>
+    </div>
+</main>
+<footer>Coding and Programming</footer>
+<script>
+const rounds = [
+    {
+        code: 'answers = ["Definitely yes", "No chance", "Ask again later"]\nanswer = answers[randint(0, 2)]',
+        randintVal: 0,
+        options: ['Definitely yes', 'No chance', 'Ask again later'],
+        correct: 0,
+        hint: 'Slot 0 is always the first item in the list.',
+        explanation: 'Slot 0 = "Definitely yes". The list starts counting at zero, so slot 0 is the first item.'
+    },
+    {
+        code: 'answers = ["Definitely yes", "No chance", "Ask again later"]\nanswer = answers[randint(0, 2)]',
+        randintVal: 2,
+        options: ['Definitely yes', 'No chance', 'Ask again later'],
+        correct: 2,
+        hint: 'Counting starts at 0. Slot 2 is the third item.',
+        explanation: 'Slot 0 = "Definitely yes", Slot 1 = "No chance", Slot 2 = "Ask again later". The third item is at slot 2.'
+    },
+    {
+        code: 'answers = ["Looking good", "For sure", "No chance", "Ask again later"]\nanswer = answers[randint(0, 3)]',
+        randintVal: 1,
+        options: ['Looking good', 'For sure', 'No chance'],
+        correct: 1,
+        hint: 'Slot 0 = Looking good. Slot 1 = ?',
+        explanation: 'Slot 0 = "Looking good", Slot 1 = "For sure". Counting starts at zero, so slot 1 is the second item.'
+    }
+];
+
+let current = 0;
+
+function renderRound() {
+    const r = rounds[current];
+    const codeLines = r.code.split('\n').map(line => escHtml(line)).join('\n');
+
+    document.getElementById('question-area').innerHTML = `
+        <div class="code-block" style="white-space:pre;">${codeLines}</div>
+        <div class="randint-box">
+            <span class="label">randint picks:</span>
+            <span style="font-size:28px;">${r.randintVal}</span>
+        </div>
+        <p style="font-size:18px;font-weight:700;margin-bottom:16px;">Which answer is displayed?</p>
+        <div class="options" id="options"></div>
+        <div class="feedback-box feedback-correct" id="fb-correct"></div>
+        <div class="feedback-box feedback-wrong" id="fb-wrong">Not quite — try again.</div>
+        <div class="actions">
+            <button class="btn btn-next" id="btn-next" onclick="nextRound()">${current < rounds.length - 1 ? 'Next round' : 'Finish'}</button>
+            <button class="btn btn-hint" onclick="toggleHint()">Show hint</button>
+        </div>
+        <div class="hint-box" id="hint">${r.hint}</div>
+    `;
+
+    const optBox = document.getElementById('options');
+    r.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'opt-btn';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => handleAnswer(i));
+        optBox.appendChild(btn);
+    });
+    document.getElementById('q-label').textContent = 'Round ' + (current + 1) + ' of ' + rounds.length;
+}
+
+function handleAnswer(idx) {
+    const r = rounds[current];
+    const btns = document.querySelectorAll('.opt-btn');
+    btns.forEach(b => b.disabled = true);
+    if (idx === r.correct) {
+        btns[idx].classList.add('correct');
+        const fb = document.getElementById('fb-correct');
+        fb.textContent = 'Correct. ' + r.explanation;
+        fb.style.display = 'block';
+        document.getElementById('fb-wrong').style.display = 'none';
+        document.getElementById('btn-next').style.display = 'inline-flex';
+        markDot(current, 'done');
+    } else {
+        btns[idx].classList.add('wrong');
+        document.getElementById('fb-wrong').style.display = 'block';
+        setTimeout(() => {
+            btns[idx].classList.remove('wrong');
+            btns.forEach(b => b.disabled = false);
+            document.getElementById('fb-wrong').style.display = 'none';
+        }, 1200);
+    }
+}
+
+function nextRound() {
+    current++;
+    if (current >= rounds.length) {
+        document.getElementById('question-area').style.display = 'none';
+        document.getElementById('complete-box').style.display = 'block';
+    } else {
+        renderRound();
+    }
+}
+
+function markDot(idx, state) {
+    document.getElementById('dot-' + idx).className = 'dot ' + state;
+    if (idx + 1 < 3) document.getElementById('dot-' + (idx + 1)).className = 'dot current';
+}
+
+function toggleHint() {
+    const hint = document.getElementById('hint');
+    const btn = document.querySelector('.btn-hint');
+    const showing = hint.style.display === 'block';
+    hint.style.display = showing ? 'none' : 'block';
+    btn.textContent = showing ? 'Show hint' : 'Hide hint';
+}
+
+function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+renderRound();
+</script>
+</body>
+</html>

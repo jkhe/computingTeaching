@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L4 Starter — Personalise and Customise</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #1e1b4b;
+    --accent: #4338ca;
+    --accent-h: #3730a3;
+    --accent-light: #ede9fe;
+    --bg: #f0f2ff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --success: #15803d;
+    --success-bg: #f0fdf4;
+    --success-border: #86efac;
+    --error: #b91c1c;
+    --error-bg: #fef2f2;
+    --error-border: #fca5a5;
+    --hint-bg: #fffbeb;
+    --hint-text: #78350f;
+    --hint-border: #f59e0b;
+    --true-bg: #dcfce7;
+    --true-border: #86efac;
+    --true-text: #15803d;
+    --false-bg: #fee2e2;
+    --false-border: #fca5a5;
+    --false-text: #b91c1c;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lexend', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; font-size: 18px; line-height: 1.7; }
+header { background: var(--primary); color: white; padding: 28px 40px; }
+.lesson-tag { font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #a5b4fc; margin-bottom: 8px; }
+header h1 { font-size: 30px; font-weight: 800; }
+main { flex: 1; padding: 40px; max-width: 860px; width: 100%; margin: 0 auto; }
+.instruction { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 24px 32px; margin-bottom: 32px; font-size: 20px; font-weight: 500; line-height: 1.6; }
+.progress { display: flex; gap: 12px; align-items: center; margin-bottom: 28px; }
+.dot { width: 16px; height: 16px; border-radius: 50%; background: var(--border); transition: background 0.3s; }
+.dot.done { background: var(--success); }
+.dot.current { background: var(--accent); }
+.question-label { font-size: 15px; font-weight: 700; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-left: 6px; }
+.statement-card { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 28px 32px; margin-bottom: 28px; font-size: 22px; font-weight: 600; line-height: 1.6; }
+.tf-row { display: flex; gap: 20px; margin-bottom: 24px; }
+.tf-btn {
+    flex: 1;
+    padding: 22px;
+    font-family: 'Lexend', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    border-radius: 16px;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.15s;
+}
+.tf-btn:active { transform: scale(0.97); }
+.tf-btn.true-btn { background: var(--true-bg); border-color: var(--true-border); color: var(--true-text); }
+.tf-btn.false-btn { background: var(--false-bg); border-color: var(--false-border); color: var(--false-text); }
+.tf-btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+.tf-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
+.tf-btn.selected-correct { box-shadow: 0 0 0 4px rgba(21,128,61,0.35); }
+.tf-btn.selected-wrong { box-shadow: 0 0 0 4px rgba(185,28,28,0.35); opacity: 0.6; }
+.feedback-box { border-radius: 14px; padding: 20px 24px; font-size: 18px; font-weight: 600; display: none; line-height: 1.5; margin-bottom: 20px; }
+.feedback-correct { background: var(--success-bg); border: 2px solid var(--success-border); color: var(--success); }
+.feedback-wrong { background: var(--error-bg); border: 2px solid var(--error-border); color: var(--error); }
+.btn { display: inline-flex; align-items: center; padding: 16px 32px; border-radius: 12px; font-family: 'Lexend', sans-serif; font-size: 18px; font-weight: 700; cursor: pointer; border: 3px solid transparent; transition: background 0.15s, transform 0.1s; }
+.btn:active { transform: scale(0.97); }
+.btn-next { background: var(--success); color: white; border-color: var(--success); display: none; }
+.btn-next:hover { background: #166534; }
+.complete-box { background: var(--success-bg); border: 2px solid var(--success-border); border-radius: 16px; padding: 32px; text-align: center; display: none; }
+.complete-box h2 { font-size: 26px; font-weight: 800; color: var(--success); margin-bottom: 12px; }
+.complete-box p { font-size: 18px; color: #166634; font-weight: 500; }
+footer { background: var(--primary); color: #a5b4fc; text-align: center; padding: 18px; font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-top: auto; }
+</style>
+</head>
+<body>
+<header>
+    <div class="lesson-tag">Lesson 4 — Starter</div>
+    <h1>Personalise and Customise</h1>
+</header>
+<main>
+    <div class="instruction">
+        Is each statement true or false?
+    </div>
+    <div class="progress">
+        <div class="dot current" id="dot-0"></div>
+        <div class="dot" id="dot-1"></div>
+        <div class="dot" id="dot-2"></div>
+        <div class="dot" id="dot-3"></div>
+        <div class="dot" id="dot-4"></div>
+        <span class="question-label" id="q-label">Statement 1 of 5</span>
+    </div>
+    <div id="question-area"></div>
+    <div class="complete-box" id="complete-box">
+        <h2>All done!</h2>
+        <p>You understand how the startup message and sounds fit into the program.</p>
+    </div>
+</main>
+<footer>Coding and Programming</footer>
+<script>
+const statements = [
+    {
+        text: 'The startup message runs every time you shake the micro:bit.',
+        correct: false,
+        explanation: 'It runs once when the micro:bit turns on — not on shake. The shake function is separate.'
+    },
+    {
+        text: 'The startup message line sits at the very top of the program, outside any function.',
+        correct: true,
+        explanation: 'It runs on startup so it must be outside the shake function — right at the top, before any def.'
+    },
+    {
+        text: 'IN_BACKGROUND means the sound finishes before the answer appears.',
+        correct: false,
+        explanation: 'IN_BACKGROUND means the sound plays at the same time as the answer scrolls — they overlap, not wait for each other.'
+    },
+    {
+        text: 'You can change soundExpression.twinkle to any built-in micro:bit sound.',
+        correct: true,
+        explanation: 'micro:bit v2 has a range of built-in sounds you can choose from — twinkle is just the default.'
+    },
+    {
+        text: 'If you change the startup message text the rest of the program stops working.',
+        correct: false,
+        explanation: 'The startup message is independent. Changing the text does not affect the shake function at all.'
+    }
+];
+
+let current = 0;
+let answered = false;
+
+function renderStatement() {
+    answered = false;
+    const s = statements[current];
+    document.getElementById('question-area').innerHTML = `
+        <div class="statement-card">${s.text}</div>
+        <div class="tf-row">
+            <button class="tf-btn true-btn" id="btn-true" onclick="handleAnswer(true)">True</button>
+            <button class="tf-btn false-btn" id="btn-false" onclick="handleAnswer(false)">False</button>
+        </div>
+        <div class="feedback-box feedback-correct" id="fb-correct"></div>
+        <div class="feedback-box feedback-wrong" id="fb-wrong"></div>
+        <button class="btn btn-next" id="btn-next" onclick="nextStatement()">${current < statements.length - 1 ? 'Next statement' : 'Finish'}</button>
+    `;
+    document.getElementById('q-label').textContent = 'Statement ' + (current + 1) + ' of ' + statements.length;
+}
+
+function handleAnswer(answer) {
+    if (answered) return;
+    answered = true;
+    const s = statements[current];
+    const isCorrect = answer === s.correct;
+    const trueBtn = document.getElementById('btn-true');
+    const falseBtn = document.getElementById('btn-false');
+    trueBtn.disabled = true;
+    falseBtn.disabled = true;
+
+    if (answer === true) trueBtn.classList.add(isCorrect ? 'selected-correct' : 'selected-wrong');
+    else falseBtn.classList.add(isCorrect ? 'selected-correct' : 'selected-wrong');
+
+    if (isCorrect) {
+        const fb = document.getElementById('fb-correct');
+        fb.textContent = 'Correct. ' + s.explanation;
+        fb.style.display = 'block';
+        markDot(current, 'done');
+    } else {
+        const correctWord = s.correct ? 'True' : 'False';
+        const fb = document.getElementById('fb-wrong');
+        fb.textContent = 'Not quite — the answer is ' + correctWord + '. ' + s.explanation;
+        fb.style.display = 'block';
+        markDot(current, 'done');
+    }
+    document.getElementById('btn-next').style.display = 'inline-flex';
+}
+
+function nextStatement() {
+    current++;
+    if (current >= statements.length) {
+        document.getElementById('question-area').style.display = 'none';
+        document.getElementById('complete-box').style.display = 'block';
+    } else {
+        renderStatement();
+    }
+}
+
+function markDot(idx, state) {
+    document.getElementById('dot-' + idx).className = 'dot ' + state;
+    if (idx + 1 < 5) document.getElementById('dot-' + (idx + 1)).className = 'dot current';
+}
+
+renderStatement();
+</script>
+</body>
+</html>

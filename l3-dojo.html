@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L3 Dojo — Lists and Randomness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #1e1b4b;
+    --accent: #4338ca;
+    --accent-h: #3730a3;
+    --accent-light: #ede9fe;
+    --bg: #f0f2ff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --success: #15803d;
+    --success-bg: #f0fdf4;
+    --success-border: #86efac;
+    --error: #b91c1c;
+    --error-bg: #fef2f2;
+    --error-border: #fca5a5;
+    --hint-bg: #fffbeb;
+    --hint-text: #78350f;
+    --hint-border: #f59e0b;
+    --code-bg: #1e293b;
+    --code-text: #e2e8f0;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lexend', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; font-size: 18px; line-height: 1.7; }
+header { background: var(--primary); color: white; padding: 28px 40px; }
+.lesson-tag { font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #a5b4fc; margin-bottom: 8px; }
+header h1 { font-size: 30px; font-weight: 800; }
+main { flex: 1; padding: 40px; max-width: 860px; width: 100%; margin: 0 auto; }
+.instruction { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 24px 32px; margin-bottom: 32px; font-size: 20px; font-weight: 500; line-height: 1.6; }
+.sub-instruction { font-size: 16px; color: var(--muted); margin-top: 10px; font-weight: 500; }
+.sortable-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+.sort-item {
+    background: var(--code-bg);
+    border: 3px solid #334155;
+    border-radius: 14px;
+    padding: 18px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 17px;
+    font-weight: 400;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--code-text);
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    user-select: none;
+    white-space: pre;
+}
+.sort-item .handle { color: #475569; font-size: 20px; flex-shrink: 0; font-family: sans-serif; }
+.sort-item:hover { border-color: #60a5fa; }
+.sort-item.selected { border-color: #3b82f6; background: #1e3a5f; box-shadow: 0 4px 18px rgba(59,130,246,0.25); }
+.sort-item.correct-pos { border-color: #4ade80; background: #14532d; color: #bbf7d0; cursor: default; }
+.actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.btn { display: inline-flex; align-items: center; padding: 16px 32px; border-radius: 12px; font-family: 'Lexend', sans-serif; font-size: 18px; font-weight: 700; cursor: pointer; border: 3px solid transparent; transition: background 0.15s, transform 0.1s; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-h); }
+.btn-hint { background: var(--hint-bg); color: var(--hint-text); border-color: var(--hint-border); }
+.hint-box { background: var(--hint-bg); border: 2px solid var(--hint-border); border-radius: 12px; padding: 20px 24px; color: var(--hint-text); font-size: 17px; font-weight: 500; margin-top: 20px; display: none; }
+.result-box { border-radius: 14px; padding: 24px 28px; font-size: 20px; font-weight: 700; margin-top: 24px; display: none; line-height: 1.5; }
+.result-correct { background: var(--success-bg); border: 2px solid var(--success-border); color: var(--success); }
+.result-wrong { background: var(--error-bg); border: 2px solid var(--error-border); color: var(--error); }
+footer { background: var(--primary); color: #a5b4fc; text-align: center; padding: 18px; font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-top: auto; }
+</style>
+</head>
+<body>
+<header>
+    <div class="lesson-tag">Lesson 3 — Dojo Challenge</div>
+    <h1>Lists and Randomness</h1>
+</header>
+<main>
+    <div class="instruction">
+        This is the full Magic 8-Ball program. Drag the lines into the correct order.
+        <div class="sub-instruction">Click a line to select it (it will highlight blue), then click another line to swap them.</div>
+    </div>
+    <div class="sortable-list" id="sortable"></div>
+    <div class="actions">
+        <button class="btn btn-primary" onclick="checkOrder()">Check my order</button>
+        <button class="btn btn-hint" onclick="toggleHint()">Show hint</button>
+    </div>
+    <div class="hint-box" id="hint">
+        The list needs to exist before the function can use it. The trigger line always goes last.
+    </div>
+    <div class="result-box result-correct" id="result-correct">
+        Correct. That is the complete 8-Ball program.
+    </div>
+    <div class="result-box result-wrong" id="result-wrong">
+        Not quite — try swapping some lines. Think about which parts depend on each other.
+    </div>
+</main>
+<footer>Coding and Programming</footer>
+<script>
+const lines = [
+    { id: 1, text: 'answers = ["answer one", "answer two", "answer three"]' },
+    { id: 2, text: 'def on_gesture_shake():' },
+    { id: 3, text: '    answer = answers[randint(0, 2)]' },
+    { id: 4, text: '    basic.show_string(answer)' },
+    { id: 5, text: 'input.on_gesture(Gesture.SHAKE, on_gesture_shake)' }
+];
+const correctOrder = [1, 2, 3, 4, 5];
+let items = [...lines].sort(() => Math.random() - 0.5);
+let selectedId = null;
+
+function render() {
+    const list = document.getElementById('sortable');
+    list.innerHTML = '';
+    items.forEach(line => {
+        const div = document.createElement('div');
+        div.className = 'sort-item' + (line.id === selectedId ? ' selected' : '');
+        div.dataset.id = line.id;
+        div.innerHTML = '<span class="handle">&#9783;</span>' + escHtml(line.text);
+        list.appendChild(div);
+    });
+    document.getElementById('result-correct').style.display = 'none';
+    document.getElementById('result-wrong').style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+    const item = e.target.closest('.sort-item');
+    if (!item) return;
+    if (item.classList.contains('correct-pos')) return;
+    const id = parseInt(item.dataset.id);
+    if (selectedId === null) {
+        selectedId = id;
+        render();
+        document.getElementById('result-correct').style.display = 'none';
+        document.getElementById('result-wrong').style.display = 'none';
+    } else if (selectedId === id) {
+        selectedId = null;
+        render();
+    } else {
+        const aIdx = items.findIndex(s => s.id === selectedId);
+        const bIdx = items.findIndex(s => s.id === id);
+        [items[aIdx], items[bIdx]] = [items[bIdx], items[aIdx]];
+        selectedId = null;
+        render();
+    }
+});
+
+function checkOrder() {
+    const current = [...document.querySelectorAll('.sort-item')].map(el => parseInt(el.dataset.id));
+    const isCorrect = correctOrder.every((id, i) => id === current[i]);
+    if (isCorrect) {
+        document.getElementById('result-correct').style.display = 'block';
+        document.getElementById('result-wrong').style.display = 'none';
+        document.querySelectorAll('.sort-item').forEach(el => el.classList.add('correct-pos'));
+    } else {
+        document.getElementById('result-wrong').style.display = 'block';
+        document.getElementById('result-correct').style.display = 'none';
+    }
+}
+
+function toggleHint() {
+    const hint = document.getElementById('hint');
+    const btn = document.querySelector('.btn-hint');
+    const showing = hint.style.display === 'block';
+    hint.style.display = showing ? 'none' : 'block';
+    btn.textContent = showing ? 'Show hint' : 'Hide hint';
+}
+
+function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+render();
+</script>
+</body>
+</html>

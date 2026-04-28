@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L5 Dojo — Test and Debug</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #1e1b4b;
+    --accent: #4338ca;
+    --accent-h: #3730a3;
+    --accent-light: #ede9fe;
+    --bg: #f0f2ff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --success: #15803d;
+    --success-bg: #f0fdf4;
+    --success-border: #86efac;
+    --error: #b91c1c;
+    --error-bg: #fef2f2;
+    --error-border: #fca5a5;
+    --hint-bg: #fffbeb;
+    --hint-text: #78350f;
+    --hint-border: #f59e0b;
+    --code-bg: #1e293b;
+    --code-text: #e2e8f0;
+    --broken-bg: #451a03;
+    --broken-text: #fed7aa;
+    --broken-border: #c2410c;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lexend', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; font-size: 18px; line-height: 1.7; }
+header { background: var(--primary); color: white; padding: 28px 40px; }
+.lesson-tag { font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #a5b4fc; margin-bottom: 8px; }
+header h1 { font-size: 30px; font-weight: 800; }
+main { flex: 1; padding: 40px; max-width: 860px; width: 100%; margin: 0 auto; }
+.instruction { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 24px 32px; margin-bottom: 32px; font-size: 20px; font-weight: 500; line-height: 1.6; }
+.level-nav { display: flex; gap: 12px; margin-bottom: 32px; }
+.level-btn { padding: 10px 24px; border-radius: 50px; font-family: 'Lexend', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; border: 3px solid var(--border); background: white; color: var(--muted); transition: all 0.15s; }
+.level-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+.level-btn.done { background: var(--success-bg); border-color: var(--success-border); color: var(--success); }
+.level-card { background: white; border: 2px solid var(--border); border-radius: 18px; padding: 32px; margin-bottom: 28px; }
+.level-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.level-badge { background: var(--accent); color: white; border-radius: 50px; padding: 6px 18px; font-size: 14px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
+.level-badge.l2 { background: #7c3aed; }
+.level-badge.l3 { background: #b45309; }
+.code-block { background: var(--code-bg); border-radius: 12px; padding: 8px 0; margin-bottom: 20px; overflow: hidden; }
+.code-line { display: flex; align-items: flex-start; padding: 8px 20px; gap: 14px; color: var(--code-text); font-family: 'Courier New', monospace; font-size: 16px; line-height: 1.7; }
+.code-line.broken { background: var(--broken-bg); color: var(--broken-text); border-left: 4px solid var(--broken-border); }
+.line-num { color: #475569; font-size: 13px; min-width: 20px; text-align: right; user-select: none; flex-shrink: 0; padding-top: 2px; }
+.code-line.broken .line-num { color: #fb923c; }
+.line-content { white-space: pre-wrap; word-break: break-all; }
+.fix-label { font-size: 16px; font-weight: 700; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+.fix-input {
+    width: 100%;
+    padding: 16px 20px;
+    border: 3px solid var(--border);
+    border-radius: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 17px;
+    color: var(--text);
+    background: #f9fafb;
+    margin-bottom: 16px;
+    transition: border-color 0.15s;
+}
+.fix-input:focus { outline: none; border-color: var(--accent); background: white; }
+.fix-input.input-correct { border-color: var(--success); background: var(--success-bg); }
+.fix-input.input-wrong { border-color: var(--error); background: var(--error-bg); }
+.btn { display: inline-flex; align-items: center; padding: 14px 28px; border-radius: 12px; font-family: 'Lexend', sans-serif; font-size: 17px; font-weight: 700; cursor: pointer; border: 3px solid transparent; transition: background 0.15s, transform 0.1s; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-h); }
+.btn-next { background: var(--success); color: white; border-color: var(--success); display: none; margin-top: 12px; }
+.btn-next:hover { background: #166534; }
+.btn-hint { background: var(--hint-bg); color: var(--hint-text); border-color: var(--hint-border); }
+.hint-box { background: var(--hint-bg); border: 2px solid var(--hint-border); border-radius: 12px; padding: 18px 22px; color: var(--hint-text); font-size: 16px; font-weight: 500; margin-top: 14px; display: none; }
+.feedback-box { border-radius: 12px; padding: 18px 22px; font-size: 17px; font-weight: 600; margin-top: 14px; display: none; line-height: 1.5; }
+.feedback-correct { background: var(--success-bg); border: 2px solid var(--success-border); color: var(--success); }
+.feedback-wrong { background: var(--error-bg); border: 2px solid var(--error-border); color: var(--error); }
+.actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 4px; }
+.complete-box { background: var(--success-bg); border: 2px solid var(--success-border); border-radius: 16px; padding: 32px; text-align: center; display: none; }
+.complete-box h2 { font-size: 26px; font-weight: 800; color: var(--success); margin-bottom: 12px; }
+.complete-box p { font-size: 18px; color: #166634; font-weight: 500; }
+footer { background: var(--primary); color: #a5b4fc; text-align: center; padding: 18px; font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-top: auto; }
+</style>
+</head>
+<body>
+<header>
+    <div class="lesson-tag">Lesson 5 — Dojo Challenge</div>
+    <h1>Test and Debug</h1>
+</header>
+<main>
+    <div class="instruction">
+        Each program is broken. Find the error and type the corrected line.
+    </div>
+
+    <div class="level-nav">
+        <button class="level-btn active" id="nav-1" onclick="goToLevel(1)">Level 1</button>
+        <button class="level-btn" id="nav-2" onclick="goToLevel(2)">Level 2</button>
+        <button class="level-btn" id="nav-3" onclick="goToLevel(3)">Level 3</button>
+    </div>
+
+    <!-- LEVEL 1 -->
+    <div id="level-1">
+        <div class="level-card">
+            <div class="level-header">
+                <span class="level-badge">Level 1</span>
+                <span style="font-size:17px;font-weight:600;color:var(--muted);">One error</span>
+            </div>
+            <div class="code-block">
+                <div class="code-line broken">
+                    <span class="line-num">1</span>
+                    <span class="line-content">answers = ["Definitely yes" "No chance" "Ask again later"]</span>
+                </div>
+                <div class="code-line">
+                    <span class="line-num">2</span>
+                    <span class="line-content">def on_gesture_shake():</span>
+                </div>
+                <div class="code-line">
+                    <span class="line-num">3</span>
+                    <span class="line-content">    answer = answers[randint(0, 2)]</span>
+                </div>
+                <div class="code-line">
+                    <span class="line-num">4</span>
+                    <span class="line-content">    basic.show_string(answer)</span>
+                </div>
+                <div class="code-line">
+                    <span class="line-num">5</span>
+                    <span class="line-content">input.on_gesture(Gesture.SHAKE, on_gesture_shake)</span>
+                </div>
+            </div>
+            <p class="fix-label">Type the corrected line 1:</p>
+            <input type="text" class="fix-input" id="input-l1" placeholder='answers = ["Definitely yes", ...]' spellcheck="false" autocomplete="off">
+            <div class="feedback-box feedback-correct" id="fb-l1-correct">Correct. The list items need commas between them: answers = ["Definitely yes", "No chance", "Ask again later"]</div>
+            <div class="feedback-box feedback-wrong" id="fb-l1-wrong">Not quite. Check the commas — every item in the list needs one between it and the next.</div>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="checkLevel1()">Check</button>
+                <button class="btn btn-hint" onclick="toggleHint('hint-l1')">Show hint</button>
+            </div>
+            <div class="hint-box" id="hint-l1">How should items in a list be separated?</div>
+            <button class="btn btn-next" id="next-l1" onclick="goToLevel(2)">Next level</button>
+        </div>
+    </div>
+
+    <!-- LEVEL 2 -->
+    <div id="level-2" style="display:none;">
+        <div class="level-card">
+            <div class="level-header">
+                <span class="level-badge l2">Level 2</span>
+                <span style="font-size:17px;font-weight:600;color:var(--muted);">One error</span>
+            </div>
+            <div class="code-block">
+                <div class="code-line">
+                    <span class="line-num">1</span>
+                    <span class="line-content">answers = ["Definitely yes", "No chance", "Ask again later", "For sure"]</span>
+                </div>
+                <div class="code-line">
+                    <span class="line-num">2</span>
+                    <span class="line-content">def on_gesture_shake():</span>
+                </div>
+                <div class="code-line broken">
+                    <span class="line-num">3</span>
+                    <span class="line-content">    answer = answers[randint(0, 2)]</span>
+                </div>
+                <div class="code-line">
+                    <span class="line-num">4</span>
+                    <span class="line-content">    basic.show_string(answer)</span>
+                </div>
+                <div class="code-line">
+                    <span class="line-num">5</span>
+                    <span class="line-content">input.on_gesture(Gesture.SHAKE, on_gesture_shake)</span>
+                </div>
+            </div>
+            <p class="fix-label">Type the corrected line 3:</p>
+            <input type="text" class="fix-input" id="input-l2" placeholder="    answer = answers[randint(...)]" spellcheck="false" autocomplete="off">
+            <div class="feedback-box feedback-correct" id="fb-l2-correct">Correct. The list has 4 items at slots 0, 1, 2, and 3 — so the range must be randint(0, 3).</div>
+            <div class="feedback-box feedback-wrong" id="fb-l2-wrong">Not quite. Count the items in the list. What is the last slot number?</div>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="checkLevel2()">Check</button>
+                <button class="btn btn-hint" onclick="toggleHint('hint-l2')">Show hint</button>
+            </div>
+            <div class="hint-box" id="hint-l2">Count the items in the list. What is the last slot number?</div>
+            <button class="btn btn-next" id="next-l2" onclick="goToLevel(3)">Next level</button>
+        </div>
+    </div>
+
+    <!-- LEVEL 3 -->
+    <div id="level-3" style="display:none;">
+        <div class="level-card">
+            <div class="level-header">
+                <span class="level-badge l3">Level 3</span>
+                <span style="font-size:17px;font-weight:600;color:var(--muted);">Two errors</span>
+            </div>
+            <div class="code-block">
+                <div class="code-line">
+                    <span class="line-num">1</span>
+                    <span class="line-content">basic.show_string("My 8-Ball")</span>
+                </div>
+                <div class="code-line">
+                    <span class="line-num">2</span>
+                    <span class="line-content">answers = ["Definitely yes", "No chance", "Ask again later"]</span>
+                </div>
+                <div class="code-line">
+                    <span class="line-num">3</span>
+                    <span class="line-content">def on_gesture_shake():</span>
+                </div>
+                <div class="code-line broken">
+                    <span class="line-num">4</span>
+                    <span class="line-content">    music.play(music.builtin_playable_sound_effect(soundExpression.twinkle), music.PlaybackMode.UNTIL_DONE)</span>
+                </div>
+                <div class="code-line broken">
+                    <span class="line-num">5</span>
+                    <span class="line-content">    answer = answers[randint(0, 3)]</span>
+                </div>
+                <div class="code-line">
+                    <span class="line-num">6</span>
+                    <span class="line-content">    basic.show_string(answer)</span>
+                </div>
+                <div class="code-line">
+                    <span class="line-num">7</span>
+                    <span class="line-content">input.on_gesture(Gesture.SHAKE, on_gesture_shake)</span>
+                </div>
+            </div>
+            <p class="fix-label">Type the corrected line 4:</p>
+            <input type="text" class="fix-input" id="input-l3a" placeholder="    music.play(...)" spellcheck="false" autocomplete="off">
+            <p class="fix-label" style="margin-top:8px;">Type the corrected line 5:</p>
+            <input type="text" class="fix-input" id="input-l3b" placeholder="    answer = answers[randint(...)]" spellcheck="false" autocomplete="off">
+            <div class="feedback-box feedback-correct" id="fb-l3-correct"></div>
+            <div class="feedback-box feedback-wrong" id="fb-l3-wrong"></div>
+            <div class="actions">
+                <button class="btn btn-primary" onclick="checkLevel3()">Check</button>
+                <button class="btn btn-hint" onclick="toggleHint('hint-l3')">Show hint</button>
+            </div>
+            <div class="hint-box" id="hint-l3">One error is about how the sound plays. One error is about the list range.</div>
+        </div>
+    </div>
+
+    <div class="complete-box" id="complete-box">
+        <h2>All three levels complete!</h2>
+        <p>You can read and fix Python errors. That is real debugging.</p>
+    </div>
+
+</main>
+<footer>Coding and Programming</footer>
+<script>
+let levelsDone = new Set();
+
+function goToLevel(n) {
+    [1,2,3].forEach(i => {
+        document.getElementById('level-' + i).style.display = (i === n) ? 'block' : 'none';
+    });
+    document.querySelectorAll('.level-btn').forEach((btn, i) => {
+        btn.classList.remove('active');
+    });
+    document.getElementById('nav-' + n).classList.add('active');
+}
+
+function normalise(str) {
+    return str.trim().replace(/\s+/g, ' ');
+}
+
+const l1Correct = 'answers = ["Definitely yes", "No chance", "Ask again later"]';
+function checkLevel1() {
+    const val = normalise(document.getElementById('input-l1').value);
+    const input = document.getElementById('input-l1');
+    if (val === l1Correct) {
+        input.classList.add('input-correct');
+        document.getElementById('fb-l1-correct').style.display = 'block';
+        document.getElementById('fb-l1-wrong').style.display = 'none';
+        document.getElementById('next-l1').style.display = 'inline-flex';
+        document.getElementById('nav-1').classList.remove('active');
+        document.getElementById('nav-1').classList.add('done');
+        levelsDone.add(1);
+    } else {
+        input.classList.add('input-wrong');
+        document.getElementById('fb-l1-wrong').style.display = 'block';
+        document.getElementById('fb-l1-correct').style.display = 'none';
+        setTimeout(() => { input.classList.remove('input-wrong'); }, 1500);
+    }
+}
+
+const l2Correct = '    answer = answers[randint(0, 3)]';
+function checkLevel2() {
+    const val = normalise(document.getElementById('input-l2').value);
+    const input = document.getElementById('input-l2');
+    if (val === normalise(l2Correct)) {
+        input.classList.add('input-correct');
+        document.getElementById('fb-l2-correct').style.display = 'block';
+        document.getElementById('fb-l2-wrong').style.display = 'none';
+        document.getElementById('next-l2').style.display = 'inline-flex';
+        document.getElementById('nav-2').classList.remove('active');
+        document.getElementById('nav-2').classList.add('done');
+        levelsDone.add(2);
+    } else {
+        input.classList.add('input-wrong');
+        document.getElementById('fb-l2-wrong').style.display = 'block';
+        document.getElementById('fb-l2-correct').style.display = 'none';
+        setTimeout(() => { input.classList.remove('input-wrong'); }, 1500);
+    }
+}
+
+const l3aCorrect = '    music.play(music.builtin_playable_sound_effect(soundExpression.twinkle), music.PlaybackMode.IN_BACKGROUND)';
+const l3bCorrect = '    answer = answers[randint(0, 2)]';
+function checkLevel3() {
+    const valA = normalise(document.getElementById('input-l3a').value);
+    const valB = normalise(document.getElementById('input-l3b').value);
+    const inputA = document.getElementById('input-l3a');
+    const inputB = document.getElementById('input-l3b');
+    const aOk = valA === normalise(l3aCorrect);
+    const bOk = valB === normalise(l3bCorrect);
+
+    inputA.classList.remove('input-correct','input-wrong');
+    inputB.classList.remove('input-correct','input-wrong');
+    inputA.classList.add(aOk ? 'input-correct' : 'input-wrong');
+    inputB.classList.add(bOk ? 'input-correct' : 'input-wrong');
+
+    if (aOk && bOk) {
+        document.getElementById('fb-l3-correct').textContent = 'Both correct. UNTIL_DONE makes the sound block everything until it finishes — IN_BACKGROUND lets both run at once. randint(0, 3) goes out of range for a 3-item list — it should be randint(0, 2).';
+        document.getElementById('fb-l3-correct').style.display = 'block';
+        document.getElementById('fb-l3-wrong').style.display = 'none';
+        document.getElementById('nav-3').classList.remove('active');
+        document.getElementById('nav-3').classList.add('done');
+        levelsDone.add(3);
+        setTimeout(() => {
+            document.getElementById('complete-box').style.display = 'block';
+        }, 800);
+    } else {
+        let msg = '';
+        if (!aOk && !bOk) msg = 'Both lines still need work. One error is about how the sound plays. One is about the list range.';
+        else if (!aOk) msg = 'Line 4 is not quite right. Check the playback mode — should the sound block everything or play in the background?';
+        else msg = 'Line 5 is not quite right. Count the items in the list. What is the last slot number?';
+        document.getElementById('fb-l3-wrong').textContent = msg;
+        document.getElementById('fb-l3-wrong').style.display = 'block';
+        document.getElementById('fb-l3-correct').style.display = 'none';
+        setTimeout(() => {
+            inputA.classList.remove('input-wrong');
+            inputB.classList.remove('input-wrong');
+        }, 1500);
+    }
+}
+
+function toggleHint(id) {
+    const hint = document.getElementById(id);
+    const showing = hint.style.display === 'block';
+    hint.style.display = showing ? 'none' : 'block';
+    const btn = hint.previousElementSibling.querySelector('.btn-hint') || document.querySelector('[onclick="toggleHint(\'' + id + '\')"]');
+    if (btn) btn.textContent = showing ? 'Show hint' : 'Hide hint';
+}
+</script>
+</body>
+</html>
