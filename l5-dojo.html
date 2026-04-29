@@ -85,6 +85,11 @@ main { flex: 1; padding: 40px; max-width: 860px; width: 100%; margin: 0 auto; }
 .complete-box { background: var(--success-bg); border: 2px solid var(--success-border); border-radius: 16px; padding: 32px; text-align: center; display: none; }
 .complete-box h2 { font-size: 26px; font-weight: 800; color: var(--success); margin-bottom: 12px; }
 .complete-box p { font-size: 18px; color: #166634; font-weight: 500; }
+.screenshot-tip { margin-top: 24px; padding-top: 24px; border-top: 2px solid var(--success-border); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.screenshot-tip img { max-width: 280px; width: 100%; border-radius: 12px; }
+.tip-heading { font-size: 19px; font-weight: 800; color: var(--success); }
+.tip-body { font-size: 17px; color: #166534; font-weight: 600; line-height: 1.5; }
+.tip-caption { font-size: 14px; color: #166534; font-weight: 500; }
 footer { background: var(--primary); color: #a5b4fc; text-align: center; padding: 18px; font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-top: auto; }
 </style>
 </head>
@@ -242,6 +247,12 @@ footer { background: var(--primary); color: #a5b4fc; text-align: center; padding
     <div class="complete-box" id="complete-box">
         <h2>All three levels complete!</h2>
         <p>You can read and fix Python errors. That is real debugging.</p>
+        <div class="screenshot-tip">
+            <p class="tip-heading">Dojo earned!</p>
+            <p class="tip-body">Screenshot this page and upload it to Google Classroom to show your teacher.</p>
+            <img src="screenshot.png" alt="Press Ctrl and the Show Windows key at the same time">
+            <p class="tip-caption">Ctrl + Show Windows key</p>
+        </div>
     </div>
 
 </main>

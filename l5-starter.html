@@ -57,6 +57,11 @@ main { flex: 1; padding: 40px; max-width: 860px; width: 100%; margin: 0 auto; }
 .complete-box { background: var(--success-bg); border: 2px solid var(--success-border); border-radius: 16px; padding: 32px; display: none; margin-top: 20px; }
 .complete-box h2 { font-size: 26px; font-weight: 800; color: var(--success); margin-bottom: 12px; }
 .complete-box p { font-size: 18px; color: #166634; font-weight: 500; line-height: 1.6; }
+.screenshot-tip { margin-top: 24px; padding-top: 24px; border-top: 2px solid var(--success-border); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.screenshot-tip img { max-width: 280px; width: 100%; border-radius: 12px; }
+.tip-heading { font-size: 19px; font-weight: 800; color: var(--success); }
+.tip-body { font-size: 17px; color: #166534; font-weight: 600; line-height: 1.5; }
+.tip-caption { font-size: 14px; color: #166534; font-weight: 500; }
 footer { background: var(--primary); color: #a5b4fc; text-align: center; padding: 18px; font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-top: auto; }
 </style>
 </head>
@@ -114,6 +119,11 @@ footer { background: var(--primary); color: #a5b4fc; text-align: center; padding
             Error 1 — Line 2: The list is missing a comma between "answer two" and "answer three". Every item in a list must be separated by a comma.<br><br>
             Error 2 — Line 5: randint(0, 3) asks for a slot between 0 and 3 but the list only has slots 0, 1, and 2. It should be randint(0, 2).
         </p>
+        <div class="screenshot-tip">
+            <p class="tip-body">Screenshot this page and upload it to Google Classroom to show your teacher.</p>
+            <img src="screenshot.png" alt="Press Ctrl and the Show Windows key at the same time">
+            <p class="tip-caption">Ctrl + Show Windows key</p>
+        </div>
     </div>
 
     <div class="actions" style="margin-top:24px;">
