@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>L1 Dojo B — Algorithm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #1e1b4b;
+    --accent: #4338ca;
+    --accent-h: #3730a3;
+    --accent-light: #ede9fe;
+    --bg: #f0f2ff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --success: #15803d;
+    --success-bg: #f0fdf4;
+    --success-border: #86efac;
+    --error: #b91c1c;
+    --error-bg: #fef2f2;
+    --error-border: #fca5a5;
+    --hint-bg: #fffbeb;
+    --hint-text: #78350f;
+    --hint-border: #f59e0b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lexend', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; font-size: 18px; line-height: 1.7; }
+header { background: var(--primary); color: white; padding: 28px 40px; }
+.lesson-tag { font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #a5b4fc; margin-bottom: 8px; }
+header h1 { font-size: 30px; font-weight: 800; }
+main { flex: 1; padding: 40px; max-width: 860px; width: 100%; margin: 0 auto; }
+.instruction { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 24px 32px; margin-bottom: 12px; font-size: 20px; font-weight: 500; line-height: 1.6; }
+.sub-instruction { font-size: 16px; color: var(--muted); margin-top: 10px; font-weight: 500; }
+.errors-remaining { font-size: 17px; font-weight: 700; color: var(--muted); margin-bottom: 24px; }
+.errors-remaining span { color: var(--accent); font-size: 20px; }
+.steps-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 28px; }
+.step-item {
+    background: white;
+    border: 3px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 28px;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    user-select: none;
+    line-height: 1.5;
+}
+.step-num { font-size: 15px; font-weight: 800; color: var(--muted); min-width: 28px; text-align: center; background: var(--bg); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-item.clickable:hover { border-color: #a5b4fc; background: #f5f5ff; }
+.step-item.clicked-wrong { border-color: var(--error); background: var(--error-bg); color: var(--error); }
+.step-item.clicked-wrong .step-num { background: var(--error-bg); color: var(--error); }
+.step-item.clicked-correct { border-color: var(--success); background: var(--success-bg); color: var(--success); cursor: default; }
+.step-item.clicked-correct .step-num { background: var(--success-bg); color: var(--success); }
+.fb-wrong-click { background: var(--error-bg); border: 2px solid var(--error-border); color: var(--error); border-radius: 12px; padding: 16px 20px; font-size: 17px; font-weight: 600; margin-bottom: 12px; display: none; }
+.feedback-area { margin-bottom: 8px; }
+.feedback-item { border-radius: 12px; padding: 16px 20px; font-size: 17px; font-weight: 600; margin-bottom: 12px; line-height: 1.5; }
+.feedback-correct { background: var(--success-bg); border: 2px solid var(--success-border); color: var(--success); }
+.btn { display: inline-flex; align-items: center; padding: 16px 32px; border-radius: 12px; font-family: 'Lexend', sans-serif; font-size: 18px; font-weight: 700; cursor: pointer; border: 3px solid transparent; transition: background 0.15s, transform 0.1s; }
+.btn:active { transform: scale(0.97); }
+.btn-hint { background: var(--hint-bg); color: var(--hint-text); border-color: var(--hint-border); }
+.hint-box { background: var(--hint-bg); border: 2px solid var(--hint-border); border-radius: 12px; padding: 20px 24px; color: var(--hint-text); font-size: 17px; font-weight: 500; margin-top: 20px; display: none; line-height: 1.6; }
+.actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.complete-box { background: var(--success-bg); border: 2px solid var(--success-border); border-radius: 16px; padding: 32px; display: none; margin-top: 20px; }
+.complete-box h2 { font-size: 26px; font-weight: 800; color: var(--success); margin-bottom: 16px; }
+.complete-box p { font-size: 18px; color: #166634; font-weight: 500; line-height: 1.6; }
+.screenshot-tip { margin-top: 24px; padding-top: 24px; border-top: 2px solid var(--success-border); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.screenshot-tip img { max-width: 280px; width: 100%; border-radius: 12px; }
+.tip-heading { font-size: 19px; font-weight: 800; color: var(--success); }
+.tip-body { font-size: 17px; color: #166534; font-weight: 600; line-height: 1.5; }
+.tip-caption { font-size: 14px; color: #166534; font-weight: 500; }
+footer { background: var(--primary); color: #a5b4fc; text-align: center; padding: 18px; font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-top: auto; }
+</style>
+</head>
+<body>
+<header>
+    <div class="lesson-tag">Lesson 1 — Dojo Challenge B</div>
+    <h1>Algorithm</h1>
+</header>
+<main>
+    <div class="instruction">
+        These steps are in the wrong order. Two of them are in the wrong position — click to find them.
+        <div class="sub-instruction">Click a step to identify it as misplaced. You need to find both.</div>
+    </div>
+    <div class="errors-remaining">
+        Still looking for: <span id="remaining-count">2</span> misplaced step(s)
+    </div>
+
+    <div class="steps-list" id="steps-list">
+        <div class="step-item clickable" data-idx="0">
+            <span class="step-num">1</span>
+            Show a startup message on the screen
+        </div>
+        <div class="step-item clickable" data-idx="1">
+            <span class="step-num">2</span>
+            Pick a random answer from the list
+        </div>
+        <div class="step-item clickable" data-idx="2">
+            <span class="step-num">3</span>
+            Wait for the device to be shaken
+        </div>
+        <div class="step-item clickable" data-idx="3">
+            <span class="step-num">4</span>
+            Create a list of possible answers
+        </div>
+        <div class="step-item clickable" data-idx="4">
+            <span class="step-num">5</span>
+            Display the answer on the screen
+        </div>
+    </div>
+
+    <div class="feedback-area" id="feedback-area"></div>
+    <div class="fb-wrong-click" id="fb-wrong-click">That step is in the right place — keep looking.</div>
+
+    <div class="complete-box" id="complete-box">
+        <h2>Both found!</h2>
+        <p>
+            <strong>Step 2 is wrong</strong> — You can't pick a random answer before the list exists. The list needs to be created first, at startup.<br><br>
+            <strong>Step 4 is wrong</strong> — Creating the list inside the shake response would mean rebuilding it every single time. The list belongs at the start of the program, before the device starts listening for shakes.
+        </p>
+        <div class="screenshot-tip">
+            <p class="tip-heading">Dojo earned!</p>
+            <p class="tip-body">Screenshot this page and upload it to Google Classroom to show your teacher.</p>
+            <img src="screenshot.png" alt="Press Ctrl and the Show Windows key at the same time">
+            <p class="tip-caption">Ctrl + Show Windows key</p>
+        </div>
+    </div>
+
+    <div class="actions" style="margin-top:24px;">
+        <button class="btn btn-hint" onclick="toggleHint()">Show hint</button>
+    </div>
+    <div class="hint-box" id="hint">
+        Think about what must exist before it can be used. Think about what should only happen after the shake — and what should be ready and waiting before any shake happens.
+    </div>
+</main>
+<footer>Coding and Programming</footer>
+<script>
+const brokenSteps = new Set([1, 3]); // 0-indexed: step 2 and step 4
+const explanations = {
+    1: 'Correct — Step 2 is misplaced. You cannot pick a random answer before the list has been created.',
+    3: 'Correct — Step 4 is misplaced. The list should be created at startup, not after waiting for a shake.'
+};
+let found = new Set();
+
+document.getElementById('steps-list').addEventListener('click', function(e) {
+    const item = e.target.closest('.step-item');
+    if (!item || !item.classList.contains('clickable')) return;
+    const idx = parseInt(item.dataset.idx);
+    if (found.has(idx)) return;
+
+    if (brokenSteps.has(idx)) {
+        found.add(idx);
+        item.classList.remove('clickable');
+        item.classList.add('clicked-correct');
+        const fb = document.createElement('div');
+        fb.className = 'feedback-item feedback-correct';
+        fb.textContent = explanations[idx];
+        document.getElementById('feedback-area').appendChild(fb);
+        document.getElementById('fb-wrong-click').style.display = 'none';
+        const remaining = brokenSteps.size - found.size;
+        document.getElementById('remaining-count').textContent = remaining;
+        if (remaining === 0) {
+            document.getElementById('complete-box').style.display = 'block';
+            document.getElementById('errors-remaining').style.display = 'none';
+        }
+    } else {
+        item.classList.add('clicked-wrong');
+        document.getElementById('fb-wrong-click').style.display = 'block';
+        setTimeout(() => {
+            item.classList.remove('clicked-wrong');
+            document.getElementById('fb-wrong-click').style.display = 'none';
+        }, 1200);
+    }
+});
+
+function toggleHint() {
+    const hint = document.getElementById('hint');
+    const btn = document.querySelector('.btn-hint');
+    const showing = hint.style.display === 'block';
+    hint.style.display = showing ? 'none' : 'block';
+    btn.textContent = showing ? 'Show hint' : 'Hide hint';
+}
+</script>
+</body>
+</html>
