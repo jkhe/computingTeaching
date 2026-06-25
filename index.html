@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KS3 Computing: Handling Data Portal</title>
-    <!-- Tailwind CSS for high-fidelity UI -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,19 +20,11 @@
                     },
                     colors: {
                         charcoal: {
-                            50: '#f9f9fa',
-                            800: '#1e2025',
-                            900: '#121316',
+                            900: '#1e2025',
                             950: '#0a0b0d',
                         },
-                        brandOrange: {
-                            500: '#f97316',
-                            600: '#ea580c',
-                        },
-                        brandYellow: {
-                            400: '#facc15',
-                            500: '#eab308',
-                        }
+                        brandOrange: { 500: '#f97316', 600: '#ea580c' },
+                        brandYellow: { 500: '#eab308' }
                     }
                 }
             }
@@ -57,7 +48,7 @@
             <div>
                 <a href="https://github.com/jkhe/computingTeaching" target="_blank" class="text-sm font-bold bg-white/5 hover:bg-white/10 text-slate-300 px-4 py-2 rounded-xl border border-white/10 transition-colors flex items-center gap-2">
                     <i class="fa-brands fa-github text-lg"></i>
-                    View GitHub Repo
+                    GitHub
                 </a>
             </div>
         </div>
@@ -65,154 +56,78 @@
 
     <!-- MAIN BODY PORTAL -->
     <main class="max-w-7xl mx-auto px-6 py-12 w-full flex-grow">
-        <!-- HEADER DESCRIPTION -->
-        <div class="max-w-4xl mb-12">
-            <h2 class="text-5xl md:text-6xl font-black font-display text-white tracking-tight leading-tight">
-                Vauxhall Park Noise Mapping Study
-            </h2>
-            <p class="text-slate-300 mt-6 text-2xl font-bold leading-relaxed border-l-4 border-brandOrange-500 pl-6">
-                A 6-week practical data handling unit. Students transition from raw sensory observations in their local park to digital database design, formulas, and visual chart analysis.
-            </p>
-        </div>
-
+        
         <!-- LESSONS PROGRESSION GRID -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-4">
             
             <!-- LESSON 1 -->
             <div class="bg-charcoal-900 border-2 border-white/10 hover:border-brandOrange-500 rounded-3xl p-8 transition-all duration-300 flex flex-col justify-between shadow-lg group">
-                <div>
-                    <div class="flex justify-between items-start mb-6">
-                        <span class="text-sm font-black font-mono text-brandOrange-500 tracking-wider">LESSON 1</span>
-                        <span class="bg-emerald-500/15 text-emerald-400 text-xs font-black px-3 py-1 rounded-full border border-emerald-500/30 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-circle text-[8px]"></i> Ready</span>
-                    </div>
-                    <h3 class="text-3xl font-black text-white font-display mb-4 group-hover:text-brandOrange-500 transition-colors">What is Data?</h3>
-                    <p class="text-lg text-slate-300 font-bold leading-relaxed mb-6">
-                        "I am learning to explain what data is and identify different types of data."
-                    </p>
-                    <div class="border-t border-white/10 pt-4 mb-6">
-                        <span class="text-xs text-slate-500 font-black uppercase tracking-widest block mb-2">Features:</span>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="bg-black/50 text-slate-300 text-xs font-bold px-3 py-1 rounded border border-white/5">Qual vs Quant</span>
-                            <span class="bg-black/50 text-slate-300 text-xs font-bold px-3 py-1 rounded border border-white/5">Sorting Game</span>
-                        </div>
-                    </div>
+                <div class="mb-10">
+                    <h2 class="text-5xl font-black text-white font-display mb-2 group-hover:text-brandOrange-500 transition-colors">Lesson 1</h2>
+                    <p class="text-2xl text-slate-400 font-bold">What is Data?</p>
                 </div>
-                <a href="ks3_l1_handling_data_interactive.html" class="w-full text-center py-4 px-6 rounded-xl bg-brandOrange-500 text-white hover:bg-brandOrange-600 font-black text-lg transition-colors flex items-center justify-center gap-3 shadow-md">
-                    <i class="fa-solid fa-play"></i> Launch Lesson 1
+                <a href="ks3_l1_handling_data_interactive.html" class="w-full text-center py-4 px-6 rounded-xl bg-brandOrange-500 text-white hover:bg-brandOrange-600 font-black text-xl transition-colors shadow-md">
+                    Launch
                 </a>
             </div>
 
             <!-- LESSON 2 -->
             <div class="bg-charcoal-900 border-2 border-white/10 hover:border-brandYellow-500 rounded-3xl p-8 transition-all duration-300 flex flex-col justify-between shadow-lg group">
-                <div>
-                    <div class="flex justify-between items-start mb-6">
-                        <span class="text-sm font-black font-mono text-brandYellow-500 tracking-wider">LESSON 2</span>
-                        <span class="bg-emerald-500/15 text-emerald-400 text-xs font-black px-3 py-1 rounded-full border border-emerald-500/30 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-circle text-[8px]"></i> Ready</span>
-                    </div>
-                    <h3 class="text-3xl font-black text-white font-display mb-4 group-hover:text-brandYellow-500 transition-colors">Planning Data Collection</h3>
-                    <p class="text-lg text-slate-300 font-bold leading-relaxed mb-6">
-                        "I am learning to plan a data collection method and design a recording table."
-                    </p>
-                    <div class="border-t border-white/10 pt-4 mb-6">
-                        <span class="text-xs text-slate-500 font-black uppercase tracking-widest block mb-2">Features:</span>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="bg-black/50 text-slate-300 text-xs font-bold px-3 py-1 rounded border border-white/5">Interactive Table</span>
-                            <span class="bg-black/50 text-slate-300 text-xs font-bold px-3 py-1 rounded border border-white/5">Anomalies</span>
-                        </div>
-                    </div>
+                <div class="mb-10">
+                    <h2 class="text-5xl font-black text-white font-display mb-2 group-hover:text-brandYellow-500 transition-colors">Lesson 2</h2>
+                    <p class="text-2xl text-slate-400 font-bold">Planning Data Collection</p>
                 </div>
-                <a href="ks3_l2_planning_collection_interactive.html" class="w-full text-center py-4 px-6 rounded-xl bg-brandYellow-500 text-charcoal-950 hover:bg-brandYellow-400 font-black text-lg transition-colors flex items-center justify-center gap-3 shadow-md">
-                    <i class="fa-solid fa-play"></i> Launch Lesson 2
+                <a href="ks3_l2_planning_collection_interactive.html" class="w-full text-center py-4 px-6 rounded-xl bg-brandYellow-500 text-charcoal-950 hover:bg-brandYellow-400 font-black text-xl transition-colors shadow-md">
+                    Launch
                 </a>
             </div>
 
             <!-- LESSON 3 -->
             <div class="bg-charcoal-900 border-2 border-white/10 hover:border-brandOrange-500 rounded-3xl p-8 transition-all duration-300 flex flex-col justify-between shadow-lg group">
-                <div>
-                    <div class="flex justify-between items-start mb-6">
-                        <span class="text-sm font-black font-mono text-slate-400 tracking-wider group-hover:text-brandOrange-500">LESSON 3</span>
-                        <span class="bg-emerald-500/15 text-emerald-400 text-xs font-black px-3 py-1 rounded-full border border-emerald-500/30 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-circle text-[8px]"></i> Ready</span>
-                    </div>
-                    <h3 class="text-3xl font-black text-white font-display mb-4">The Field Trip</h3>
-                    <p class="text-lg text-slate-300 font-bold leading-relaxed mb-6">
-                        "I am learning to collect and record real-world data systematically."
-                    </p>
-                    <div class="border-t border-white/10 pt-4 mb-6">
-                        <span class="text-xs text-slate-500 font-black uppercase tracking-widest block mb-2">Features:</span>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="bg-black/50 text-slate-300 text-xs font-bold px-3 py-1 rounded border border-white/5">Rules Briefing</span>
-                            <span class="bg-black/50 text-slate-300 text-xs font-bold px-3 py-1 rounded border border-white/5">Holding Screen</span>
-                        </div>
-                    </div>
+                <div class="mb-10">
+                    <h2 class="text-5xl font-black text-white font-display mb-2 group-hover:text-brandOrange-500 transition-colors">Lesson 3</h2>
+                    <p class="text-2xl text-slate-400 font-bold">The Field Trip</p>
                 </div>
-                <a href="ks3_l3_field_trip_interactive.html" class="w-full text-center py-4 px-6 rounded-xl bg-brandOrange-500 text-white hover:bg-brandOrange-600 font-black text-lg transition-colors flex items-center justify-center gap-3 shadow-md">
-                    <i class="fa-solid fa-play"></i> Launch Lesson 3
+                <a href="ks3_l3_field_trip_interactive.html" class="w-full text-center py-4 px-6 rounded-xl bg-brandOrange-500 text-white hover:bg-brandOrange-600 font-black text-xl transition-colors shadow-md">
+                    Launch
                 </a>
             </div>
 
-            <!-- LESSON 4 (Draft Placeholder) -->
-            <div class="bg-charcoal-900 border border-white/5 rounded-3xl p-8 flex flex-col justify-between opacity-50 relative overflow-hidden">
-                <div class="absolute inset-0 bg-black/20 pointer-events-none"></div>
-                <div>
-                    <div class="flex justify-between items-start mb-6">
-                        <span class="text-sm font-black font-mono text-slate-600 tracking-wider">LESSON 4</span>
-                        <span class="text-xs font-black text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-hammer mr-1"></i> In Development</span>
-                    </div>
-                    <h3 class="text-3xl font-black text-slate-400 font-display mb-4">Spreadsheet Entry</h3>
-                    <p class="text-lg text-slate-500 font-bold leading-relaxed mb-6">
-                        Transferring paper tally structures to digital Google Sheets layouts.
-                    </p>
+            <!-- LESSON 4 (Locked) -->
+            <div class="bg-charcoal-900 border-2 border-white/5 rounded-3xl p-8 flex flex-col justify-between opacity-50 relative">
+                <div class="mb-10">
+                    <h2 class="text-5xl font-black text-slate-500 font-display mb-2">Lesson 4</h2>
+                    <p class="text-2xl text-slate-600 font-bold">Spreadsheet Entry</p>
                 </div>
-                <button disabled class="w-full text-center py-4 px-6 rounded-xl bg-black/40 text-slate-600 font-black text-lg cursor-not-allowed border border-white/5">
+                <button disabled class="w-full text-center py-4 px-6 rounded-xl bg-black/40 text-slate-600 font-black text-xl cursor-not-allowed border border-white/5">
                     <i class="fa-solid fa-lock mr-2"></i> Locked
                 </button>
             </div>
 
-            <!-- LESSON 5 (Draft Placeholder) -->
-            <div class="bg-charcoal-900 border border-white/5 rounded-3xl p-8 flex flex-col justify-between opacity-50 relative overflow-hidden">
-                <div class="absolute inset-0 bg-black/20 pointer-events-none"></div>
-                <div>
-                    <div class="flex justify-between items-start mb-6">
-                        <span class="text-sm font-black font-mono text-slate-600 tracking-wider">LESSON 5</span>
-                        <span class="text-xs font-black text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-hammer mr-1"></i> In Development</span>
-                    </div>
-                    <h3 class="text-3xl font-black text-slate-400 font-display mb-4">Formulas</h3>
-                    <p class="text-lg text-slate-500 font-bold leading-relaxed mb-6">
-                        Calculating Average, Max, Min with proper operators & cell ranges.
-                    </p>
+            <!-- LESSON 5 (Locked) -->
+            <div class="bg-charcoal-900 border-2 border-white/5 rounded-3xl p-8 flex flex-col justify-between opacity-50 relative">
+                <div class="mb-10">
+                    <h2 class="text-5xl font-black text-slate-500 font-display mb-2">Lesson 5</h2>
+                    <p class="text-2xl text-slate-600 font-bold">Formulas</p>
                 </div>
-                <button disabled class="w-full text-center py-4 px-6 rounded-xl bg-black/40 text-slate-600 font-black text-lg cursor-not-allowed border border-white/5">
+                <button disabled class="w-full text-center py-4 px-6 rounded-xl bg-black/40 text-slate-600 font-black text-xl cursor-not-allowed border border-white/5">
                     <i class="fa-solid fa-lock mr-2"></i> Locked
                 </button>
             </div>
 
-            <!-- LESSON 6 (Draft Placeholder) -->
-            <div class="bg-charcoal-900 border border-white/5 rounded-3xl p-8 flex flex-col justify-between opacity-50 relative overflow-hidden">
-                <div class="absolute inset-0 bg-black/20 pointer-events-none"></div>
-                <div>
-                    <div class="flex justify-between items-start mb-6">
-                        <span class="text-sm font-black font-mono text-slate-600 tracking-wider">LESSON 6</span>
-                        <span class="text-xs font-black text-slate-500 uppercase tracking-widest"><i class="fa-solid fa-hammer mr-1"></i> In Development</span>
-                    </div>
-                    <h3 class="text-3xl font-black text-slate-400 font-display mb-4">Analyzing Charts</h3>
-                    <p class="text-lg text-slate-500 font-bold leading-relaxed mb-6">
-                        Creating visual charts to present evidence to the local council.
-                    </p>
+            <!-- LESSON 6 (Locked) -->
+            <div class="bg-charcoal-900 border-2 border-white/5 rounded-3xl p-8 flex flex-col justify-between opacity-50 relative">
+                <div class="mb-10">
+                    <h2 class="text-5xl font-black text-slate-500 font-display mb-2">Lesson 6</h2>
+                    <p class="text-2xl text-slate-600 font-bold">Analyzing Charts</p>
                 </div>
-                <button disabled class="w-full text-center py-4 px-6 rounded-xl bg-black/40 text-slate-600 font-black text-lg cursor-not-allowed border border-white/5">
+                <button disabled class="w-full text-center py-4 px-6 rounded-xl bg-black/40 text-slate-600 font-black text-xl cursor-not-allowed border border-white/5">
                     <i class="fa-solid fa-lock mr-2"></i> Locked
                 </button>
             </div>
 
         </div>
     </main>
-
-    <!-- FOOTER -->
-    <footer class="border-t-4 border-white/10 bg-charcoal-900 py-8 mt-12">
-        <div class="max-w-7xl mx-auto px-6 flex justify-between items-center text-sm text-slate-400 font-bold">
-            <p>Designed for KS3 National Curriculum Computing.</p>
-        </div>
-    </footer>
 
 </body>
 </html>
