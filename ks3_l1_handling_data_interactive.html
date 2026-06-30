@@ -1,679 +1,1188 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lesson 1: What is Data?</title>
-    <!-- Tailwind CSS for high-contrast presentation styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Nunito', 'sans-serif'],
-                        display: ['Nunito', 'sans-serif'],
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lesson 1: What is Data?</title>
+        <!-- Tailwind CSS for high-contrast presentation styling -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        />
+
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ["Nunito", "sans-serif"],
+                            display: ["Nunito", "sans-serif"],
+                        },
+                        colors: {
+                            charcoal: {
+                                900: "#14161d",
+                                950: "#0a0b0f",
+                            },
+                            brandOrange: {
+                                500: "#f97316",
+                                600: "#ea580c",
+                            },
+                            brandYellow: {
+                                400: "#facc15",
+                                500: "#eab308",
+                            },
+                        },
                     },
-                    colors: {
-                        charcoal: {
-                            900: '#14161d',
-                            950: '#0a0b0f',
-                        },
-                        brandOrange: {
-                            500: '#f97316',
-                            600: '#ea580c',
-                        },
-                        brandYellow: {
-                            400: '#facc15',
-                            500: '#eab308',
+                },
+            };
+        </script>
+        <style>
+            /* Smooth scale transitions for touch targets */
+            .btn-interact {
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .btn-interact:active {
+                transform: scale(0.96);
+            }
+            @keyframes breath {
+                0% {
+                    transform: scale(1);
+                    background-color: rgba(249, 115, 22, 0.1);
+                }
+                50% {
+                    transform: scale(1.15);
+                    background-color: rgba(249, 115, 22, 0.35);
+                }
+                100% {
+                    transform: scale(1);
+                    background-color: rgba(249, 115, 22, 0.1);
+                }
+            }
+            .breathing-active {
+                animation: breath 4s ease-in-out infinite;
+            }
+        </style>
+    </head>
+    <body
+        class="bg-charcoal-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-brandOrange-500 selection:text-white overflow-x-hidden"
+    >
+        <!-- HIGH-CONTRAST HEADER -->
+        <header
+            class="border-b-4 border-white/10 bg-charcoal-900 sticky top-0 z-40 shadow-xl"
+        >
+            <div
+                class="max-w-7xl mx-auto px-6 py-4 flex flex-col xl:flex-row justify-between items-center gap-4"
+            >
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-16 h-16 rounded-2xl bg-brandOrange-500/10 text-brandOrange-500 flex items-center justify-center border-2 border-brandOrange-500/30"
+                    >
+                        <i class="fa-solid fa-database text-4xl"></i>
+                    </div>
+                    <div>
+                        <span
+                            class="text-xl font-black uppercase tracking-widest text-brandOrange-500 font-display block mb-1"
+                            >Handling Data</span
+                        >
+                        <h1
+                            class="text-4xl md:text-5xl font-extrabold text-white font-display"
+                        >
+                            Lesson 1: What is Data?
+                        </h1>
+                    </div>
+                </div>
+
+                <!-- Whiteboard Lesson Progress Navigation -->
+                <nav
+                    class="flex flex-wrap gap-2 bg-black/50 p-2 rounded-2xl border border-white/10"
+                >
+                    <button
+                        onclick="switchLessonPhase('starter')"
+                        id="phase-btn-starter"
+                        class="px-5 py-3 rounded-xl text-base font-black transition-all bg-brandOrange-500 text-white flex items-center gap-2"
+                    >
+                        <span
+                            class="w-3 h-3 rounded-full bg-white animate-pulse"
+                        ></span>
+                        1. Hook Starter
+                    </button>
+                    <button
+                        onclick="switchLessonPhase('model')"
+                        id="phase-btn-model"
+                        class="px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2"
+                    >
+                        <i class="fa-solid fa-lightbulb"></i>
+                        2. Learn
+                    </button>
+                    <button
+                        onclick="switchLessonPhase('practice')"
+                        id="phase-btn-practice"
+                        class="px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2"
+                    >
+                        <i class="fa-solid fa-users"></i>
+                        3. Together
+                    </button>
+                    <button
+                        onclick="switchLessonPhase('independent')"
+                        id="phase-btn-independent"
+                        class="px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2"
+                    >
+                        <i class="fa-solid fa-laptop"></i>
+                        4. Chromebook Task
+                    </button>
+                    <button
+                        onclick="switchLessonPhase('plenary')"
+                        id="phase-btn-plenary"
+                        class="px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2"
+                    >
+                        <i class="fa-solid fa-flag-checkered"></i>
+                        5. Check Out
+                    </button>
+                    <button
+                        onclick="switchLessonPhase('support')"
+                        id="phase-btn-support"
+                        class="px-5 py-3 rounded-xl text-base font-black transition-all text-blue-400 hover:text-white flex items-center gap-2 border border-blue-500/30 bg-blue-500/10"
+                    >
+                        <i class="fa-solid fa-life-ring"></i>
+                        Help
+                    </button>
+                </nav>
+            </div>
+        </header>
+
+        <!-- MAIN WHITEBOARD CANVAS -->
+        <main
+            class="max-w-7xl mx-auto px-6 py-6 w-full flex-grow relative space-y-6"
+        >
+            <div class="grid grid-cols-1 gap-6">
+                <!-- PHASE 1: HOOK / STARTER -->
+                <section id="pane-starter" class="space-y-6">
+                    <div
+                        class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-4"
+                    >
+                        <div class="flex items-center gap-4">
+                            <span
+                                class="text-xl font-black uppercase tracking-widest text-brandOrange-500 bg-brandOrange-500/15 px-4 py-2 rounded-xl"
+                                >Activity 1</span
+                            >
+                            <h2
+                                class="text-5xl font-black font-display text-white"
+                            >
+                                The Information Mystery
+                            </h2>
+                        </div>
+                        <p
+                            class="text-slate-200 text-3xl md:text-4xl leading-relaxed font-bold"
+                        >
+                            Look at the three items on the board. Computers
+                            process all of this every day. How do we sort this
+                            information into categories we can understand?
+                        </p>
+                    </div>
+
+                    <!-- Three Big Visual Whiteboard Hook Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div
+                            class="bg-charcoal-900 border border-white/10 p-6 rounded-2xl text-center space-y-4 shadow-lg"
+                        >
+                            <div
+                                class="w-20 h-20 mx-auto rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center border-2 border-purple-500/20"
+                            >
+                                <i class="fa-solid fa-barcode text-5xl"></i>
+                            </div>
+                            <h3
+                                class="text-3xl font-extrabold text-white font-display"
+                            >
+                                A Store Barcode
+                            </h3>
+                            <p class="text-slate-200 text-2xl leading-relaxed">
+                                Is this a picture, a calculated number, or a
+                                hidden message?
+                            </p>
+                        </div>
+
+                        <div
+                            class="bg-charcoal-900 border border-white/10 p-6 rounded-2xl text-center space-y-4 shadow-lg"
+                        >
+                            <div
+                                class="w-20 h-20 mx-auto rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center border-2 border-cyan-500/20"
+                            >
+                                <i class="fa-solid fa-message text-5xl"></i>
+                            </div>
+                            <h3
+                                class="text-3xl font-extrabold text-white font-display"
+                            >
+                                Text message: CU L8R
+                            </h3>
+                            <p class="text-slate-200 text-2xl leading-relaxed">
+                                Contains digits, but is it a math calculation or
+                                descriptive words?
+                            </p>
+                        </div>
+
+                        <div
+                            class="bg-charcoal-900 border border-white/10 p-6 rounded-2xl text-center space-y-4 shadow-lg"
+                        >
+                            <div
+                                class="w-20 h-20 mx-auto rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border-2 border-emerald-500/20"
+                            >
+                                <i
+                                    class="fa-solid fa-heart-pulse text-5xl animate-pulse"
+                                ></i>
+                            </div>
+                            <h3
+                                class="text-3xl font-extrabold text-white font-display"
+                            >
+                                Heart Rate: 120 bpm
+                            </h3>
+                            <p class="text-slate-200 text-2xl leading-relaxed">
+                                A measurement taken by a sensor. What makes this
+                                different from text?
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Class Discussion Box -->
+                    <div
+                        class="bg-black/40 border border-white/10 rounded-2xl p-6 text-center shadow-inner"
+                    >
+                        <h4
+                            class="text-4xl font-extrabold text-brandYellow-400 font-display"
+                        >
+                            Class Discussion
+                        </h4>
+                        <p
+                            class="text-slate-200 text-3xl mt-2 leading-relaxed font-bold"
+                        >
+                            If we had to sort these items into two buckets —
+                            <span class="text-brandOrange-500">WORDS</span> and
+                            <span class="text-brandYellow-400">NUMBERS</span> —
+                            which goes where? Are any of them trying to trick
+                            us?
+                        </p>
+                    </div>
+                </section>
+
+                <!-- PHASE 2: LEARN (CORE CONCEPTS) -->
+                <section id="pane-model" class="space-y-6 hidden">
+                    <!-- Learning Objective Banner -->
+                    <div
+                        class="p-6 bg-charcoal-900 border-l-8 border-brandOrange-500 rounded-r-2xl shadow-2xl mb-6"
+                    >
+                        <span
+                            class="text-xl font-extrabold text-brandYellow-400 uppercase tracking-widest block mb-2"
+                            >Learning Objective</span
+                        >
+                        <p
+                            class="text-white font-black text-4xl md:text-5xl font-display leading-tight"
+                        >
+                            I am learning to explain what data is and identify
+                            different types of data
+                        </p>
+                    </div>
+
+                    <div
+                        class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-4"
+                    >
+                        <div class="flex items-center gap-4">
+                            <span
+                                class="text-xl font-black uppercase tracking-widest text-brandOrange-500 bg-brandOrange-500/15 px-4 py-2 rounded-xl"
+                                >Core Idea</span
+                            >
+                            <h2
+                                class="text-5xl font-black font-display text-white"
+                            >
+                                What is Data?
+                            </h2>
+                        </div>
+                        <p
+                            class="text-slate-200 text-3xl md:text-4xl leading-relaxed font-bold"
+                        >
+                            Data is simply information we collect to help us
+                            understand the world, answer questions, or solve
+                            problems.
+                        </p>
+                    </div>
+
+                    <!-- The Two Main Pillars of Data (Highly Visual) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div
+                            class="bg-charcoal-900 border-t-8 border-brandOrange-500 rounded-2xl p-8 space-y-4 shadow-2xl"
+                        >
+                            <span
+                                class="text-base font-extrabold text-brandOrange-500 uppercase tracking-widest block"
+                                >Type 1</span
+                            >
+                            <h3
+                                class="text-6xl font-black text-white font-display"
+                            >
+                                WORDS
+                            </h3>
+                            <h4 class="text-4xl font-bold text-slate-300">
+                                Qualitative Data
+                                <span class="text-slate-500 text-2xl font-bold"
+                                    >(Labels & Descriptions)</span
+                                >
+                            </h4>
+                            <p class="text-slate-300 text-2xl leading-relaxed">
+                                Information that describes things using
+                                descriptive words, qualities, labels, or
+                                categories.
+                            </p>
+                            <div
+                                class="bg-black/30 p-4 rounded-xl border border-white/5 mt-4"
+                            >
+                                <span
+                                    class="text-lg text-slate-400 font-bold uppercase block mb-1"
+                                    >Examples:</span
+                                >
+                                <span
+                                    class="text-3xl text-brandOrange-500 font-extrabold block"
+                                    >Blue, Sunny, Quiet, LN14 KHE</span
+                                >
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-charcoal-900 border-t-8 border-brandYellow-500 rounded-2xl p-8 space-y-4 shadow-2xl"
+                        >
+                            <span
+                                class="text-base font-extrabold text-brandYellow-400 uppercase tracking-widest block"
+                                >Type 2</span
+                            >
+                            <h3
+                                class="text-6xl font-black text-white font-display"
+                            >
+                                NUMBERS
+                            </h3>
+                            <h4 class="text-4xl font-bold text-slate-300">
+                                Quantitative Data
+                            </h4>
+                            <p class="text-slate-300 text-2xl leading-relaxed">
+                                Information that can be measured or counted
+                                using numerical values.
+                            </p>
+                            <div
+                                class="bg-black/30 p-4 rounded-xl border border-white/5 mt-4"
+                            >
+                                <span
+                                    class="text-lg text-slate-400 font-bold uppercase block mb-1"
+                                    >Examples:</span
+                                >
+                                <span
+                                    class="text-3xl text-brandYellow-400 font-extrabold block"
+                                    >15 Steps, 18.2 Degrees, 5 Seats</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- WATCH OUT: THE BIGGER NUMBER TEST -->
+                    <div
+                        class="bg-black/50 border-2 border-rose-400/40 rounded-2xl p-8 shadow-inner mt-6"
+                    >
+                        <div class="flex items-center gap-4 mb-6">
+                            <span
+                                class="text-xl font-black uppercase tracking-widest text-rose-400 bg-rose-400/15 px-4 py-2 rounded-xl"
+                                >Watch Out!</span
+                            >
+                            <h3
+                                class="text-5xl font-black text-white font-display"
+                            >
+                                Some Numbers Are Tricking Us
+                            </h3>
+                        </div>
+                        <p
+                            class="text-3xl text-slate-200 font-bold leading-relaxed mb-6"
+                        >
+                            A phone number has digits. But it's not really a
+                            NUMBER in the way we mean — it's actually a
+                            <span class="text-rose-400 font-black">label</span>.
+                        </p>
+                        <div
+                            class="bg-charcoal-950 border border-white/10 rounded-2xl p-6"
+                        >
+                            <span
+                                class="text-lg font-black uppercase tracking-widest text-rose-400 block mb-2"
+                                >The Test</span
+                            >
+                            <p
+                                class="text-3xl text-white font-bold leading-relaxed"
+                            >
+                                If this mobile phone number, 07700 900077 got
+                                bigger, would it mean <em>more</em> of something
+                                real?
+                            </p>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6"
+                            >
+                                <div
+                                    class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4"
+                                >
+                                    <p
+                                        class="text-2xl text-emerald-400 font-bold"
+                                    >
+                                        <i class="fa-solid fa-check mr-2"></i>
+                                        Bigger temperature = hotter.
+                                        <span class="font-black"
+                                            >It's a NUMBER.</span
+                                        >
+                                    </p>
+                                </div>
+                                <div
+                                    class="bg-rose-500/10 border border-rose-500/30 rounded-xl p-4"
+                                >
+                                    <p class="text-2xl text-rose-400 font-bold">
+                                        <i class="fa-solid fa-xmark mr-2"></i>
+                                        Bigger phone number = nothing.
+                                        <span class="font-black"
+                                            >It's a WORD (a label).</span
+                                        >
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PHASE 3: TOGETHER (ACTIVE CLASS SORTING GAME) -->
+                <section id="pane-practice" class="space-y-6 hidden">
+                    <div
+                        class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-4"
+                    >
+                        <div class="flex items-center gap-4">
+                            <span
+                                class="text-xl font-black uppercase tracking-widest text-brandYellow-400 bg-brandYellow-400/15 px-4 py-2 rounded-xl"
+                                >Group Game</span
+                            >
+                            <h2
+                                class="text-5xl font-black font-display text-white"
+                            >
+                                Let's Sort the Data!
+                            </h2>
+                        </div>
+                        <p
+                            class="text-slate-200 text-3xl md:text-4xl leading-relaxed font-bold"
+                        >
+                            Decide together: Is the item on screen Qualitative
+                            or Quantitative? Watch out for the numbers that
+                            behave like words!
+                        </p>
+                    </div>
+
+                    <!-- Live Sorting Arena Frame -->
+                    <div
+                        class="bg-charcoal-900 border-2 border-white/10 rounded-3xl p-6 flex flex-col gap-6 shadow-2xl"
+                    >
+                        <div class="flex justify-between items-center">
+                            <span
+                                class="text-2xl font-black text-slate-400 uppercase tracking-widest"
+                                >Question <span id="arena-index">1</span> of
+                                6</span
+                            >
+                            <span
+                                id="arena-indicator"
+                                class="text-xl font-bold text-slate-400 bg-white/5 px-4 py-2 rounded-xl border border-white/10"
+                                >In Progress</span
+                            >
+                        </div>
+
+                        <!-- Massive Display Item Box -->
+                        <div
+                            class="bg-black/50 border border-white/10 rounded-2xl p-8 text-center min-h-[220px] flex flex-col items-center justify-center gap-4 shadow-inner"
+                        >
+                            <div
+                                class="w-20 h-20 rounded-full bg-white/5 text-brandYellow-400 flex items-center justify-center border-2 border-white/10 shadow-md"
+                            >
+                                <i
+                                    id="arena-icon"
+                                    class="fa-solid fa-folder-open text-4xl animate-pulse"
+                                ></i>
+                            </div>
+                            <h4
+                                id="arena-item-title"
+                                class="text-5xl md:text-6xl font-black text-white font-display leading-tight"
+                            >
+                                Loading...
+                            </h4>
+                            <p
+                                id="arena-item-hint"
+                                class="text-2xl text-slate-300 font-bold max-w-4xl"
+                            >
+                                Think: Is this written down as a descriptive
+                                label, or is it a calculated measurement?
+                            </p>
+                        </div>
+
+                        <!-- Massive Classroom Whiteboard Target Buttons -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <button
+                                onclick="voteClass('qualitative')"
+                                class="btn-interact py-8 px-6 bg-brandOrange-500 hover:bg-brandOrange-600 rounded-2xl text-white font-black font-display flex flex-col items-center justify-center gap-2 shadow-xl"
+                            >
+                                <span
+                                    class="text-6xl md:text-7xl tracking-wide uppercase"
+                                    >WORDS</span
+                                >
+                                <span class="text-3xl opacity-90 font-extrabold"
+                                    >Qualitative Data</span
+                                >
+                            </button>
+                            <button
+                                onclick="voteClass('quantitative')"
+                                class="btn-interact py-8 px-6 bg-brandYellow-500 hover:bg-brandYellow-600 rounded-2xl text-charcoal-950 font-black font-display flex flex-col items-center justify-center gap-2 shadow-xl"
+                            >
+                                <span
+                                    class="text-6xl md:text-7xl tracking-wide uppercase"
+                                    >NUMBERS</span
+                                >
+                                <span class="text-3xl opacity-90 font-extrabold"
+                                    >Quantitative Data</span
+                                >
+                            </button>
+                        </div>
+
+                        <!-- Feedback Output (with massive typography) -->
+                        <div
+                            id="arena-feedback"
+                            class="min-h-[60px] text-center text-3xl font-bold flex items-center justify-center transition-all px-4"
+                        ></div>
+
+                        <div
+                            class="flex justify-between items-center border-t border-white/10 pt-6"
+                        >
+                            <button
+                                onclick="resetArena()"
+                                class="text-xl font-bold text-slate-400 hover:text-white transition-colors flex items-center gap-2"
+                            >
+                                <i class="fa-solid fa-rotate-left"></i> Reset
+                                Game
+                            </button>
+                            <div class="flex gap-2" id="arena-dots">
+                                <!-- JS will render progression beads here -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PHASE 4: CHROMEBOOK TASK (SIMPLIFIED) -->
+                <section id="pane-independent" class="space-y-6 hidden">
+                    <div
+                        class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-6 shadow-xl"
+                    >
+                        <div class="flex items-center gap-4">
+                            <span
+                                class="text-xl font-black uppercase tracking-widest text-emerald-400 bg-emerald-400/15 px-4 py-2 rounded-xl"
+                                >Google Classroom</span
+                            >
+                            <h2
+                                class="text-5xl font-black font-display text-white"
+                            >
+                                Chromebook Work
+                            </h2>
+                        </div>
+
+                        <div
+                            class="bg-black/35 border border-white/10 p-6 rounded-2xl flex flex-col items-center text-center gap-4"
+                        >
+                            <div
+                                class="w-16 h-16 rounded-2xl bg-brandOrange-500/10 text-brandOrange-500 flex items-center justify-center border border-brandOrange-500/20 text-3xl"
+                            >
+                                <i
+                                    class="fa-solid fa-arrow-pointer animate-bounce"
+                                ></i>
+                            </div>
+                            <h3 class="text-3xl font-bold text-white">
+                                Task Instructions:
+                            </h3>
+                            <p
+                                class="text-slate-300 text-3xl leading-relaxed font-bold max-w-3xl"
+                            >
+                                Open Google Classroom and click the link to open
+                                your copy of the Google Sheet.
+                            </p>
+                        </div>
+
+                        <!-- Side-by-Side Tracks -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                            <!-- CORE TRACK -->
+                            <div
+                                class="bg-charcoal-900/80 border-4 border-brandYellow-500 rounded-2xl p-8 flex flex-col justify-start shadow-lg"
+                            >
+                                <span
+                                    class="px-4 py-2 bg-brandYellow-500 text-charcoal-950 text-lg font-black rounded uppercase tracking-wider block w-max mb-6"
+                                    >Core Task</span
+                                >
+                                <h4
+                                    class="text-4xl font-extrabold text-white font-display mb-6"
+                                >
+                                    Classify the Data
+                                </h4>
+                                <p
+                                    class="text-slate-300 text-2xl leading-relaxed font-semibold mb-6"
+                                >
+                                    Sort these 12 items from a School Sports Day
+                                    record into the correct columns on your
+                                    spreadsheet:
+                                </p>
+                                <ul
+                                    class="space-y-4 text-2xl text-slate-200 font-bold list-disc pl-6"
+                                >
+                                    <li>Athlete Name (Sarah Smith)</li>
+                                    <li>Competitor Bib Number (405)</li>
+                                    <li>100m Sprint Time (14.2 seconds)</li>
+                                    <li>House Team (Blue)</li>
+                                    <li>Running Lane (Lane 4)</li>
+                                    <li>Long Jump Distance (4.55 m)</li>
+                                    <li>Position Finished (1st)</li>
+                                    <li>Heart Rate (145 bpm)</li>
+                                    <li>Event Name (High Jump)</li>
+                                    <li>Spectator Count (150)</li>
+                                    <li>Air Temperature (21.5 °C)</li>
+                                    <li>Medal Won (Gold)</li>
+                                </ul>
+                            </div>
+
+                            <!-- EXTENSION TRACK -->
+                            <div
+                                class="bg-charcoal-900/80 border-4 border-purple-500 rounded-2xl p-8 flex flex-col justify-start shadow-lg"
+                            >
+                                <span
+                                    class="px-4 py-2 bg-purple-500 text-white text-lg font-black rounded uppercase tracking-wider block w-max mb-6"
+                                    >Extension</span
+                                >
+                                <h4
+                                    class="text-4xl font-extrabold text-white font-display mb-6"
+                                >
+                                    Discrete vs Continuous
+                                </h4>
+                                <p
+                                    class="text-slate-300 text-2xl leading-relaxed font-semibold mb-6"
+                                >
+                                    Label your quantitative numbers as either:
+                                </p>
+                                <div class="space-y-6">
+                                    <div
+                                        class="p-4 bg-black/30 rounded-xl border border-white/5"
+                                    >
+                                        <strong
+                                            class="text-brandYellow-400 text-2xl block mb-2"
+                                            >Discrete:</strong
+                                        >
+                                        <span
+                                            class="text-slate-300 text-xl leading-relaxed font-bold"
+                                            >Whole counted numbers (e.g., number
+                                            of seats).</span
+                                        >
+                                    </div>
+                                    <div
+                                        class="p-4 bg-black/30 rounded-xl border border-white/5"
+                                    >
+                                        <strong
+                                            class="text-brandYellow-400 text-2xl block mb-2"
+                                            >Continuous:</strong
+                                        >
+                                        <span
+                                            class="text-slate-300 text-xl leading-relaxed font-bold"
+                                            >Measured decimals (e.g., car
+                                            weight).</span
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PHASE 5: PLENARY CHECK OUT -->
+                <section id="pane-plenary" class="space-y-6 hidden">
+                    <!-- Exit Ticket Block -->
+                    <div
+                        class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-4 shadow-xl mb-6"
+                    >
+                        <div class="flex items-center gap-4 mb-4">
+                            <span
+                                class="text-xl font-black uppercase tracking-widest text-emerald-400 bg-emerald-400/15 px-4 py-2 rounded-xl"
+                                >Google Classroom</span
+                            >
+                            <h2
+                                class="text-5xl font-black font-display text-white"
+                            >
+                                Exit Ticket
+                            </h2>
+                        </div>
+                        <p
+                            class="text-slate-200 text-3xl md:text-4xl leading-relaxed font-bold"
+                        >
+                            Open Google Classroom and complete the Exit Ticket
+                            form.
+                        </p>
+                        <div
+                            class="bg-black/30 p-6 rounded-xl border border-white/5 space-y-4 text-left"
+                        >
+                            <p class="text-2xl text-slate-300 font-bold">
+                                <span class="text-brandOrange-500 mr-2"
+                                    >1.</span
+                                >
+                                Give one example of qualitative data.
+                            </p>
+                            <p class="text-2xl text-slate-300 font-bold">
+                                <span class="text-brandOrange-500 mr-2"
+                                    >2.</span
+                                >
+                                Give one example of quantitative data.
+                            </p>
+                            <p class="text-2xl text-slate-300 font-bold">
+                                <span class="text-brandOrange-500 mr-2"
+                                    >3.</span
+                                >
+                                Is a house number qualitative or quantitative?
+                                Explain.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div
+                        class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-4 text-center"
+                    >
+                        <h2
+                            class="text-4xl font-black font-display text-white mb-4"
+                        >
+                            Classroom Vote
+                        </h2>
+                        <p
+                            class="text-slate-200 text-3xl leading-relaxed font-bold mb-6"
+                        >
+                            Show your teacher a quick vote for each question:
+                        </p>
+                        <div
+                            class="flex flex-col sm:flex-row justify-center items-center gap-6"
+                        >
+                            <div
+                                class="bg-black/40 border border-brandOrange-500/30 px-8 py-4 rounded-2xl flex items-center gap-4"
+                            >
+                                <i
+                                    class="fa-solid fa-thumbs-up text-5xl text-brandOrange-500"
+                                ></i>
+                                <span class="text-3xl font-extrabold text-white"
+                                    >Qualitative (Words)</span
+                                >
+                            </div>
+                            <div
+                                class="bg-black/40 border border-brandYellow-400/30 px-8 py-4 rounded-2xl flex items-center gap-4"
+                            >
+                                <i
+                                    class="fa-solid fa-thumbs-down text-5xl text-brandYellow-400"
+                                ></i>
+                                <span class="text-3xl font-extrabold text-white"
+                                    >Quantitative (Numbers)</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                        <div
+                            class="bg-charcoal-900 border border-white/10 p-8 rounded-2xl shadow-lg text-center flex flex-col justify-center min-h-[200px]"
+                        >
+                            <span
+                                class="text-lg font-bold text-slate-400 uppercase tracking-widest mb-4"
+                                >Question 1</span
+                            >
+                            <h3
+                                class="text-3xl font-extrabold text-white font-display"
+                            >
+                                Is "Blue" Qualitative or Quantitative?
+                            </h3>
+                        </div>
+
+                        <div
+                            class="bg-charcoal-900 border border-white/10 p-8 rounded-2xl shadow-lg text-center flex flex-col justify-center min-h-[200px]"
+                        >
+                            <span
+                                class="text-lg font-bold text-slate-400 uppercase tracking-widest mb-4"
+                                >Question 2</span
+                            >
+                            <h3
+                                class="text-3xl font-extrabold text-white font-display"
+                            >
+                                Is "Number of Pupils" Qualitative or
+                                Quantitative?
+                            </h3>
+                        </div>
+
+                        <div
+                            class="bg-charcoal-900 border border-white/10 p-8 rounded-2xl shadow-lg text-center flex flex-col justify-center min-h-[200px]"
+                        >
+                            <span
+                                class="text-lg font-bold text-slate-400 uppercase tracking-widest mb-4"
+                                >Question 3</span
+                            >
+                            <h3
+                                class="text-3xl font-extrabold text-white font-display"
+                            >
+                                Is a Phone Number Qualitative or Quantitative?
+                            </h3>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- PHASE 6: HELP DESK -->
+                <section id="pane-support" class="space-y-6 hidden">
+                    <div
+                        class="bg-charcoal-900 border border-white/10 rounded-2xl p-8 flex flex-col justify-between gap-8 shadow-xl text-center"
+                    >
+                        <div class="flex flex-col items-center gap-4">
+                            <span
+                                class="text-xl font-black text-blue-400 bg-blue-400/15 px-6 py-2 rounded-xl uppercase tracking-widest block"
+                                >Help Desk</span
+                            >
+                            <h3
+                                class="text-5xl md:text-6xl font-black text-white font-display"
+                            >
+                                Stuck on your task? Use these guides:
+                            </h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                            <div
+                                class="bg-black/40 p-8 rounded-2xl border border-brandYellow-400/30 flex flex-col items-center justify-start gap-4 shadow-sm text-left"
+                            >
+                                <i
+                                    class="fa-solid fa-lightbulb text-brandYellow-400 text-6xl mb-2"
+                                ></i>
+                                <h4
+                                    class="text-3xl font-bold text-white w-full text-center"
+                                >
+                                    The Golden Rule
+                                </h4>
+                                <p
+                                    class="text-2xl text-slate-200 leading-relaxed font-semibold"
+                                >
+                                    Ask yourself:
+                                    <em class="text-white font-sans"
+                                        >"Can I add these values together or
+                                        calculate an average?"</em
+                                    >
+                                </p>
+                                <ul
+                                    class="text-2xl text-slate-300 font-bold space-y-2 mt-4 list-disc pl-6"
+                                >
+                                    <li>
+                                        If
+                                        <span class="text-brandYellow-400"
+                                            >YES</span
+                                        >
+                                        = It is Quantitative (Numbers).
+                                    </li>
+                                    <li>
+                                        If
+                                        <span class="text-brandOrange-500"
+                                            >NO</span
+                                        >
+                                        = It is Qualitative (Words/Labels).
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <div
+                                class="bg-black/40 p-8 rounded-2xl border border-brandOrange-500/30 flex flex-col items-center justify-start gap-4 shadow-sm text-center"
+                            >
+                                <i
+                                    class="fa-solid fa-hand text-brandOrange-500 text-6xl mb-2"
+                                ></i>
+                                <h4
+                                    class="text-3xl font-bold text-white w-full text-center"
+                                >
+                                    How to ask for help
+                                </h4>
+                                <div class="space-y-4 mt-2">
+                                    <p
+                                        class="text-2xl text-slate-200 leading-relaxed font-semibold"
+                                    >
+                                        <i
+                                            class="fa-solid fa-person-chalkboard text-brandOrange-500 mr-2"
+                                        ></i>
+                                        Put your hand up to ask your teacher.
+                                    </p>
+                                    <p
+                                        class="text-2xl text-slate-200 leading-relaxed font-semibold"
+                                    >
+                                        <i
+                                            class="fa-solid fa-users text-brandOrange-500 mr-2"
+                                        ></i>
+                                        Ask the person sitting next to you.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Floating Clock Trigger Button -->
+        <button
+            onclick="toggleSidebar()"
+            class="fixed right-6 bottom-6 z-50 w-16 h-16 rounded-full bg-brandOrange-500 hover:bg-brandOrange-600 text-white flex items-center justify-center shadow-2xl btn-interact border-2 border-white/20"
+        >
+            <i class="fa-solid fa-clock text-2xl"></i>
+        </button>
+
+        <!-- Slide-out Side Drawer for Lesson Timers -->
+        <div
+            id="sidebar-timer"
+            class="fixed right-0 top-0 h-full w-80 bg-charcoal-900 border-l-4 border-brandOrange-500 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl p-6 flex flex-col justify-between"
+        >
+            <div>
+                <div class="flex justify-between items-center mb-6">
+                    <h3
+                        class="text-xl font-bold text-white font-display uppercase tracking-wider"
+                    >
+                        Class Timer
+                    </h3>
+                    <button
+                        onclick="toggleSidebar()"
+                        class="text-slate-400 hover:text-white text-2xl"
+                    >
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="text-center space-y-6">
+                    <div
+                        class="relative w-40 h-40 mx-auto flex items-center justify-center bg-black/40 rounded-full border-4 border-brandOrange-500/25"
+                    >
+                        <span
+                            id="classroom-timer"
+                            class="font-sans text-4xl font-extrabold text-white"
+                            >05:00</span
+                        >
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button
+                            onclick="setTimerPreset(120)"
+                            class="py-2 px-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 border border-white/10 transition-all font-bold"
+                        >
+                            2 Min
+                        </button>
+                        <button
+                            onclick="setTimerPreset(300)"
+                            class="py-2 px-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 border border-white/10 transition-all font-bold text-brandOrange-500"
+                        >
+                            5 Min
+                        </button>
+                        <button
+                            onclick="setTimerPreset(600)"
+                            class="py-2 px-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 border border-white/10 transition-all font-bold"
+                        >
+                            10 Min
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button
+                            id="timer-control-btn"
+                            onclick="toggleTimer()"
+                            class="py-3 px-3 bg-brandOrange-500 hover:bg-brandOrange-600 text-white font-extrabold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-md"
+                        >
+                            <i class="fa-solid fa-play"></i> Start
+                        </button>
+                        <button
+                            onclick="resetTimer()"
+                            class="py-3 px-3 bg-white/5 hover:bg-white/10 text-slate-300 font-extrabold text-sm rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2"
+                        >
+                            <i class="fa-solid fa-rotate-left"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs text-slate-500 text-center font-bold">
+                Whiteboard Timer Companion
+            </div>
+        </div>
+
+        <!-- CLEAN HIGH-CONTRAST FOOTER -->
+        <footer class="border-t-4 border-white/10 bg-charcoal-900 py-4 mt-6">
+            <div
+                class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-400 font-bold"
+            >
+                <p>Computing — Handling Data — Lesson 1: What is Data?</p>
+            </div>
+        </footer>
+
+        <script>
+            // Phase-switching logic
+            function switchLessonPhase(phaseId) {
+                const panes = [
+                    "starter",
+                    "model",
+                    "practice",
+                    "independent",
+                    "plenary",
+                    "support",
+                ];
+                panes.forEach((p) => {
+                    const paneEl = document.getElementById(`pane-${p}`);
+                    if (paneEl) paneEl.classList.add("hidden");
+
+                    const btn = document.getElementById(`phase-btn-${p}`);
+                    if (btn) {
+                        if (p === "support") {
+                            btn.className =
+                                "px-5 py-3 rounded-xl text-base font-black transition-all text-blue-400 hover:text-white flex items-center gap-2 border border-blue-500/30 bg-blue-500/10";
+                        } else {
+                            btn.className =
+                                "px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2";
                         }
                     }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Smooth scale transitions for touch targets */
-        .btn-interact {
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .btn-interact:active {
-            transform: scale(0.96);
-        }
-        @keyframes breath {
-            0% { transform: scale(1); background-color: rgba(249, 115, 22, 0.1); }
-            50% { transform: scale(1.15); background-color: rgba(249, 115, 22, 0.35); }
-            100% { transform: scale(1); background-color: rgba(249, 115, 22, 0.1); }
-        }
-        .breathing-active {
-            animation: breath 4s ease-in-out infinite;
-        }
-    </style>
-</head>
-<body class="bg-charcoal-950 text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-brandOrange-500 selection:text-white overflow-x-hidden">
+                });
 
-    <!-- HIGH-CONTRAST HEADER -->
-    <header class="border-b-4 border-white/10 bg-charcoal-900 sticky top-0 z-40 shadow-xl">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex flex-col xl:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-4">
-                <div class="w-16 h-16 rounded-2xl bg-brandOrange-500/10 text-brandOrange-500 flex items-center justify-center border-2 border-brandOrange-500/30">
-                    <i class="fa-solid fa-database text-4xl"></i>
-                </div>
-                <div>
-                    <span class="text-xl font-black uppercase tracking-widest text-brandOrange-500 font-display block mb-1">Handling Data</span>
-                    <h1 class="text-4xl md:text-5xl font-extrabold text-white font-display">Lesson 1: What is Data?</h1>
-                </div>
-            </div>
-            
-            <!-- Whiteboard Lesson Progress Navigation -->
-            <nav class="flex flex-wrap gap-2 bg-black/50 p-2 rounded-2xl border border-white/10">
-                <button onclick="switchLessonPhase('starter')" id="phase-btn-starter" class="px-5 py-3 rounded-xl text-base font-black transition-all bg-brandOrange-500 text-white flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-white animate-pulse"></span>
-                    1. Starter
-                </button>
-                <button onclick="switchLessonPhase('model')" id="phase-btn-model" class="px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-lightbulb"></i>
-                    2. Learn
-                </button>
-                <button onclick="switchLessonPhase('live')" id="phase-btn-live" class="px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2 border border-brandYellow-500/30 bg-brandYellow-500/10 text-brandYellow-400">
-                    <i class="fa-solid fa-image"></i>
-                    Example
-                </button>
-                <button onclick="switchLessonPhase('practice')" id="phase-btn-practice" class="px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-users"></i>
-                    3. Together
-                </button>
-                <button onclick="switchLessonPhase('independent')" id="phase-btn-independent" class="px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-laptop"></i>
-                    4. Chromebook Task
-                </button>
-                <button onclick="switchLessonPhase('plenary')" id="phase-btn-plenary" class="px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2">
-                    <i class="fa-solid fa-flag-checkered"></i>
-                    5. Check Out
-                </button>
-                <button onclick="switchLessonPhase('support')" id="phase-btn-support" class="px-5 py-3 rounded-xl text-base font-black transition-all text-blue-400 hover:text-white flex items-center gap-2 border border-blue-500/30 bg-blue-500/10">
-                    <i class="fa-solid fa-life-ring"></i>
-                    Help
-                </button>
-            </nav>
-        </div>
-    </header>
+                const activePane = document.getElementById(`pane-${phaseId}`);
+                if (activePane) activePane.classList.remove("hidden");
 
-    <!-- MAIN WHITEBOARD CANVAS -->
-    <main class="max-w-7xl mx-auto px-6 py-6 w-full flex-grow relative space-y-6">
-
-        <div class="grid grid-cols-1 gap-6">
-            
-            <!-- PHASE 1: HOOK / STARTER -->
-            <section id="pane-starter" class="space-y-6">
-                <div class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-4">
-                    <div class="flex items-center gap-4">
-                        <span class="text-xl font-black uppercase tracking-widest text-brandOrange-500 bg-brandOrange-500/15 px-4 py-2 rounded-xl">Activity 1</span>
-                        <h2 class="text-5xl font-black font-display text-white">The Information Mystery</h2>
-                    </div>
-                    <p class="text-slate-200 text-3xl md:text-4xl leading-relaxed font-bold">
-                        Look at the three items on the board. Computers process all of this every day. How do we sort this information into categories we can understand?
-                    </p>
-                </div>
-
-                <!-- Three Big Visual Whiteboard Hook Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-charcoal-900 border border-white/10 p-6 rounded-2xl text-center space-y-4 shadow-lg">
-                        <div class="w-20 h-20 mx-auto rounded-2xl bg-purple-500/10 text-purple-400 flex items-center justify-center border-2 border-purple-500/20">
-                            <i class="fa-solid fa-barcode text-5xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-extrabold text-white font-display">A Store Barcode</h3>
-                        <p class="text-slate-200 text-2xl leading-relaxed">Is this a picture, a calculated number, or a hidden message?</p>
-                    </div>
-
-                    <div class="bg-charcoal-900 border border-white/10 p-6 rounded-2xl text-center space-y-4 shadow-lg">
-                        <div class="w-20 h-20 mx-auto rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center border-2 border-cyan-500/20">
-                            <i class="fa-solid fa-message text-5xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-extrabold text-white font-display">Text message: CU L8R</h3>
-                        <p class="text-slate-200 text-2xl leading-relaxed">Contains digits, but is it a math calculation or descriptive words?</p>
-                    </div>
-
-                    <div class="bg-charcoal-900 border border-white/10 p-6 rounded-2xl text-center space-y-4 shadow-lg">
-                        <div class="w-20 h-20 mx-auto rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center border-2 border-emerald-500/20">
-                            <i class="fa-solid fa-heart-pulse text-5xl animate-pulse"></i>
-                        </div>
-                        <h3 class="text-3xl font-extrabold text-white font-display">Heart Rate: 120 bpm</h3>
-                        <p class="text-slate-200 text-2xl leading-relaxed">A measurement taken by a sensor. What makes this different from text?</p>
-                    </div>
-                </div>
-
-                <!-- Class Discussion Box -->
-                <div class="bg-black/40 border border-white/10 rounded-2xl p-6 text-center shadow-inner">
-                    <h4 class="text-4xl font-extrabold text-brandYellow-400 font-display">Class Discussion</h4>
-                    <p class="text-slate-200 text-3xl mt-2 leading-relaxed font-bold">If we had to sort these items into two buckets — <span class="text-brandOrange-500">WORDS</span> and <span class="text-brandYellow-400">NUMBERS</span> — which goes where? Are any of them trying to trick us?</p>
-                </div>
-            </section>
-
-            <!-- PHASE 2: LEARN (CORE CONCEPTS) -->
-            <section id="pane-model" class="space-y-6 hidden">
-                <!-- Learning Objective Banner -->
-                <div class="p-6 bg-charcoal-900 border-l-8 border-brandOrange-500 rounded-r-2xl shadow-2xl mb-6">
-                    <span class="text-xl font-extrabold text-brandYellow-400 uppercase tracking-widest block mb-2">Learning Objective</span>
-                    <p class="text-white font-black text-4xl md:text-5xl font-display leading-tight">I am learning to explain what data is and identify different types of data</p>
-                </div>
-
-                <div class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-4">
-                    <div class="flex items-center gap-4">
-                        <span class="text-xl font-black uppercase tracking-widest text-brandOrange-500 bg-brandOrange-500/15 px-4 py-2 rounded-xl">Core Idea</span>
-                        <h2 class="text-5xl font-black font-display text-white">What is Data?</h2>
-                    </div>
-                    <p class="text-slate-200 text-3xl md:text-4xl leading-relaxed font-bold">
-                        Data is simply information we collect to help us understand the world, answer questions, or solve problems.
-                    </p>
-                </div>
-
-                <!-- The Two Main Pillars of Data (Highly Visual) -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-charcoal-900 border-t-8 border-brandOrange-500 rounded-2xl p-8 space-y-4 shadow-2xl">
-                        <span class="text-base font-extrabold text-brandOrange-500 uppercase tracking-widest block">Type 1</span>
-                        <h3 class="text-6xl font-black text-white font-display">WORDS</h3>
-                        <h4 class="text-4xl font-bold text-slate-300">Qualitative Data</h4>
-                        <p class="text-slate-300 text-2xl leading-relaxed">
-                            Information that describes things using descriptive words, qualities, labels, or categories.
-                        </p>
-                        <div class="bg-black/30 p-4 rounded-xl border border-white/5 mt-4">
-                            <span class="text-lg text-slate-400 font-bold uppercase block mb-1">Examples:</span>
-                            <span class="text-3xl text-brandOrange-500 font-extrabold block">Blue, Sunny, Quiet, LN14 KHE</span>
-                        </div>
-                    </div>
-
-                    <div class="bg-charcoal-900 border-t-8 border-brandYellow-500 rounded-2xl p-8 space-y-4 shadow-2xl">
-                        <span class="text-base font-extrabold text-brandYellow-400 uppercase tracking-widest block">Type 2</span>
-                        <h3 class="text-6xl font-black text-white font-display">NUMBERS</h3>
-                        <h4 class="text-4xl font-bold text-slate-300">Quantitative Data</h4>
-                        <p class="text-slate-300 text-2xl leading-relaxed">
-                            Information that can be measured or counted using numerical values.
-                        </p>
-                        <div class="bg-black/30 p-4 rounded-xl border border-white/5 mt-4">
-                            <span class="text-lg text-slate-400 font-bold uppercase block mb-1">Examples:</span>
-                            <span class="text-3xl text-brandYellow-400 font-extrabold block">15 Steps, 18.2 Degrees, 5 Seats</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- NEW INFOGRAPHIC: The Video Game Character -->
-                <div class="bg-charcoal-900 border-2 border-blue-500/30 rounded-2xl p-8 shadow-xl mt-6">
-                    <div class="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
-                        <span class="text-xl font-black uppercase tracking-widest text-blue-400 bg-blue-400/15 px-4 py-2 rounded-xl">Real World Example</span>
-                        <h3 class="text-5xl font-black text-white font-display">Data in Video Games</h3>
-                    </div>
-                    
-                    <p class="text-3xl text-slate-200 font-bold leading-relaxed mb-8">
-                        Think about your favourite video game. The game uses <span class="text-brandOrange-500">WORDS</span> and <span class="text-brandYellow-400">NUMBERS</span> together to build your character!
-                    </p>
-
-                    <div class="bg-black/50 border border-white/10 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-center gap-12 shadow-inner relative overflow-hidden">
-                        <!-- Abstract gaming background glow -->
-                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-                        <!-- Character Visual -->
-                        <div class="relative z-10 text-center space-y-2">
-                            <div class="w-32 h-32 mx-auto bg-blue-500/20 border-4 border-blue-400 rounded-full flex items-center justify-center text-blue-400 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
-                                <i class="fa-solid fa-user-astronaut text-6xl"></i>
-                            </div>
-                        </div>
-
-                        <!-- The Stats (Data) -->
-                        <div class="relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-2xl">
-                            <!-- Qualitative Column -->
-                            <div class="space-y-4">
-                                <div class="bg-brandOrange-500/10 border-l-4 border-brandOrange-500 p-4 rounded-r-xl">
-                                    <span class="text-brandOrange-500 text-sm font-black uppercase tracking-wider block mb-1">Qualitative (Words)</span>
-                                    <div class="text-2xl text-white font-bold"><span class="text-slate-400 mr-2">Name:</span> ShadowNinja</div>
-                                </div>
-                                <div class="bg-brandOrange-500/10 border-l-4 border-brandOrange-500 p-4 rounded-r-xl">
-                                    <span class="text-brandOrange-500 text-sm font-black uppercase tracking-wider block mb-1">Qualitative (Words)</span>
-                                    <div class="text-2xl text-white font-bold"><span class="text-slate-400 mr-2">Rank:</span> Gold Tier</div>
-                                </div>
-                            </div>
-
-                            <!-- Quantitative Column -->
-                            <div class="space-y-4">
-                                <div class="bg-brandYellow-400/10 border-l-4 border-brandYellow-400 p-4 rounded-r-xl">
-                                    <span class="text-brandYellow-400 text-sm font-black uppercase tracking-wider block mb-1">Quantitative (Numbers)</span>
-                                    <div class="text-2xl text-white font-bold"><span class="text-slate-400 mr-2">Health:</span> 150 HP</div>
-                                </div>
-                                <div class="bg-brandYellow-400/10 border-l-4 border-brandYellow-400 p-4 rounded-r-xl">
-                                    <span class="text-brandYellow-400 text-sm font-black uppercase tracking-wider block mb-1">Quantitative (Numbers)</span>
-                                    <div class="text-2xl text-white font-bold"><span class="text-slate-400 mr-2">Speed:</span> 88</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </section>
-
-            <!-- PHASE 2.5: LIVE EXAMPLE (DRAG & DROP ZONE) -->
-            <section id="pane-live" class="space-y-6 hidden">
-                <div class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 shadow-xl">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span class="text-xl font-black uppercase tracking-widest text-brandYellow-400 bg-brandYellow-400/15 px-4 py-2 rounded-xl">Example</span>
-                        <h2 class="text-5xl font-black font-display text-white">Visual Example</h2>
-                    </div>
-                    <p class="text-slate-200 text-3xl font-bold">
-                        Let's look at a real example. Find the <span class="text-brandOrange-500">Qualitative (Words)</span> and <span class="text-brandYellow-400">Quantitative (Numbers)</span> data.
-                    </p>
-                </div>
-
-                <!-- Drag & Drop Interactive Canvas -->
-                <div class="bg-charcoal-900 border-2 border-white/10 rounded-3xl p-6 shadow-2xl flex flex-col gap-4">
-                    
-                    <!-- The Drop Zone -->
-                    <div id="drop-zone" class="relative w-full h-[600px] border-4 border-dashed border-slate-600 rounded-2xl bg-black/40 flex items-center justify-center transition-all overflow-hidden group">
-                        
-                        <!-- Initial Placeholder Content -->
-                        <div id="drop-placeholder" class="text-center pointer-events-none flex flex-col items-center gap-4">
-                            <i class="fa-solid fa-cloud-arrow-up text-7xl text-slate-500 group-hover:text-brandOrange-500 transition-colors"></i>
-                            <h3 class="text-3xl font-black text-slate-400 font-display">Drag & Drop an Image Here</h3>
-                            <p class="text-xl text-slate-500 font-bold max-w-md">e.g. A FIFA Player Card or Fortnite Locker. The image will perfectly scale to fit this box.</p>
-                        </div>
-
-                        <!-- Image Display Element -->
-                        <img id="live-image-display" class="hidden absolute inset-0 w-full h-full object-contain p-4" src="" alt="Example Image">
-                        
-                        <!-- Hidden File Input for "Replace" button functionality -->
-                        <input type="file" id="file-input" class="hidden" accept="image/*">
-                    </div>
-
-                    <!-- Controls -->
-                    <div class="flex justify-between items-center bg-black/50 p-4 rounded-xl border border-white/5">
-                        <span id="image-status" class="text-lg font-bold text-slate-400 uppercase tracking-widest"><i class="fa-solid fa-circle text-slate-600 mr-2"></i> Waiting for image...</span>
-                        <div class="flex gap-4 hidden" id="image-controls">
-                            <button onclick="document.getElementById('file-input').click()" class="px-6 py-3 bg-brandYellow-500 text-charcoal-950 font-black rounded-xl hover:bg-brandYellow-400 transition-colors flex items-center gap-2">
-                                <i class="fa-solid fa-arrows-rotate"></i> Replace
-                            </button>
-                            <button onclick="removeLiveImage()" class="px-6 py-3 bg-red-500/20 border border-red-500/50 text-red-400 font-black rounded-xl hover:bg-red-500/40 transition-colors flex items-center gap-2">
-                                <i class="fa-solid fa-trash"></i> Remove
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PHASE 3: TOGETHER (ACTIVE CLASS SORTING GAME) -->
-            <section id="pane-practice" class="space-y-6 hidden">
-                <div class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-4">
-                    <div class="flex items-center gap-4">
-                        <span class="text-xl font-black uppercase tracking-widest text-brandYellow-400 bg-brandYellow-400/15 px-4 py-2 rounded-xl">Group Game</span>
-                        <h2 class="text-5xl font-black font-display text-white">Let's Sort the Data!</h2>
-                    </div>
-                    <p class="text-slate-200 text-3xl md:text-4xl leading-relaxed font-bold">
-                        Decide together: Is the item on screen Qualitative or Quantitative? Watch out for the numbers that behave like words!
-                    </p>
-                </div>
-
-                <!-- Live Sorting Arena Frame -->
-                <div class="bg-charcoal-900 border-2 border-white/10 rounded-3xl p-6 flex flex-col gap-6 shadow-2xl">
-                    <div class="flex justify-between items-center">
-                        <span class="text-2xl font-black text-slate-400 uppercase tracking-widest">Question <span id="arena-index">1</span> of 6</span>
-                        <span id="arena-indicator" class="text-xl font-bold text-slate-400 bg-white/5 px-4 py-2 rounded-xl border border-white/10">In Progress</span>
-                    </div>
-
-                    <!-- Massive Display Item Box -->
-                    <div class="bg-black/50 border border-white/10 rounded-2xl p-8 text-center min-h-[220px] flex flex-col items-center justify-center gap-4 shadow-inner">
-                        <div class="w-20 h-20 rounded-full bg-white/5 text-brandYellow-400 flex items-center justify-center border-2 border-white/10 shadow-md">
-                            <i id="arena-icon" class="fa-solid fa-folder-open text-4xl animate-pulse"></i>
-                        </div>
-                        <h4 id="arena-item-title" class="text-5xl md:text-6xl font-black text-white font-display leading-tight">Loading...</h4>
-                        <p id="arena-item-hint" class="text-2xl text-slate-300 font-bold max-w-4xl">Think: Is this written down as a descriptive label, or is it a calculated measurement?</p>
-                    </div>
-
-                    <!-- Massive Classroom Whiteboard Target Buttons -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <button onclick="voteClass('qualitative')" class="btn-interact py-8 px-6 bg-brandOrange-500 hover:bg-brandOrange-600 rounded-2xl text-white font-black font-display flex flex-col items-center justify-center gap-2 shadow-xl">
-                            <span class="text-6xl md:text-7xl tracking-wide uppercase">WORDS</span>
-                            <span class="text-3xl opacity-90 font-extrabold">Qualitative Data</span>
-                        </button>
-                        <button onclick="voteClass('quantitative')" class="btn-interact py-8 px-6 bg-brandYellow-500 hover:bg-brandYellow-600 rounded-2xl text-charcoal-950 font-black font-display flex flex-col items-center justify-center gap-2 shadow-xl">
-                            <span class="text-6xl md:text-7xl tracking-wide uppercase">NUMBERS</span>
-                            <span class="text-3xl opacity-90 font-extrabold">Quantitative Data</span>
-                        </button>
-                    </div>
-
-                    <!-- Feedback Output (with massive typography) -->
-                    <div id="arena-feedback" class="min-h-[60px] text-center text-3xl font-bold flex items-center justify-center transition-all px-4"></div>
-                    
-                    <div class="flex justify-between items-center border-t border-white/10 pt-6">
-                        <button onclick="resetArena()" class="text-xl font-bold text-slate-400 hover:text-white transition-colors flex items-center gap-2">
-                            <i class="fa-solid fa-rotate-left"></i> Reset Game
-                        </button>
-                        <div class="flex gap-2" id="arena-dots">
-                            <!-- JS will render progression beads here -->
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PHASE 4: CHROMEBOOK TASK -->
-            <section id="pane-independent" class="space-y-6 hidden">
-                <div class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-6 shadow-xl">
-                    <div class="flex items-center gap-4">
-                        <span class="text-xl font-black uppercase tracking-widest text-emerald-400 bg-emerald-400/15 px-4 py-2 rounded-xl">Google Classroom</span>
-                        <h2 class="text-5xl font-black font-display text-white">Chromebook Work</h2>
-                    </div>
-                    
-                    <div class="bg-black/35 border border-white/10 p-6 rounded-2xl flex flex-col items-center text-center gap-4">
-                        <div class="w-16 h-16 rounded-2xl bg-brandOrange-500/10 text-brandOrange-500 flex items-center justify-center border border-brandOrange-500/20 text-3xl">
-                            <i class="fa-solid fa-arrow-pointer animate-bounce"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold text-white">Task Instructions:</h3>
-                        <p class="text-slate-300 text-3xl leading-relaxed font-bold max-w-3xl">
-                            Open Google Classroom and click the link to open your copy of the Google Sheet.
-                        </p>
-                    </div>
-
-                    <!-- Side-by-Side Tracks -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                        <!-- CORE TRACK -->
-                        <div class="bg-charcoal-900/80 border-4 border-brandYellow-500 rounded-2xl p-8 flex flex-col justify-start shadow-lg">
-                            <span class="px-4 py-2 bg-brandYellow-500 text-charcoal-950 text-lg font-black rounded uppercase tracking-wider block w-max mb-6">Core Task</span>
-                            <h4 class="text-4xl font-extrabold text-white font-display mb-6">Classify the Data</h4>
-                            <p class="text-slate-300 text-2xl leading-relaxed font-semibold mb-6">
-                                Sort these 12 items from a School Sports Day record into the correct columns on your spreadsheet:
-                            </p>
-                            <ul class="space-y-4 text-2xl text-slate-200 font-bold list-disc pl-6">
-                                <li>Athlete Name (Sarah Smith)</li>
-                                <li>Competitor Bib Number (405)</li>
-                                <li>100m Sprint Time (14.2 seconds)</li>
-                                <li>House Team (Blue)</li>
-                                <li>Running Lane (Lane 4)</li>
-                                <li>Long Jump Distance (4.55 m)</li>
-                                <li>Position Finished (1st)</li>
-                                <li>Heart Rate (145 bpm)</li>
-                                <li>Event Name (High Jump)</li>
-                                <li>Spectator Count (150)</li>
-                                <li>Air Temperature (21.5 °C)</li>
-                                <li>Medal Won (Gold)</li>
-                            </ul>
-                        </div>
-
-                        <!-- EXTENSION TRACK -->
-                        <div class="bg-charcoal-900/80 border-4 border-purple-500 rounded-2xl p-8 flex flex-col justify-start shadow-lg">
-                            <span class="px-4 py-2 bg-purple-500 text-white text-lg font-black rounded uppercase tracking-wider block w-max mb-6">Extension</span>
-                            <h4 class="text-4xl font-extrabold text-white font-display mb-6">Discrete vs Continuous</h4>
-                            <p class="text-slate-300 text-2xl leading-relaxed font-semibold mb-6">
-                                Label your quantitative numbers as either:
-                            </p>
-                            <div class="space-y-6">
-                                <div class="p-4 bg-black/30 rounded-xl border border-white/5">
-                                    <strong class="text-brandYellow-400 text-2xl block mb-2">Discrete:</strong>
-                                    <span class="text-slate-300 text-xl leading-relaxed font-bold">Whole counted numbers (e.g., number of seats).</span>
-                                </div>
-                                <div class="p-4 bg-black/30 rounded-xl border border-white/5">
-                                    <strong class="text-brandYellow-400 text-2xl block mb-2">Continuous:</strong>
-                                    <span class="text-slate-300 text-xl leading-relaxed font-bold">Measured decimals (e.g., car weight).</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PHASE 5: PLENARY CHECK OUT -->
-            <section id="pane-plenary" class="space-y-6 hidden">
-                <!-- Exit Ticket Block -->
-                <div class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-4 shadow-xl mb-6">
-                    <div class="flex items-center gap-4 mb-4">
-                        <span class="text-xl font-black uppercase tracking-widest text-emerald-400 bg-emerald-400/15 px-4 py-2 rounded-xl">Google Classroom</span>
-                        <h2 class="text-5xl font-black font-display text-white">Exit Ticket</h2>
-                    </div>
-                    <p class="text-slate-200 text-3xl md:text-4xl leading-relaxed font-bold">
-                        Open Google Classroom and complete the Exit Ticket form. Be ready to answer these 3 questions:
-                    </p>
-                    <div class="bg-black/30 p-6 rounded-xl border border-white/5 space-y-4 text-left">
-                        <p class="text-2xl text-slate-300 font-bold"><span class="text-brandOrange-500 mr-2">1.</span> Give one example of qualitative data.</p>
-                        <p class="text-2xl text-slate-300 font-bold"><span class="text-brandOrange-500 mr-2">2.</span> Give one example of quantitative data.</p>
-                        <p class="text-2xl text-slate-300 font-bold"><span class="text-brandOrange-500 mr-2">3.</span> Is a house number qualitative or quantitative? Explain.</p>
-                    </div>
-                </div>
-
-                <div class="bg-charcoal-900 border border-white/10 rounded-2xl p-6 space-y-4 text-center">
-                    <h2 class="text-4xl font-black font-display text-white mb-4">Classroom Vote</h2>
-                    <p class="text-slate-200 text-3xl leading-relaxed font-bold mb-6">
-                        Show your teacher a quick vote for each question:
-                    </p>
-                    <div class="flex flex-col sm:flex-row justify-center items-center gap-6">
-                        <div class="bg-black/40 border border-brandOrange-500/30 px-8 py-4 rounded-2xl flex items-center gap-4">
-                            <i class="fa-solid fa-thumbs-up text-5xl text-brandOrange-500"></i>
-                            <span class="text-3xl font-extrabold text-white">Qualitative (Words)</span>
-                        </div>
-                        <div class="bg-black/40 border border-brandYellow-400/30 px-8 py-4 rounded-2xl flex items-center gap-4">
-                            <i class="fa-solid fa-thumbs-down text-5xl text-brandYellow-400"></i>
-                            <span class="text-3xl font-extrabold text-white">Quantitative (Numbers)</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-                    <div class="bg-charcoal-900 border border-white/10 p-8 rounded-2xl shadow-lg text-center flex flex-col justify-center min-h-[200px]">
-                        <span class="text-lg font-bold text-slate-400 uppercase tracking-widest mb-4">Question 1</span>
-                        <h3 class="text-3xl font-extrabold text-white font-display">Is "Blue" Qualitative or Quantitative?</h3>
-                    </div>
-
-                    <div class="bg-charcoal-900 border border-white/10 p-8 rounded-2xl shadow-lg text-center flex flex-col justify-center min-h-[200px]">
-                        <span class="text-lg font-bold text-slate-400 uppercase tracking-widest mb-4">Question 2</span>
-                        <h3 class="text-3xl font-extrabold text-white font-display">Is "Number of Pupils" Qualitative or Quantitative?</h3>
-                    </div>
-
-                    <div class="bg-charcoal-900 border border-white/10 p-8 rounded-2xl shadow-lg text-center flex flex-col justify-center min-h-[200px]">
-                        <span class="text-lg font-bold text-slate-400 uppercase tracking-widest mb-4">Question 3</span>
-                        <h3 class="text-3xl font-extrabold text-white font-display">Is a Phone Number Qualitative or Quantitative?</h3>
-                    </div>
-                </div>
-            </section>
-
-            <!-- PHASE 6: HELP DESK -->
-            <section id="pane-support" class="space-y-6 hidden">
-                <div class="bg-charcoal-900 border border-white/10 rounded-2xl p-8 flex flex-col justify-between gap-8 shadow-xl text-center">
-                    <div class="flex flex-col items-center gap-4">
-                        <span class="text-xl font-black text-blue-400 bg-blue-400/15 px-6 py-2 rounded-xl uppercase tracking-widest block">Help Desk</span>
-                        <h3 class="text-5xl md:text-6xl font-black text-white font-display">Stuck on your task? Use these guides:</h3>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-                        <div class="bg-black/40 p-8 rounded-2xl border border-brandYellow-400/30 flex flex-col items-center justify-start gap-4 shadow-sm text-left">
-                            <i class="fa-solid fa-lightbulb text-brandYellow-400 text-6xl mb-2"></i>
-                            <h4 class="text-3xl font-bold text-white w-full text-center">The Golden Rule</h4>
-                            <p class="text-2xl text-slate-200 leading-relaxed font-semibold">
-                                Ask yourself: <em class="text-white font-sans">"Can I add these values together or calculate an average?"</em>
-                            </p>
-                            <ul class="text-2xl text-slate-300 font-bold space-y-2 mt-4 list-disc pl-6">
-                                <li>If <span class="text-brandYellow-400">YES</span> = It is Quantitative (Numbers).</li>
-                                <li>If <span class="text-brandOrange-500">NO</span> = It is Qualitative (Words/Labels).</li>
-                            </ul>
-                        </div>
-
-                        <div class="bg-black/40 p-8 rounded-2xl border border-brandOrange-500/30 flex flex-col items-center justify-start gap-4 shadow-sm text-center">
-                            <i class="fa-solid fa-hand text-brandOrange-500 text-6xl mb-2"></i>
-                            <h4 class="text-3xl font-bold text-white w-full text-center">How to ask for help</h4>
-                            <div class="space-y-4 mt-2">
-                                <p class="text-2xl text-slate-200 leading-relaxed font-semibold">
-                                    <i class="fa-solid fa-person-chalkboard text-brandOrange-500 mr-2"></i> Put your hand up to ask your teacher.
-                                </p>
-                                <p class="text-2xl text-slate-200 leading-relaxed font-semibold">
-                                    <i class="fa-solid fa-users text-brandOrange-500 mr-2"></i> Ask the person sitting next to you.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-        </div>
-
-    </main>
-
-    <!-- Floating Clock Trigger Button -->
-    <button onclick="toggleSidebar()" class="fixed right-6 bottom-6 z-50 w-16 h-16 rounded-full bg-brandOrange-500 hover:bg-brandOrange-600 text-white flex items-center justify-center shadow-2xl btn-interact border-2 border-white/20">
-        <i class="fa-solid fa-clock text-2xl"></i>
-    </button>
-
-    <!-- Slide-out Side Drawer for Lesson Timers -->
-    <div id="sidebar-timer" class="fixed right-0 top-0 h-full w-80 bg-charcoal-900 border-l-4 border-brandOrange-500 transform translate-x-full transition-transform duration-300 ease-in-out z-50 shadow-2xl p-6 flex flex-col justify-between">
-        <div>
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-white font-display uppercase tracking-wider">Class Timer</h3>
-                <button onclick="toggleSidebar()" class="text-slate-400 hover:text-white text-2xl">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
-
-            <div class="text-center space-y-6">
-                <div class="relative w-40 h-40 mx-auto flex items-center justify-center bg-black/40 rounded-full border-4 border-brandOrange-500/25">
-                    <span id="classroom-timer" class="font-sans text-4xl font-extrabold text-white">05:00</span>
-                </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <button onclick="setTimerPreset(120)" class="py-2 px-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 border border-white/10 transition-all font-bold">2 Min</button>
-                    <button onclick="setTimerPreset(300)" class="py-2 px-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 border border-white/10 transition-all font-bold text-brandOrange-500">5 Min</button>
-                    <button onclick="setTimerPreset(600)" class="py-2 px-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-slate-300 border border-white/10 transition-all font-bold">10 Min</button>
-                </div>
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="timer-control-btn" onclick="toggleTimer()" class="py-3 px-3 bg-brandOrange-500 hover:bg-brandOrange-600 text-white font-extrabold text-sm rounded-xl transition-all flex items-center justify-center gap-2 shadow-md">
-                        <i class="fa-solid fa-play"></i> Start
-                    </button>
-                    <button onclick="resetTimer()" class="py-3 px-3 bg-white/5 hover:bg-white/10 text-slate-300 font-extrabold text-sm rounded-xl transition-all border border-white/10 flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-rotate-left"></i> Reset
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-xs text-slate-500 text-center font-bold">
-            Whiteboard Timer Companion
-        </div>
-    </div>
-
-    <!-- CLEAN HIGH-CONTRAST FOOTER -->
-    <footer class="border-t-4 border-white/10 bg-charcoal-900 py-4 mt-6">
-        <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-xs text-slate-400 font-bold">
-            <p>Computing — Handling Data — Lesson 1: What is Data?</p>
-        </div>
-    </footer>
-
-    <script>
-        // Phase-switching logic
-        function switchLessonPhase(phaseId) {
-            const panes = ['starter', 'model', 'live', 'practice', 'independent', 'plenary', 'support'];
-            panes.forEach(p => {
-                const paneEl = document.getElementById(`pane-${p}`);
-                if (paneEl) paneEl.classList.add('hidden');
-                
-                const btn = document.getElementById(`phase-btn-${p}`);
-                if (btn) {
-                    if (p === 'support') {
-                        btn.className = "px-5 py-3 rounded-xl text-base font-black transition-all text-blue-400 hover:text-white flex items-center gap-2 border border-blue-500/30 bg-blue-500/10";
-                    } else if (p === 'live') {
-                        btn.className = "px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2 border border-brandYellow-500/30 bg-brandYellow-500/10 text-brandYellow-400";
+                const activeBtn = document.getElementById(
+                    `phase-btn-${phaseId}`,
+                );
+                if (activeBtn) {
+                    if (phaseId === "support") {
+                        activeBtn.className =
+                            "px-5 py-3 rounded-xl text-base font-black transition-all bg-blue-500 text-white flex items-center gap-2";
                     } else {
-                        btn.className = "px-5 py-3 rounded-xl text-base font-black transition-all text-slate-300 hover:text-white flex items-center gap-2";
+                        activeBtn.className =
+                            "px-5 py-3 rounded-xl text-base font-black transition-all bg-brandOrange-500 text-white flex items-center gap-2";
                     }
                 }
-            });
+            }
 
-            const activePane = document.getElementById(`pane-${phaseId}`);
-            if (activePane) activePane.classList.remove('hidden');
-            
-            const activeBtn = document.getElementById(`phase-btn-${phaseId}`);
-            if (activeBtn) {
-                if (phaseId === 'support') {
-                    activeBtn.className = "px-5 py-3 rounded-xl text-base font-black transition-all bg-blue-500 text-white flex items-center gap-2";
-                } else if (phaseId === 'live') {
-                    activeBtn.className = "px-5 py-3 rounded-xl text-base font-black transition-all bg-brandYellow-500 text-charcoal-950 flex items-center gap-2";
+            // Sidebar Drawer toggle
+            let isSidebarOpen = false;
+            function toggleSidebar() {
+                const sidebar = document.getElementById("sidebar-timer");
+                if (isSidebarOpen) {
+                    sidebar.classList.add("translate-x-full");
+                    isSidebarOpen = false;
                 } else {
-                    activeBtn.className = "px-5 py-3 rounded-xl text-base font-black transition-all bg-brandOrange-500 text-white flex items-center gap-2";
+                    sidebar.classList.remove("translate-x-full");
+                    isSidebarOpen = true;
                 }
             }
-        }
 
-        // Sidebar Drawer toggle
-        let isSidebarOpen = false;
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar-timer');
-            if (isSidebarOpen) {
-                sidebar.classList.add('translate-x-full');
-                isSidebarOpen = false;
-            } else {
-                sidebar.classList.remove('translate-x-full');
-                isSidebarOpen = true;
-            }
-        }
+            // Everyday Data system content database
+            const contentDB = {
+                gaming: {
+                    title: "Video Game Server Records",
+                    summary:
+                        "Your game tracks details about your player account instantly:",
+                    points: [
+                        {
+                            type: "Qualitative Data (Words)",
+                            val: "Username: ProPlayerX",
+                        },
+                        {
+                            type: "Quantitative Data (Numbers)",
+                            val: "High Score: 4,500 points",
+                        },
+                        {
+                            type: "Quantitative Data (Numbers)",
+                            val: "Time Spent: 12.5 hours",
+                        },
+                    ],
+                },
+                smartwatch: {
+                    title: "Smart Watch Metrics",
+                    summary:
+                        "Sensors on your watch log physiological data while you run:",
+                    points: [
+                        {
+                            type: "Qualitative Data (Words)",
+                            val: "Status: Active",
+                        },
+                        {
+                            type: "Quantitative Data (Numbers)",
+                            val: "Step Count: 3,240 steps",
+                        },
+                        {
+                            type: "Quantitative Data (Numbers)",
+                            val: "Workout Time: 15.4 minutes",
+                        },
+                    ],
+                },
+                weather: {
+                    title: "Weather Station Metrics",
+                    summary:
+                        "Thermometers and rain monitors log atmosphere parameters:",
+                    points: [
+                        {
+                            type: "Qualitative Data (Words)",
+                            val: "Main View: Cloudy",
+                        },
+                        {
+                            type: "Quantitative Data (Numbers)",
+                            val: "Rain Drops: 124 per minute",
+                        },
+                        {
+                            type: "Quantitative Data (Numbers)",
+                            val: "Temperature: 18.2 °C",
+                        },
+                    ],
+                },
+                youtube: {
+                    title: "Video Platform Servers",
+                    summary:
+                        "The platform tracks system feedback metrics automatically:",
+                    points: [
+                        {
+                            type: "Qualitative Data (Words)",
+                            val: "Account Status: Verified",
+                        },
+                        {
+                            type: "Quantitative Data (Numbers)",
+                            val: "Channel Subscribers: 15,200",
+                        },
+                        {
+                            type: "Quantitative Data (Numbers)",
+                            val: "Video Length: 10.4 minutes",
+                        },
+                    ],
+                },
+            };
 
-        // Everyday Data system content database
-        const contentDB = {
-            gaming: {
-                title: "Video Game Server Records",
-                summary: "Your game tracks details about your player account instantly:",
-                points: [
-                    { type: "Qualitative Data (Words)", val: "Username: ProPlayerX" },
-                    { type: "Quantitative Data (Numbers)", val: "High Score: 4,500 points" },
-                    { type: "Quantitative Data (Numbers)", val: "Time Spent: 12.5 hours" }
-                ]
-            },
-            smartwatch: {
-                title: "Smart Watch Metrics",
-                summary: "Sensors on your watch log physiological data while you run:",
-                points: [
-                    { type: "Qualitative Data (Words)", val: "Status: Active" },
-                    { type: "Quantitative Data (Numbers)", val: "Step Count: 3,240 steps" },
-                    { type: "Quantitative Data (Numbers)", val: "Workout Time: 15.4 minutes" }
-                ]
-            },
-            weather: {
-                title: "Weather Station Metrics",
-                summary: "Thermometers and rain monitors log atmosphere parameters:",
-                points: [
-                    { type: "Qualitative Data (Words)", val: "Main View: Cloudy" },
-                    { type: "Quantitative Data (Numbers)", val: "Rain Drops: 124 per minute" },
-                    { type: "Quantitative Data (Numbers)", val: "Temperature: 18.2 °C" }
-                ]
-            },
-            youtube: {
-                title: "Video Platform Servers",
-                summary: "The platform tracks system feedback metrics automatically:",
-                points: [
-                    { type: "Qualitative Data (Words)", val: "Account Status: Verified" },
-                    { type: "Quantitative Data (Numbers)", val: "Channel Subscribers: 15,200" },
-                    { type: "Quantitative Data (Numbers)", val: "Video Length: 10.4 minutes" }
-                ]
-            }
-        };
+            function modelDataPoint(key) {
+                const buttons = ["gaming", "smartwatch", "weather", "youtube"];
+                buttons.forEach((b) => {
+                    document.getElementById(`btn-model-${b}`).className =
+                        "btn-interact p-5 rounded-2xl border border-white/10 bg-black/30 hover:border-brandOrange-500 text-left flex items-start gap-4";
+                });
 
-        function modelDataPoint(key) {
-            const buttons = ['gaming', 'smartwatch', 'weather', 'youtube'];
-            buttons.forEach(b => {
-                document.getElementById(`btn-model-${b}`).className = "btn-interact p-5 rounded-2xl border border-white/10 bg-black/30 hover:border-brandOrange-500 text-left flex items-start gap-4";
-            });
+                document.getElementById(`btn-model-${key}`).className =
+                    "btn-interact p-5 rounded-2xl border border-brandOrange-500 bg-brandOrange-500/5 text-left flex items-start gap-4";
 
-            document.getElementById(`btn-model-${key}`).className = "btn-interact p-5 rounded-2xl border border-brandOrange-500 bg-brandOrange-500/5 text-left flex items-start gap-4";
+                const data = contentDB[key];
+                const output = document.getElementById("modeling-output");
 
-            const data = contentDB[key];
-            const output = document.getElementById('modeling-output');
-
-            let listMarkup = "";
-            data.points.forEach(p => {
-                const badgeColor = p.type.includes('Qualitative') ? 'bg-brandOrange-500/15 text-brandOrange-500' : 'bg-brandYellow-400/15 text-brandYellow-400';
-                listMarkup += `
+                let listMarkup = "";
+                data.points.forEach((p) => {
+                    const badgeColor = p.type.includes("Qualitative")
+                        ? "bg-brandOrange-500/15 text-brandOrange-500"
+                        : "bg-brandYellow-400/15 text-brandYellow-400";
+                    listMarkup += `
                     <div class="bg-black/35 border border-white/10 p-4 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                         <span class="text-lg font-black px-4 py-1.5 rounded-lg ${badgeColor}">${p.type}</span>
                         <span class="text-2xl text-white font-extrabold">${p.val}</span>
                     </div>
                 `;
-            });
+                });
 
-            if(output){
-                output.innerHTML = `
+                if (output) {
+                    output.innerHTML = `
                 <div class="w-full text-left space-y-3">
                     <h3 class="text-2xl font-black text-white font-display flex items-center gap-2"><i class="fa-solid fa-chart-line text-brandOrange-500"></i> ${data.title}</h3>
                     <p class="text-lg text-slate-300 leading-normal">${data.summary}</p>
@@ -682,213 +1191,195 @@
                     </div>
                 </div>
                 `;
-            }
-        }
-
-        // Active sorting questions (with traps)
-        const arenaQuestions = [
-            { title: "Eye Colour: Green", category: "qualitative", icon: "fa-eye", hint: "Think carefully: Is this a measurement, or is it a label?", isTrap: false },
-            { title: "Pupils inside the Room: 12", category: "quantitative", icon: "fa-people-group", hint: "Think carefully: Is this a measurement, or is it a label?", isTrap: false },
-            { title: "Mobile Phone Number: 07700 900077", category: "qualitative", icon: "fa-mobile-screen-button", hint: "Think carefully: Is this a measurement, or is it a label?", isTrap: true },
-            { title: "Room Temperature: 21.5 °C", category: "quantitative", icon: "fa-temperature-half", hint: "Think carefully: Is this a measurement, or is it a label?", isTrap: false },
-            { title: "Postcode: SW8 1XN", category: "qualitative", icon: "fa-map-pin", hint: "Think carefully: Is this a measurement, or is it a label?", isTrap: true },
-            { title: "Car Registration Plate: LN14 KHE", category: "qualitative", icon: "fa-car", hint: "Think carefully: Is this a measurement, or is it a label?", isTrap: true }
-        ];
-
-        let questionIndex = 0;
-
-        function refreshArenaUI() {
-            const dots = document.getElementById('arena-dots');
-
-            if (questionIndex >= arenaQuestions.length) {
-                document.getElementById('arena-item-title').innerText = "All Data Sorted Successfully!";
-                document.getElementById('arena-item-hint').innerText = "Classroom voting complete. Excellent sorting skills.";
-                document.getElementById('arena-icon').className = "fa-solid fa-circle-check text-3xl text-emerald-400 animate-none";
-                document.getElementById('arena-indicator').className = "text-base font-bold text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20";
-                document.getElementById('arena-indicator').innerText = "Complete";
-                document.getElementById('arena-index').innerText = arenaQuestions.length;
-                return;
-            }
-
-            const activeQ = arenaQuestions[questionIndex];
-            document.getElementById('arena-index').innerText = questionIndex + 1;
-            document.getElementById('arena-item-title').innerText = activeQ.title;
-            document.getElementById('arena-item-hint').innerText = activeQ.hint;
-            document.getElementById('arena-icon').className = `fa-solid ${activeQ.icon} text-3xl`;
-            document.getElementById('arena-indicator').className = "text-base font-bold text-slate-400 bg-white/5 px-4 py-2 rounded-xl border border-white/10";
-            document.getElementById('arena-indicator').innerText = "In Progress";
-
-            dots.innerHTML = "";
-            for (let i = 0; i < arenaQuestions.length; i++) {
-                const color = (i === questionIndex) ? "bg-brandOrange-500 w-4" : (i < questionIndex ? "bg-emerald-500" : "bg-white/10");
-                dots.innerHTML += `<span class="w-3.5 h-3.5 rounded-full ${color} transition-all"></span>`;
-            }
-        }
-
-        function voteClass(choice) {
-            if (questionIndex >= arenaQuestions.length) return;
-
-            const activeQ = arenaQuestions[questionIndex];
-            const feedback = document.getElementById('arena-feedback');
-
-            if (activeQ.category === choice) {
-                if (activeQ.isTrap) {
-                    feedback.innerHTML = `<span class="text-emerald-400 flex flex-col items-center gap-1"><span class="flex items-center gap-2 text-2xl"><i class="fa-solid fa-circle-check"></i> Brilliant! You didn't fall for the trap!</span> <span class="text-lg text-slate-300 font-medium">Even though this contains digits, it is Qualitative because it is just a label. You cannot do calculations on it.</span></span>`;
-                } else {
-                    feedback.innerHTML = `<span class="text-emerald-400 flex items-center gap-2 text-2xl"><i class="fa-solid fa-circle-check"></i> Correct! ${activeQ.title} has been sorted.</span>`;
                 }
-                questionIndex++;
-                setTimeout(() => {
-                    feedback.innerHTML = "";
-                    refreshArenaUI();
-                }, 4000);
-            } else {
-                if (activeQ.isTrap) {
-                    feedback.innerHTML = `<span class="text-brandYellow-400 flex flex-col items-center gap-1"><span class="flex items-center gap-2 text-2xl"><i class="fa-solid fa-circle-info animate-bounce"></i> Ah! You fell for the trap!</span> <span class="text-lg text-slate-300 font-medium">It has digits, but it is actually Qualitative. Ask yourself: Can you add phone numbers or calculate their average? No! They are labels.</span></span>`;
-                } else {
-                    feedback.innerHTML = `<span class="text-brandYellow-400 flex items-center gap-2 text-2xl"><i class="fa-solid fa-circle-info animate-bounce"></i> Think again: Is this descriptive words, or a measured/counted number value?</span>`;
-                }
-                setTimeout(() => {
-                    feedback.innerHTML = "";
-                }, 5000);
             }
-        }
 
-        function resetArena() {
-            questionIndex = 0;
-            document.getElementById('arena-feedback').innerHTML = "";
-            refreshArenaUI();
-        }
+            // Active sorting questions (with traps)
+            const arenaQuestions = [
+                {
+                    title: "Eye Colour: Green",
+                    category: "qualitative",
+                    icon: "fa-eye",
+                    hint: "Think carefully: Is this a measurement, or is it a label?",
+                    isTrap: false,
+                },
+                {
+                    title: "Pupils inside the Room: 12",
+                    category: "quantitative",
+                    icon: "fa-people-group",
+                    hint: "Think carefully: Is this a measurement, or is it a label?",
+                    isTrap: false,
+                },
+                {
+                    title: "Mobile Phone Number: 07700 900077",
+                    category: "qualitative",
+                    icon: "fa-mobile-screen-button",
+                    hint: "Think carefully: Is this a measurement, or is it a label?",
+                    isTrap: true,
+                },
+                {
+                    title: "Room Temperature: 21.5 °C",
+                    category: "quantitative",
+                    icon: "fa-temperature-half",
+                    hint: "Think carefully: Is this a measurement, or is it a label?",
+                    isTrap: false,
+                },
+                {
+                    title: "Postcode: SW8 1XN",
+                    category: "qualitative",
+                    icon: "fa-map-pin",
+                    hint: "Think carefully: Is this a measurement, or is it a label?",
+                    isTrap: true,
+                },
+                {
+                    title: "Car Registration Plate: LN14 KHE",
+                    category: "qualitative",
+                    icon: "fa-car",
+                    hint: "Think carefully: Is this a measurement, or is it a label?",
+                    isTrap: true,
+                },
+            ];
 
-        // Sidebar Timer logic
-        let duration = 300; 
-        let clock = null;
+            let questionIndex = 0;
 
-        function setTimerPreset(seconds) {
-            clearInterval(clock);
-            clock = null;
-            document.getElementById('timer-control-btn').innerHTML = '<i class="fa-solid fa-play"></i> Start';
-            duration = seconds;
-            renderTimer();
-        }
+            function refreshArenaUI() {
+                const dots = document.getElementById("arena-dots");
 
-        function renderTimer() {
-            const mins = Math.floor(duration / 60);
-            const secs = duration % 60;
-            document.getElementById('classroom-timer').innerText = 
-                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
+                if (questionIndex >= arenaQuestions.length) {
+                    document.getElementById("arena-item-title").innerText =
+                        "All Data Sorted Successfully!";
+                    document.getElementById("arena-item-hint").innerText =
+                        "Classroom voting complete. Excellent sorting skills.";
+                    document.getElementById("arena-icon").className =
+                        "fa-solid fa-circle-check text-3xl text-emerald-400 animate-none";
+                    document.getElementById("arena-indicator").className =
+                        "text-base font-bold text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-xl border border-emerald-500/20";
+                    document.getElementById("arena-indicator").innerText =
+                        "Complete";
+                    document.getElementById("arena-index").innerText =
+                        arenaQuestions.length;
+                    return;
+                }
 
-        function toggleTimer() {
-            const button = document.getElementById('timer-control-btn');
-            if (clock) {
+                const activeQ = arenaQuestions[questionIndex];
+                document.getElementById("arena-index").innerText =
+                    questionIndex + 1;
+                document.getElementById("arena-item-title").innerText =
+                    activeQ.title;
+                document.getElementById("arena-item-hint").innerText =
+                    activeQ.hint;
+                document.getElementById("arena-icon").className =
+                    `fa-solid ${activeQ.icon} text-3xl`;
+                document.getElementById("arena-indicator").className =
+                    "text-base font-bold text-slate-400 bg-white/5 px-4 py-2 rounded-xl border border-white/10";
+                document.getElementById("arena-indicator").innerText =
+                    "In Progress";
+
+                dots.innerHTML = "";
+                for (let i = 0; i < arenaQuestions.length; i++) {
+                    const color =
+                        i === questionIndex
+                            ? "bg-brandOrange-500 w-4"
+                            : i < questionIndex
+                              ? "bg-emerald-500"
+                              : "bg-white/10";
+                    dots.innerHTML += `<span class="w-3.5 h-3.5 rounded-full ${color} transition-all"></span>`;
+                }
+            }
+
+            function voteClass(choice) {
+                if (questionIndex >= arenaQuestions.length) return;
+
+                const activeQ = arenaQuestions[questionIndex];
+                const feedback = document.getElementById("arena-feedback");
+
+                if (activeQ.category === choice) {
+                    if (activeQ.isTrap) {
+                        feedback.innerHTML = `<span class="text-emerald-400 flex flex-col items-center gap-1"><span class="flex items-center gap-2 text-2xl"><i class="fa-solid fa-circle-check"></i> Brilliant! You didn't fall for the trap!</span> <span class="text-lg text-slate-300 font-medium">Even though this contains digits, it is Qualitative because it is just a label. You cannot do calculations on it.</span></span>`;
+                    } else {
+                        feedback.innerHTML = `<span class="text-emerald-400 flex items-center gap-2 text-2xl"><i class="fa-solid fa-circle-check"></i> Correct! ${activeQ.title} has been sorted.</span>`;
+                    }
+                    questionIndex++;
+                    setTimeout(() => {
+                        feedback.innerHTML = "";
+                        refreshArenaUI();
+                    }, 4000);
+                } else {
+                    if (activeQ.isTrap) {
+                        feedback.innerHTML = `<span class="text-brandYellow-400 flex flex-col items-center gap-1"><span class="flex items-center gap-2 text-2xl"><i class="fa-solid fa-circle-info animate-bounce"></i> Ah! You fell for the trap!</span> <span class="text-lg text-slate-300 font-medium">It has digits, but it is actually Qualitative. Ask yourself: Can you add phone numbers or calculate their average? No! They are labels.</span></span>`;
+                    } else {
+                        feedback.innerHTML = `<span class="text-brandYellow-400 flex items-center gap-2 text-2xl"><i class="fa-solid fa-circle-info animate-bounce"></i> Think again: Is this descriptive words, or a measured/counted number value?</span>`;
+                    }
+                    setTimeout(() => {
+                        feedback.innerHTML = "";
+                    }, 5000);
+                }
+            }
+
+            function resetArena() {
+                questionIndex = 0;
+                document.getElementById("arena-feedback").innerHTML = "";
+                refreshArenaUI();
+            }
+
+            // Sidebar Timer logic
+            let duration = 300;
+            let clock = null;
+
+            function setTimerPreset(seconds) {
                 clearInterval(clock);
                 clock = null;
-                button.innerHTML = '<i class="fa-solid fa-play"></i> Start';
-            } else {
-                button.innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
-                clock = setInterval(() => {
-                    if (duration > 0) {
-                        duration--;
-                        renderTimer();
-                    } else {
-                        clearInterval(clock);
-                        clock = null;
-                        button.innerHTML = '<i class="fa-solid fa-play"></i> Start';
-                    }
-                }, 1000);
+                document.getElementById("timer-control-btn").innerHTML =
+                    '<i class="fa-solid fa-play"></i> Start';
+                duration = seconds;
+                renderTimer();
             }
-        }
 
-        function resetTimer() {
-            clearInterval(clock);
-            clock = null;
-            document.getElementById('timer-control-btn').innerHTML = '<i class="fa-solid fa-play"></i> Start';
-            duration = 300;
-            renderTimer();
-        }
-
-        // DRAG AND DROP LOGIC
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-input');
-        const imgDisplay = document.getElementById('live-image-display');
-        const placeholder = document.getElementById('drop-placeholder');
-        const imgControls = document.getElementById('image-controls');
-        const imgStatus = document.getElementById('image-status');
-
-        function loadSavedImage() {
-            const savedImage = localStorage.getItem('handling_data_live_img');
-            if (savedImage) {
-                showImage(savedImage);
+            function renderTimer() {
+                const mins = Math.floor(duration / 60);
+                const secs = duration % 60;
+                document.getElementById("classroom-timer").innerText =
+                    `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
             }
-        }
 
-        function showImage(srcData) {
-            imgDisplay.src = srcData;
-            imgDisplay.classList.remove('hidden');
-            placeholder.classList.add('hidden');
-            imgControls.classList.remove('hidden');
-            dropZone.classList.remove('border-dashed', 'border-slate-600');
-            dropZone.classList.add('border-solid', 'border-brandYellow-500');
-            imgStatus.innerHTML = '<i class="fa-solid fa-circle text-emerald-500 mr-2"></i> Image Loaded (Saved locally)';
-        }
-
-        function removeLiveImage() {
-            localStorage.removeItem('handling_data_live_img');
-            imgDisplay.src = '';
-            imgDisplay.classList.add('hidden');
-            placeholder.classList.remove('hidden');
-            imgControls.classList.add('hidden');
-            dropZone.classList.add('border-dashed', 'border-slate-600');
-            dropZone.classList.remove('border-solid', 'border-brandYellow-500');
-            imgStatus.innerHTML = '<i class="fa-solid fa-circle text-slate-600 mr-2"></i> Waiting for image...';
-        }
-
-        function handleFile(file) {
-            if (!file || !file.type.startsWith('image/')) return;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const base64data = e.target.result;
-                try {
-                    localStorage.setItem('handling_data_live_img', base64data);
-                    showImage(base64data);
-                } catch (e) {
-                    alert("Image is too large to save in local memory. It will show now, but disappear on refresh.");
-                    showImage(base64data);
+            function toggleTimer() {
+                const button = document.getElementById("timer-control-btn");
+                if (clock) {
+                    clearInterval(clock);
+                    clock = null;
+                    button.innerHTML = '<i class="fa-solid fa-play"></i> Start';
+                } else {
+                    button.innerHTML =
+                        '<i class="fa-solid fa-pause"></i> Pause';
+                    clock = setInterval(() => {
+                        if (duration > 0) {
+                            duration--;
+                            renderTimer();
+                        } else {
+                            clearInterval(clock);
+                            clock = null;
+                            button.innerHTML =
+                                '<i class="fa-solid fa-play"></i> Start';
+                        }
+                    }, 1000);
                 }
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // Drag events
-        dropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropZone.classList.add('border-brandOrange-500', 'bg-black/60');
-        });
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('border-brandOrange-500', 'bg-black/60');
-        });
-        dropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropZone.classList.remove('border-brandOrange-500', 'bg-black/60');
-            if (e.dataTransfer.files.length) {
-                handleFile(e.dataTransfer.files[0]);
             }
-        });
 
-        // Click to upload (via hidden input)
-        fileInput.addEventListener('change', function() {
-            if (this.files.length) handleFile(this.files[0]);
-        });
+            function resetTimer() {
+                clearInterval(clock);
+                clock = null;
+                document.getElementById("timer-control-btn").innerHTML =
+                    '<i class="fa-solid fa-play"></i> Start';
+                duration = 300;
+                renderTimer();
+            }
 
-
-        // Initialize state on window load
-        window.onload = function() {
-            refreshArenaUI();
-            renderTimer();
-            modelDataPoint('smartwatch');
-            loadSavedImage(); // Load the drag-and-drop image if it exists
-        }
-    </script>
-</body>
+            // Initialize state on window load
+            window.onload = function () {
+                refreshArenaUI();
+                renderTimer();
+                modelDataPoint("smartwatch");
+            };
+        </script>
+    </body>
 </html>
