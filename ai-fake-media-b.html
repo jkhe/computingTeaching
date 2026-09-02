@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI and Fake Media — Track B</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #1e1b4b;
+    --accent: #4338ca;
+    --accent-h: #3730a3;
+    --accent-light: #ede9fe;
+    --bg: #f0f2ff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --success: #15803d;
+    --success-bg: #f0fdf4;
+    --success-border: #86efac;
+    --error: #b91c1c;
+    --error-bg: #fef2f2;
+    --error-border: #fca5a5;
+    --warn-bg: #fffbeb;
+    --warn-text: #78350f;
+    --warn-border: #f59e0b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lexend', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; font-size: 18px; line-height: 1.7; }
+header { background: var(--primary); color: white; padding: 28px 40px; }
+.lesson-tag { font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #a5b4fc; margin-bottom: 8px; }
+header h1 { font-size: 30px; font-weight: 800; }
+main { flex: 1; padding: 40px; max-width: 740px; width: 100%; margin: 0 auto; }
+
+.progress-bar { font-size: 16px; font-weight: 700; color: var(--muted); margin-bottom: 24px; }
+.progress-bar span { color: var(--accent); font-size: 18px; }
+
+.card { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 36px; margin-bottom: 24px; }
+
+.scenario-text { font-size: 21px; font-weight: 500; line-height: 1.65; margin-bottom: 24px; }
+
+.category-row { margin-bottom: 24px; }
+.category-row-label { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.cat-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+.cat-ignore { background: var(--error-bg); color: var(--error); border: 2px solid var(--error-border); }
+.cat-check  { background: var(--warn-bg);  color: var(--warn-text); border: 2px solid var(--warn-border); }
+.cat-share  { background: var(--success-bg); color: var(--success); border: 2px solid var(--success-border); }
+
+.action-label { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
+
+.btn-action {
+    display: block;
+    width: 100%;
+    font-family: 'Lexend', sans-serif;
+    font-size: 19px;
+    font-weight: 600;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    background: #f9fafb;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s;
+}
+.btn-action:hover { background: var(--accent-light); border-color: var(--accent); }
+.btn-action:active { transform: scale(0.99); }
+
+.reasoning-box {
+    background: var(--success-bg);
+    border: 2px solid var(--success-border);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-top: 22px;
+}
+.reasoning-label { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--success); margin-bottom: 10px; }
+.reasoning-text { font-size: 18px; font-weight: 500; color: #166534; line-height: 1.65; margin-bottom: 20px; }
+.btn-next {
+    width: 100%;
+    font-family: 'Lexend', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+.btn-next:hover { background: var(--accent-h); }
+.btn-next:active { transform: scale(0.98); }
+
+.feedback { font-size: 20px; font-weight: 700; margin-top: 20px; min-height: 28px; text-align: center; }
+.fb-wrong { color: var(--error); }
+
+.hidden { display: none; }
+
+/* End / Dojo */
+.complete-heading { font-size: 28px; font-weight: 800; color: var(--success); margin-bottom: 8px; }
+.complete-sub { font-size: 20px; font-weight: 500; margin-bottom: 28px; }
+
+.dojo-box {
+    background: var(--warn-bg);
+    border: 2px solid var(--warn-border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 28px;
+}
+.dojo-label { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--warn-text); margin-bottom: 10px; }
+.dojo-question { font-size: 19px; font-weight: 600; line-height: 1.5; margin-bottom: 6px; }
+.dojo-sub { font-size: 17px; font-weight: 500; color: var(--muted); margin-bottom: 18px; }
+
+textarea {
+    width: 100%;
+    font-family: 'Lexend', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    resize: none;
+    line-height: 1.7;
+    color: var(--text);
+    background: white;
+    min-height: 110px;
+}
+textarea:focus { outline: none; border-color: var(--accent); }
+
+.screenshot-tip { margin-top: 28px; padding-top: 28px; border-top: 2px solid var(--success-border); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.screenshot-tip img { max-width: 280px; width: 100%; border-radius: 12px; }
+.tip-heading { font-size: 19px; font-weight: 800; color: var(--success); }
+.tip-body { font-size: 17px; color: #166534; font-weight: 600; line-height: 1.5; }
+.tip-caption { font-size: 14px; color: #166534; font-weight: 500; }
+
+footer { background: var(--primary); color: #a5b4fc; text-align: center; padding: 18px; font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-top: auto; }
+</style>
+</head>
+<body>
+<header>
+    <div class="lesson-tag">Online Safety — Lesson 3</div>
+    <h1>AI and Fake Media</h1>
+</header>
+<main>
+
+    <div class="progress-bar" id="progress">Scenario <span id="prog-num">1</span> of 4</div>
+
+    <div class="card" id="mainCard">
+        <div class="scenario-text" id="scenarioText"></div>
+
+        <div class="category-row">
+            <div class="category-row-label">This scenario is:</div>
+            <span class="cat-badge" id="catBadge"></span>
+        </div>
+
+        <div id="actionSection">
+            <div class="action-label">What do you do next?</div>
+            <div id="actionButtons"></div>
+        </div>
+
+        <div class="reasoning-box hidden" id="reasoningBox">
+            <div class="reasoning-label">Why this works</div>
+            <div class="reasoning-text" id="reasoningText"></div>
+            <button class="btn-next" onclick="nextScenario()">Next →</button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="card hidden" id="endCard">
+        <div class="complete-heading">Well done!</div>
+        <div class="complete-sub">You worked through all 4 scenarios. Now try the Dojo Challenge.</div>
+
+        <div class="dojo-box">
+            <div class="dojo-label">Dojo Challenge</div>
+            <div class="dojo-question">Someone asks an AI chatbot for advice on an argument with a friend, and tells it which school they go to and roughly where they live so it can give advice that fits their situation.</div>
+            <div class="dojo-sub">Complete the sentence below to explain the risk.</div>
+            <textarea id="dojoText" spellcheck="false" oninput="checkDojo()">This is a mistake because ___. A safer way to get help would be ___.</textarea>
+            <p id="dojoCounter" style="font-size:14px;font-weight:700;color:var(--muted);margin-top:8px;text-align:right;"></p>
+        </div>
+
+        <div class="screenshot-tip hidden" id="screenshotTip">
+            <p class="tip-heading">Task complete!</p>
+            <p class="tip-body">Screenshot this page — including your Dojo answer — and upload it to Google Classroom.</p>
+            <img src="screenshot.png" alt="Press Ctrl and the Show Windows key at the same time">
+            <p class="tip-caption">Ctrl + Show Windows key</p>
+        </div>
+    </div>
+
+</main>
+<footer>Online Safety</footer>
+<script>
+const actions = ["Report it", "Block it", "Ask a trusted adult", "Do nothing"];
+const catClass = { "Ignore": "cat-ignore", "Check": "cat-check", "Share": "cat-share" };
+
+const scenarios = [
+    {
+        text: "You are in a Discord voice call. A voice that sounds exactly like your friend asks you to read out a login code that just appeared on your phone. But your friend is showing as offline.",
+        category: "Ignore",
+        correctAction: 2,
+        reasoning: "Never share login codes or passwords with anyone, even a voice that sounds familiar. AI can clone a person's voice from just a few seconds of audio. The right move is to end the call and tell a trusted adult what happened — they can help you check if your account is safe."
+    },
+    {
+        text: "A TikTok live stream shows a well-known streamer giving away free V-Bucks and Robux if you click a link in the chat. The stream has been running for hours with no breaks.",
+        category: "Ignore",
+        correctAction: 0,
+        reasoning: "Real streamers don't run non-stop AI loops. A stream that never pauses, never interacts naturally, and promises free currency is almost certainly a deepfake or bot impersonating the streamer. Reporting it to TikTok gets it taken down before more people get scammed."
+    },
+    {
+        text: "You ask an AI chatbot what the final score of tomorrow's football match will be. It tells you confidently: 'Arsenal 3–1 Chelsea. Bukayo Saka will score twice.'",
+        category: "Check",
+        correctAction: 3,
+        reasoning: "AI chatbots cannot predict the future. They sometimes generate very specific, confident-sounding answers that are completely made up — this is called a hallucination. Don't share or act on this. Check a real sports website after the match if you want to know the result."
+    },
+    {
+        text: "An Instagram post shows two photos of the same person side by side. The caption says a health drink caused dramatic weight loss in just three days. Thousands of people have liked it.",
+        category: "Ignore",
+        correctAction: 3,
+        reasoning: "No drink causes significant weight loss in three days. Before-and-after photos are easy to manipulate with AI image editing, and high like counts don't make something true. The safest move is to scroll past without sharing — spreading it could harm people who buy the product."
+    }
+];
+
+let currentIndex = 0;
+let locked = false;
+
+function loadScenario() {
+    if (currentIndex >= scenarios.length) {
+        document.getElementById('mainCard').classList.add('hidden');
+        document.getElementById('progress').classList.add('hidden');
+        document.getElementById('endCard').classList.remove('hidden');
+        return;
+    }
+    const s = scenarios[currentIndex];
+    document.getElementById('prog-num').textContent = currentIndex + 1;
+    document.getElementById('scenarioText').textContent = s.text;
+    const badge = document.getElementById('catBadge');
+    badge.textContent = s.category;
+    badge.className = 'cat-badge ' + catClass[s.category];
+    document.getElementById('actionSection').classList.remove('hidden');
+    document.getElementById('reasoningBox').classList.add('hidden');
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+    locked = false;
+
+    const div = document.getElementById('actionButtons');
+    div.innerHTML = '';
+    actions.forEach((label, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-action';
+        btn.textContent = label;
+        btn.onclick = () => handleAction(idx);
+        div.appendChild(btn);
+    });
+}
+
+function handleAction(idx) {
+    if (locked) return;
+    const s = scenarios[currentIndex];
+    const fb = document.getElementById('feedback');
+    if (idx === s.correctAction) {
+        locked = true;
+        fb.textContent = '';
+        document.getElementById('actionSection').classList.add('hidden');
+        document.getElementById('reasoningText').textContent = s.reasoning;
+        document.getElementById('reasoningBox').classList.remove('hidden');
+    } else {
+        fb.textContent = 'Not quite — think about what would actually help here.';
+        fb.className = 'feedback fb-wrong';
+        setTimeout(() => { fb.textContent = ''; fb.className = 'feedback'; }, 2200);
+    }
+}
+
+function nextScenario() {
+    currentIndex++;
+    loadScenario();
+}
+
+const DOJO_MIN = 60;
+
+function checkDojo() {
+    const len = document.getElementById('dojoText').value.length;
+    const remaining = Math.max(0, DOJO_MIN - len);
+    document.getElementById('dojoCounter').textContent = remaining > 0 ? remaining + ' more characters needed' : '';
+    if (remaining === 0) document.getElementById('screenshotTip').classList.remove('hidden');
+    else document.getElementById('screenshotTip').classList.add('hidden');
+}
+
+loadScenario();
+</script>
+</body>
+</html>

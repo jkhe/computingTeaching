@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI and Fake Media — Track C</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+    --primary: #1e1b4b;
+    --accent: #4338ca;
+    --accent-h: #3730a3;
+    --accent-light: #ede9fe;
+    --bg: #f0f2ff;
+    --text: #111827;
+    --muted: #6b7280;
+    --border: #d1d5db;
+    --success: #15803d;
+    --success-bg: #f0fdf4;
+    --success-border: #86efac;
+    --error: #b91c1c;
+    --error-bg: #fef2f2;
+    --error-border: #fca5a5;
+    --warn-bg: #fffbeb;
+    --warn-text: #78350f;
+    --warn-border: #f59e0b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Lexend', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; font-size: 18px; line-height: 1.7; }
+header { background: var(--primary); color: white; padding: 28px 40px; }
+.lesson-tag { font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #a5b4fc; margin-bottom: 8px; }
+header h1 { font-size: 30px; font-weight: 800; }
+main { flex: 1; padding: 40px; max-width: 740px; width: 100%; margin: 0 auto; }
+
+.progress-bar { font-size: 16px; font-weight: 700; color: var(--muted); margin-bottom: 24px; }
+.progress-bar span { color: var(--accent); font-size: 18px; }
+
+.card { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 36px; margin-bottom: 24px; }
+
+.scenario-text { font-size: 21px; font-weight: 500; line-height: 1.65; margin-bottom: 28px; }
+
+.step-label { font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+.step-question { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+
+/* Category buttons */
+.cat-btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-cat {
+    flex: 1;
+    min-width: 100px;
+    font-family: 'Lexend', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 14px 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.btn-cat:active { transform: scale(0.97); }
+.btn-cat-share { background: var(--success-bg); border: 2px solid var(--success-border); color: var(--success); }
+.btn-cat-share:hover { background: #dcfce7; }
+.btn-cat-check { background: var(--warn-bg); border: 2px solid var(--warn-border); color: var(--warn-text); }
+.btn-cat-check:hover { background: #fef3c7; }
+.btn-cat-ignore { background: var(--error-bg); border: 2px solid var(--error-border); color: var(--error); }
+.btn-cat-ignore:hover { background: #fee2e2; }
+
+/* Action buttons */
+.btn-action {
+    display: block;
+    width: 100%;
+    font-family: 'Lexend', sans-serif;
+    font-size: 19px;
+    font-weight: 600;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    background: #f9fafb;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, border-color 0.15s;
+}
+.btn-action:hover { background: var(--accent-light); border-color: var(--accent); }
+.btn-action:active { transform: scale(0.99); }
+
+/* Chosen badges */
+.chosen-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.chosen-chip {
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    background: var(--accent-light);
+    color: var(--accent);
+    border: 2px solid #c7d2fe;
+}
+
+/* Write section */
+.write-prompt { font-size: 19px; font-weight: 700; margin-bottom: 14px; line-height: 1.5; }
+textarea {
+    width: 100%;
+    font-family: 'Lexend', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    padding: 14px 16px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    resize: none;
+    line-height: 1.7;
+    color: var(--text);
+    background: white;
+    min-height: 130px;
+}
+textarea:focus { outline: none; border-color: var(--accent); }
+.write-hint { font-size: 14px; font-weight: 700; color: var(--muted); text-align: right; margin-top: 8px; margin-bottom: 16px; min-height: 20px; }
+.btn-next {
+    width: 100%;
+    font-family: 'Lexend', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    background: #d1d5db;
+    color: #9ca3af;
+    cursor: not-allowed;
+    transition: background 0.2s, color 0.2s, transform 0.1s;
+}
+.btn-next.ready { background: var(--accent); color: white; cursor: pointer; }
+.btn-next.ready:hover { background: var(--accent-h); }
+.btn-next.ready:active { transform: scale(0.98); }
+
+.feedback { font-size: 20px; font-weight: 700; margin-top: 20px; min-height: 28px; text-align: center; }
+.fb-wrong { color: var(--error); }
+
+.hidden { display: none; }
+
+/* End / Dojo */
+.complete-heading { font-size: 28px; font-weight: 800; color: var(--success); margin-bottom: 8px; }
+.complete-sub { font-size: 20px; font-weight: 500; margin-bottom: 28px; }
+
+.dojo-box {
+    background: var(--warn-bg);
+    border: 2px solid var(--warn-border);
+    border-radius: 14px;
+    padding: 28px;
+    margin-bottom: 28px;
+}
+.dojo-label { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--warn-text); margin-bottom: 10px; }
+.dojo-question { font-size: 19px; font-weight: 600; line-height: 1.5; margin-bottom: 6px; }
+.dojo-sub { font-size: 17px; font-weight: 500; color: var(--muted); margin-bottom: 18px; }
+
+.screenshot-tip { margin-top: 28px; padding-top: 28px; border-top: 2px solid var(--success-border); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.screenshot-tip img { max-width: 280px; width: 100%; border-radius: 12px; }
+.tip-heading { font-size: 19px; font-weight: 800; color: var(--success); }
+.tip-body { font-size: 17px; color: #166534; font-weight: 600; line-height: 1.5; }
+.tip-caption { font-size: 14px; color: #166534; font-weight: 500; }
+
+footer { background: var(--primary); color: #a5b4fc; text-align: center; padding: 18px; font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; margin-top: auto; }
+</style>
+</head>
+<body>
+<header>
+    <div class="lesson-tag">Online Safety — Lesson 3</div>
+    <h1>AI and Fake Media</h1>
+</header>
+<main>
+
+    <div class="progress-bar" id="progress">Scenario <span id="prog-num">1</span> of 4</div>
+
+    <div class="card" id="mainCard">
+        <div class="scenario-text" id="scenarioText"></div>
+
+        <!-- Step 1: Category -->
+        <div id="catSection">
+            <div class="step-label">Step 1 of 3</div>
+            <div class="step-question">How would you categorise this?</div>
+            <div class="cat-btn-row">
+                <button class="btn-cat btn-cat-share" onclick="handleCat(0)">Share</button>
+                <button class="btn-cat btn-cat-check" onclick="handleCat(1)">Check</button>
+                <button class="btn-cat btn-cat-ignore" onclick="handleCat(2)">Ignore</button>
+            </div>
+        </div>
+
+        <!-- Step 2: Action -->
+        <div id="actionSection" class="hidden">
+            <div class="step-label">Step 2 of 3</div>
+            <div class="step-question">What do you do next?</div>
+            <div id="actionButtons"></div>
+        </div>
+
+        <!-- Step 3: Write -->
+        <div id="writeSection" class="hidden">
+            <div class="step-label">Step 3 of 3</div>
+            <div class="chosen-row" id="chosenRow"></div>
+            <div class="write-prompt">Now explain your choices in a couple of sentences.</div>
+            <textarea id="writeText" spellcheck="false" oninput="checkWrite()" rows="5"></textarea>
+            <div class="write-hint" id="writeHint">Fill in both blanks to continue.</div>
+            <button class="btn-next" id="writeNext" onclick="nextScenario()" disabled>Next →</button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="card hidden" id="endCard">
+        <div class="complete-heading">Well done!</div>
+        <div class="complete-sub">You categorised, chose an action, and justified all 4 scenarios. Now try the Dojo Challenge.</div>
+
+        <div class="dojo-box">
+            <div class="dojo-label">Dojo Challenge</div>
+            <div class="dojo-question">Someone asks an AI chatbot for advice on an argument with a friend, and tells it which school they go to and roughly where they live so it can give advice that fits their situation.</div>
+            <div class="dojo-sub">Explain the risk and suggest a safer approach.</div>
+            <textarea id="dojoText" spellcheck="false" oninput="checkDojo()">This is a mistake because ___. A safer way to get help would be ___.</textarea>
+            <p id="dojoCounter" style="font-size:14px;font-weight:700;color:var(--muted);margin-top:8px;text-align:right;"></p>
+        </div>
+
+        <div class="screenshot-tip hidden" id="screenshotTip">
+            <p class="tip-heading">Task complete!</p>
+            <p class="tip-body">Screenshot this page — including your Dojo answer — and upload it to Google Classroom.</p>
+            <img src="screenshot.png" alt="Press Ctrl and the Show Windows key at the same time">
+            <p class="tip-caption">Ctrl + Show Windows key</p>
+        </div>
+    </div>
+
+</main>
+<footer>Online Safety</footer>
+<script>
+const actionLabels = ["Report it", "Block it", "Ask a trusted adult", "Do nothing"];
+const catLabels = ["Share", "Check", "Ignore"];
+
+const scenarios = [
+    {
+        text: "You are in a Discord voice call. A voice that sounds exactly like your friend asks you to read out a login code that just appeared on your phone. But your friend is showing as offline.",
+        correctCat: 2,
+        correctAction: 2,
+        writeStarter: "I categorised this as \"Ignore\" because ___.\n\nI chose to ask a trusted adult because ___."
+    },
+    {
+        text: "A TikTok live stream shows a well-known streamer giving away free V-Bucks and Robux if you click a link in the chat. The stream has been running for hours with no breaks.",
+        correctCat: 2,
+        correctAction: 0,
+        writeStarter: "I categorised this as \"Ignore\" because ___.\n\nI chose to report it because ___."
+    },
+    {
+        text: "You ask an AI chatbot what the final score of tomorrow's football match will be. It tells you confidently: 'Arsenal 3–1 Chelsea. Bukayo Saka will score twice.'",
+        correctCat: 1,
+        correctAction: 3,
+        writeStarter: "I categorised this as \"Check\" because ___.\n\nI chose to do nothing with the prediction because ___."
+    },
+    {
+        text: "An Instagram post shows two photos of the same person side by side. The caption says a health drink caused dramatic weight loss in just three days. Thousands of people have liked it.",
+        correctCat: 2,
+        correctAction: 3,
+        writeStarter: "I categorised this as \"Ignore\" because ___.\n\nI chose to do nothing (not share it) because ___."
+    }
+];
+
+let currentIndex = 0;
+let locked = false;
+let chosenCat = -1;
+let chosenAction = -1;
+
+function loadScenario() {
+    if (currentIndex >= scenarios.length) {
+        document.getElementById('mainCard').classList.add('hidden');
+        document.getElementById('progress').classList.add('hidden');
+        document.getElementById('endCard').classList.remove('hidden');
+        return;
+    }
+    const s = scenarios[currentIndex];
+    document.getElementById('prog-num').textContent = currentIndex + 1;
+    document.getElementById('scenarioText').textContent = s.text;
+    document.getElementById('catSection').classList.remove('hidden');
+    document.getElementById('actionSection').classList.add('hidden');
+    document.getElementById('writeSection').classList.add('hidden');
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+    locked = false;
+    chosenCat = -1;
+    chosenAction = -1;
+}
+
+function handleCat(idx) {
+    if (locked) return;
+    const s = scenarios[currentIndex];
+    const fb = document.getElementById('feedback');
+    if (idx === s.correctCat) {
+        chosenCat = idx;
+        fb.textContent = '';
+        document.getElementById('catSection').classList.add('hidden');
+        document.getElementById('actionSection').classList.remove('hidden');
+
+        const div = document.getElementById('actionButtons');
+        div.innerHTML = '';
+        actionLabels.forEach((label, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-action';
+            btn.textContent = label;
+            btn.onclick = () => handleAction(i);
+            div.appendChild(btn);
+        });
+    } else {
+        fb.textContent = 'Think again — should you trust, verify, or ignore this?';
+        fb.className = 'feedback fb-wrong';
+        setTimeout(() => { fb.textContent = ''; fb.className = 'feedback'; }, 2200);
+    }
+}
+
+function handleAction(idx) {
+    if (locked) return;
+    const s = scenarios[currentIndex];
+    const fb = document.getElementById('feedback');
+    if (idx === s.correctAction) {
+        chosenAction = idx;
+        fb.textContent = '';
+        document.getElementById('actionSection').classList.add('hidden');
+
+        const row = document.getElementById('chosenRow');
+        row.innerHTML = '';
+        [catLabels[chosenCat], actionLabels[chosenAction]].forEach(label => {
+            const chip = document.createElement('span');
+            chip.className = 'chosen-chip';
+            chip.textContent = 'Your choice: ' + label;
+            row.appendChild(chip);
+        });
+
+        document.getElementById('writeText').value = s.writeStarter;
+        document.getElementById('writeNext').disabled = true;
+        document.getElementById('writeNext').classList.remove('ready');
+        document.getElementById('writeHint').textContent = 'Fill in both blanks to continue.';
+        document.getElementById('writeSection').classList.remove('hidden');
+    } else {
+        fb.textContent = 'Not quite — think about what would actually help here.';
+        fb.className = 'feedback fb-wrong';
+        setTimeout(() => { fb.textContent = ''; fb.className = 'feedback'; }, 2200);
+    }
+}
+
+function checkWrite() {
+    const text = document.getElementById('writeText').value;
+    const hasGaps = text.includes('___');
+    const btn = document.getElementById('writeNext');
+    btn.disabled = hasGaps;
+    btn.classList.toggle('ready', !hasGaps);
+    document.getElementById('writeHint').textContent = hasGaps ? 'Fill in both blanks to continue.' : '';
+}
+
+function nextScenario() {
+    currentIndex++;
+    loadScenario();
+}
+
+const DOJO_MIN = 60;
+
+function checkDojo() {
+    const len = document.getElementById('dojoText').value.length;
+    const remaining = Math.max(0, DOJO_MIN - len);
+    document.getElementById('dojoCounter').textContent = remaining > 0 ? remaining + ' more characters needed' : '';
+    if (remaining === 0) document.getElementById('screenshotTip').classList.remove('hidden');
+    else document.getElementById('screenshotTip').classList.add('hidden');
+}
+
+loadScenario();
+</script>
+</body>
+</html>
