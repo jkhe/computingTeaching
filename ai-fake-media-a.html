@@ -76,8 +76,32 @@ main { flex: 1; padding: 40px; max-width: 740px; width: 100%; margin: 0 auto; }
 .btn-action:hover { background: var(--accent-light); border-color: var(--accent); }
 .btn-action:active { transform: scale(0.99); }
 
+.reasoning-box {
+    background: var(--success-bg);
+    border: 2px solid var(--success-border);
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-top: 22px;
+}
+.reasoning-label { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--success); margin-bottom: 10px; }
+.reasoning-text { font-size: 18px; font-weight: 500; color: #166534; line-height: 1.65; margin-bottom: 20px; }
+.btn-next {
+    width: 100%;
+    font-family: 'Lexend', sans-serif;
+    font-size: 19px;
+    font-weight: 700;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+.btn-next:hover { background: var(--accent-h); }
+.btn-next:active { transform: scale(0.98); }
+
 .feedback { font-size: 20px; font-weight: 700; margin-top: 20px; min-height: 28px; text-align: center; }
-.fb-correct { color: var(--success); }
 .fb-wrong { color: var(--error); }
 
 .hidden { display: none; }
@@ -139,8 +163,16 @@ footer { background: var(--primary); color: #a5b4fc; text-align: center; padding
             <span class="cat-badge" id="catBadge"></span>
         </div>
 
-        <div class="action-label">What do you do next?</div>
-        <div id="actionButtons"></div>
+        <div id="actionSection">
+            <div class="action-label">What do you do next?</div>
+            <div id="actionButtons"></div>
+        </div>
+
+        <div class="reasoning-box hidden" id="reasoningBox">
+            <div class="reasoning-label">Why this works</div>
+            <div class="reasoning-text" id="reasoningText"></div>
+            <button class="btn-next" onclick="nextScenario()">Next →</button>
+        </div>
 
         <div class="feedback" id="feedback"></div>
     </div>
@@ -175,22 +207,26 @@ const scenarios = [
     {
         text: "You are in a Discord voice call. A voice that sounds exactly like your friend asks you to read out a login code that just appeared on your phone. But your friend is showing as offline.",
         category: "Ignore",
-        correctAction: 2
+        correctAction: 2,
+        reasoning: "Never share login codes or passwords with anyone, even a voice that sounds familiar. AI can clone a person's voice from just a few seconds of audio. The right move is to end the call and tell a trusted adult what happened — they can help you check if your account is safe."
     },
     {
         text: "A TikTok live stream shows a well-known streamer giving away free V-Bucks and Robux if you click a link in the chat. The stream has been running for hours with no breaks.",
         category: "Ignore",
-        correctAction: 0
+        correctAction: 0,
+        reasoning: "Real streamers don't run non-stop AI loops. A stream that never pauses, never interacts naturally, and promises free currency is almost certainly a deepfake or bot impersonating the streamer. Reporting it to TikTok gets it taken down before more people get scammed."
     },
     {
         text: "You ask an AI chatbot what the final score of tomorrow's football match will be. It tells you confidently: 'Arsenal 3–1 Chelsea. Bukayo Saka will score twice.'",
         category: "Check",
-        correctAction: 3
+        correctAction: 3,
+        reasoning: "AI chatbots cannot predict the future. They sometimes generate very specific, confident-sounding answers that are completely made up — this is called a hallucination. Don't share or act on this. Check a real sports website after the match if you want to know the result."
     },
     {
         text: "An Instagram post shows two photos of the same person side by side. The caption says a health drink caused dramatic weight loss in just three days. Thousands of people have liked it.",
         category: "Ignore",
-        correctAction: 3
+        correctAction: 3,
+        reasoning: "No drink causes significant weight loss in three days. Before-and-after photos are easy to manipulate with AI image editing, and high like counts don't make something true. The safest move is to scroll past without sharing — spreading it could harm people who buy the product."
     }
 ];
 
@@ -210,6 +246,8 @@ function loadScenario() {
     const badge = document.getElementById('catBadge');
     badge.textContent = s.category;
     badge.className = 'cat-badge ' + catClass[s.category];
+    document.getElementById('actionSection').classList.remove('hidden');
+    document.getElementById('reasoningBox').classList.add('hidden');
     document.getElementById('feedback').textContent = '';
     document.getElementById('feedback').className = 'feedback';
     locked = false;
@@ -231,9 +269,10 @@ function handleAction(idx) {
     const fb = document.getElementById('feedback');
     if (idx === s.correctAction) {
         locked = true;
-        fb.textContent = 'Good choice! Moving on...';
-        fb.className = 'feedback fb-correct';
-        setTimeout(() => { currentIndex++; loadScenario(); }, 1400);
+        fb.textContent = '';
+        document.getElementById('actionSection').classList.add('hidden');
+        document.getElementById('reasoningText').textContent = s.reasoning;
+        document.getElementById('reasoningBox').classList.remove('hidden');
     } else {
         fb.textContent = 'Not quite — think about what would actually help here.';
         fb.className = 'feedback fb-wrong';
@@ -241,13 +280,17 @@ function handleAction(idx) {
     }
 }
 
+function nextScenario() {
+    currentIndex++;
+    loadScenario();
+}
+
 const DOJO_MIN = 60;
 
 function checkDojo() {
     const len = document.getElementById('dojoText').value.length;
     const remaining = Math.max(0, DOJO_MIN - len);
-    const counter = document.getElementById('dojoCounter');
-    counter.textContent = remaining > 0 ? remaining + ' more characters needed' : '';
+    document.getElementById('dojoCounter').textContent = remaining > 0 ? remaining + ' more characters needed' : '';
     if (remaining === 0) document.getElementById('screenshotTip').classList.remove('hidden');
     else document.getElementById('screenshotTip').classList.add('hidden');
 }
