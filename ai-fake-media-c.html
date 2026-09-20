@@ -232,11 +232,11 @@ const scenarios = [
     {
         text: "A message pops up saying you have won a new skin for your favourite game. It asks you to type in your username and password to claim it.",
         category: "Check",
-        correctAction: 2,
+        correctAction: [2, 3],
         reasons: [
-            "Sharing your username and password could let someone take over your account, so it is safest to check with an adult first.",
+            "Never give out your username or password — ignoring it or checking with an adult both keep you safe.",
             "It says you have already won, so it must be true.",
-            "You should ignore it because it is not important."
+            "You should click it quickly before the offer disappears."
         ],
         correctReason: 0
     },
@@ -344,7 +344,8 @@ function handleAction(idx) {
     if (locked) return;
     const s = scenarios[currentIndex];
     const fb = document.getElementById('feedback');
-    if (idx === s.correctAction) {
+    const correct = Array.isArray(s.correctAction) ? s.correctAction : [s.correctAction];
+    if (correct.includes(idx)) {
         locked = true;
         fb.textContent = 'Good thinking.';
         fb.className = 'feedback fb-good';
