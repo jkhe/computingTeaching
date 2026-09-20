@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI and Fake Media — Track C</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
     --primary: #1e1b4b;
@@ -28,18 +25,27 @@
     --warn-border: #f59e0b;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Lexend', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; font-size: 18px; line-height: 1.7; }
+body {
+    font-family: 'Arial Rounded MT Bold', 'Arial Rounded', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-size: 19px;
+    line-height: 1.7;
+}
 header { background: var(--primary); color: white; padding: 28px 40px; }
 .lesson-tag { font-size: 13px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #a5b4fc; margin-bottom: 8px; }
 header h1 { font-size: 30px; font-weight: 800; }
-main { flex: 1; padding: 40px; max-width: 740px; width: 100%; margin: 0 auto; }
+main { flex: 1; padding: 32px 40px; max-width: 740px; width: 100%; margin: 0 auto; }
 
-.progress-bar { font-size: 16px; font-weight: 700; color: var(--muted); margin-bottom: 24px; }
-.progress-bar span { color: var(--accent); font-size: 18px; }
+.progress-bar { font-size: 17px; font-weight: 700; color: var(--muted); margin-bottom: 24px; }
+.progress-bar span { color: var(--accent); font-size: 19px; }
 
 .card { background: white; border: 2px solid var(--border); border-radius: 16px; padding: 36px; margin-bottom: 24px; }
 
-.scenario-text { font-size: 21px; font-weight: 500; line-height: 1.65; margin-bottom: 24px; }
+.scenario-text { font-size: 22px; line-height: 1.65; margin-bottom: 20px; }
 
 .category-row { margin-bottom: 24px; }
 .category-row-label { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
@@ -53,32 +59,41 @@ main { flex: 1; padding: 40px; max-width: 740px; width: 100%; margin: 0 auto; }
     text-transform: uppercase;
 }
 .cat-ignore { background: var(--error-bg); color: var(--error); border: 2px solid var(--error-border); }
-.cat-check  { background: var(--warn-bg);  color: var(--warn-text); border: 2px solid var(--warn-border); }
+.cat-check  { background: var(--warn-bg); color: var(--warn-text); border: 2px solid var(--warn-border); }
 .cat-share  { background: var(--success-bg); color: var(--success); border: 2px solid var(--success-border); }
 
-.action-label { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 14px; }
+.step-heading { font-size: 20px; font-weight: 800; color: var(--text); margin-bottom: 18px; }
 
-.btn-action {
+.btn-choice {
     display: block;
     width: 100%;
-    font-family: 'Lexend', sans-serif;
-    font-size: 19px;
-    font-weight: 600;
-    padding: 15px 20px;
-    margin-bottom: 10px;
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 20px 24px;
+    margin-bottom: 12px;
     background: #f9fafb;
     border: 2px solid var(--border);
-    border-radius: 10px;
+    border-radius: 12px;
     cursor: pointer;
     text-align: left;
-    transition: background 0.15s, border-color 0.15s;
+    line-height: 1.4;
+    transition: background 0.12s, border-color 0.12s;
 }
-.btn-action:hover { background: var(--accent-light); border-color: var(--accent); }
-.btn-action:active { transform: scale(0.99); }
+.btn-choice:hover { background: var(--accent-light); border-color: var(--accent); }
+.btn-choice:active { transform: scale(0.99); }
+.btn-choice:disabled { cursor: default; }
 
-.feedback { font-size: 20px; font-weight: 700; margin-top: 20px; min-height: 28px; text-align: center; }
-.fb-correct { color: var(--success); }
-.fb-wrong { color: var(--error); }
+.feedback {
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 20px;
+    min-height: 30px;
+    text-align: center;
+    line-height: 1.4;
+}
+.fb-good { color: var(--success); }
+.fb-retry { color: var(--warn-text); }
 
 .hidden { display: none; }
 
@@ -96,22 +111,9 @@ main { flex: 1; padding: 40px; max-width: 740px; width: 100%; margin: 0 auto; }
 .dojo-label { font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--warn-text); margin-bottom: 10px; }
 .dojo-question { font-size: 19px; font-weight: 600; line-height: 1.5; margin-bottom: 6px; }
 .dojo-sub { font-size: 17px; font-weight: 500; color: var(--muted); margin-bottom: 18px; }
-
-textarea {
-    width: 100%;
-    font-family: 'Lexend', sans-serif;
-    font-size: 17px;
-    font-weight: 500;
-    padding: 14px 16px;
-    border: 2px solid var(--border);
-    border-radius: 10px;
-    resize: none;
-    line-height: 1.7;
-    color: var(--text);
-    background: white;
-    min-height: 110px;
-}
-textarea:focus { outline: none; border-color: var(--accent); }
+.dojo-feedback { font-size: 20px; font-weight: 700; margin-top: 12px; min-height: 28px; }
+.dojo-fb-correct { color: var(--success); }
+.dojo-fb-retry { color: var(--warn-text); }
 
 .screenshot-tip { margin-top: 28px; padding-top: 28px; border-top: 2px solid var(--success-border); display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
 .screenshot-tip img { max-width: 280px; width: 100%; border-radius: 12px; }
@@ -129,32 +131,43 @@ footer { background: var(--primary); color: #a5b4fc; text-align: center; padding
 </header>
 <main>
 
-    <div class="progress-bar" id="progress">Scenario <span id="prog-num">1</span> of 4</div>
+    <div class="progress-bar" id="progress">Scenario <span id="prog-num">1</span> of 10</div>
 
     <div class="card" id="mainCard">
-        <div class="scenario-text" id="scenarioText"></div>
 
-        <div class="category-row">
-            <div class="category-row-label">This scenario is:</div>
-            <span class="cat-badge" id="catBadge"></span>
+        <!-- Step 1: Action -->
+        <div id="stepAction">
+            <div class="scenario-text" id="scenarioText"></div>
+            <div class="category-row">
+                <div class="category-row-label">This scenario is:</div>
+                <span class="cat-badge" id="catBadge"></span>
+            </div>
+            <div class="step-heading">What do you do next?</div>
+            <div id="actionButtons"></div>
         </div>
 
-        <div class="action-label">What do you do next?</div>
-        <div id="actionButtons"></div>
+        <!-- Step 2: Reason -->
+        <div id="stepReason" class="hidden">
+            <div class="step-heading">Why is that the best choice?</div>
+            <div id="reasonButtons"></div>
+        </div>
 
         <div class="feedback" id="feedback"></div>
     </div>
 
+    <!-- Completion + Dojo card -->
     <div class="card hidden" id="endCard">
         <div class="complete-heading">Well done!</div>
-        <div class="complete-sub">You worked through all 4 scenarios. Now try the Dojo Challenge.</div>
+        <div class="complete-sub">You worked through all 10 scenarios. Now try the Dojo Challenge.</div>
 
         <div class="dojo-box">
             <div class="dojo-label">Dojo Challenge</div>
             <div class="dojo-question">Someone asks an AI chatbot for advice on an argument with a friend, and tells it which school they go to and roughly where they live so it can give advice that fits their situation.</div>
-            <div class="dojo-sub">Complete the sentence below to explain the risk.</div>
-            <textarea id="dojoText" spellcheck="false" oninput="checkDojo()">This is a mistake because ___. A safer way to get help would be ___.</textarea>
-            <p id="dojoCounter" style="font-size:14px;font-weight:700;color:var(--muted);margin-top:8px;text-align:right;"></p>
+            <div class="dojo-sub">What is the risk?</div>
+            <button class="btn-choice" id="dojo0" onclick="handleDojo(0)">Sharing your school and where you live could help a stranger find you in real life.</button>
+            <button class="btn-choice" id="dojo1" onclick="handleDojo(1)">The AI chatbot might not give good advice about arguments.</button>
+            <button class="btn-choice" id="dojo2" onclick="handleDojo(2)">Your teacher might be able to see everything you typed.</button>
+            <div class="dojo-feedback" id="dojoFeedback"></div>
         </div>
 
         <div class="screenshot-tip hidden" id="screenshotTip">
@@ -168,34 +181,133 @@ footer { background: var(--primary); color: #a5b4fc; text-align: center; padding
 </main>
 <footer>Online Safety</footer>
 <script>
-const actions = ["Report it", "Block it", "Ask a trusted adult", "Do nothing"];
+const actionLabels = ["Report it", "Block it", "Ask a trusted adult", "Do nothing"];
 const catClass = { "Ignore": "cat-ignore", "Check": "cat-check", "Share": "cat-share" };
 
 const scenarios = [
     {
-        text: "You are in a Discord voice call. A voice that sounds exactly like your friend asks you to read out a login code that just appeared on your phone. But your friend is showing as offline.",
-        category: "Ignore",
-        correctAction: 2
-    },
-    {
-        text: "A TikTok live stream shows a well-known streamer giving away free V-Bucks and Robux if you click a link in the chat. The stream has been running for hours with no breaks.",
-        category: "Ignore",
-        correctAction: 0
-    },
-    {
-        text: "You ask an AI chatbot what the final score of tomorrow's football match will be. It tells you confidently: 'Arsenal 3–1 Chelsea. Bukayo Saka will score twice.'",
+        text: "You are playing an online game, like Minecraft, with a friend. A voice message in the game sounds exactly like your friend, but they are not online right now. It asks you to send your password.",
         category: "Check",
-        correctAction: 3
+        correctAction: 2,
+        reasons: [
+            "It could let someone into your account, and an adult can help you check safely.",
+            "The voice sounds exactly like your friend, so it must be safe.",
+            "You should always report anything strange straight away."
+        ],
+        correctReason: 0
     },
     {
-        text: "An Instagram post shows two photos of the same person side by side. The caption says a health drink caused dramatic weight loss in just three days. Thousands of people have liked it.",
+        text: "A video about a game you like keeps playing the same clip over and over. It says click this link to get free coins or gems.",
         category: "Ignore",
-        correctAction: 3
+        correctAction: 3,
+        reasons: [
+            "A video that repeats and asks you to click a link is a common scam sign, so it is safest to leave it alone.",
+            "The video looks exciting, so it must be true.",
+            "Clicking quickly is the only way to get the reward."
+        ],
+        correctReason: 0
+    },
+    {
+        text: "A computer chatbot tells you the exact score of a football match. But the match has not been played yet.",
+        category: "Check",
+        correctAction: 3,
+        reasons: [
+            "A computer can sound completely confident and still be wrong, so it is best not to trust or repeat it.",
+            "Computers always get sports scores right.",
+            "You should tell everyone the score straight away."
+        ],
+        correctReason: 0
+    },
+    {
+        text: "A video says a tablet case will stop the screen from ever cracking, even if you drop it off a roof.",
+        category: "Check",
+        correctAction: 0,
+        reasons: [
+            "Claims like this are often false and could trick people into buying something that does not work, so it is worth reporting.",
+            "It must be true because it is in a video.",
+            "It does not affect you, so it is fine to scroll past."
+        ],
+        correctReason: 0
+    },
+    {
+        text: "A message pops up saying you have won a new skin for your favourite game. It asks you to type in your username and password to claim it.",
+        category: "Check",
+        correctAction: 2,
+        reasons: [
+            "Sharing your username and password could let someone take over your account, so it is safest to check with an adult first.",
+            "It says you have already won, so it must be true.",
+            "You should ignore it because it is not important."
+        ],
+        correctReason: 0
+    },
+    {
+        text: "An advert keeps popping up saying your tablet is infected and you must click a button right now to fix it.",
+        category: "Ignore",
+        correctAction: 3,
+        reasons: [
+            "Adverts like this are designed to scare you into clicking, and clicking could be unsafe, so it is best to leave it alone.",
+            "It must be true because it says so on the screen.",
+            "You should click it straight away to stop the warning."
+        ],
+        correctReason: 0
+    },
+    {
+        text: "An account that looks like it belongs to a footballer you like keeps sending you the same message, asking you to click a link to meet them in a video call.",
+        category: "Check",
+        correctAction: 1,
+        reasons: [
+            "Real footballers do not message fans like this, and blocking stops them contacting you again.",
+            "It must be real because it uses their name and photo.",
+            "You should click the link to see if it is really them."
+        ],
+        correctReason: 0
+    },
+    {
+        text: "A pop-up says you have won a free games console just for visiting the website.",
+        category: "Ignore",
+        correctAction: 3,
+        reasons: [
+            "Adverts that promise a free prize just for visiting a page are almost always fake, so it is safest to leave it alone.",
+            "It must be true because it is on a website.",
+            "You should click it quickly before the offer runs out."
+        ],
+        correctReason: 0
+    },
+    {
+        text: "A video claims a game cheat code will give you unlimited lives if you enter your account details on a website.",
+        category: "Check",
+        correctAction: 0,
+        reasons: [
+            "Videos that ask for account details to get free rewards are usually scams, so it is worth reporting them.",
+            "It must work because lots of people are watching the video.",
+            "It does not matter because it is just a game."
+        ],
+        correctReason: 0
+    },
+    {
+        text: "An AI voice message says it is from your school, telling you to stay home tomorrow because of an emergency.",
+        category: "Check",
+        correctAction: 2,
+        reasons: [
+            "A message like this could be fake, and checking with a trusted adult means you will not miss something important or be tricked.",
+            "It must be true because it sounds like an official message.",
+            "You should tell all your friends to stay home too."
+        ],
+        correctReason: 0
     }
 ];
 
 let currentIndex = 0;
 let locked = false;
+
+function shuffle(n) {
+    const arr = Array.from({length: n}, (_, i) => i);
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
 
 function loadScenario() {
     if (currentIndex >= scenarios.length) {
@@ -210,15 +322,18 @@ function loadScenario() {
     const badge = document.getElementById('catBadge');
     badge.textContent = s.category;
     badge.className = 'cat-badge ' + catClass[s.category];
+
+    document.getElementById('stepAction').classList.remove('hidden');
+    document.getElementById('stepReason').classList.add('hidden');
     document.getElementById('feedback').textContent = '';
     document.getElementById('feedback').className = 'feedback';
     locked = false;
 
     const div = document.getElementById('actionButtons');
     div.innerHTML = '';
-    actions.forEach((label, idx) => {
+    actionLabels.forEach((label, idx) => {
         const btn = document.createElement('button');
-        btn.className = 'btn-action';
+        btn.className = 'btn-choice';
         btn.textContent = label;
         btn.onclick = () => handleAction(idx);
         div.appendChild(btn);
@@ -231,25 +346,66 @@ function handleAction(idx) {
     const fb = document.getElementById('feedback');
     if (idx === s.correctAction) {
         locked = true;
-        fb.textContent = 'Good choice! Moving on...';
-        fb.className = 'feedback fb-correct';
-        setTimeout(() => { currentIndex++; loadScenario(); }, 1400);
+        fb.textContent = 'Good thinking.';
+        fb.className = 'feedback fb-good';
+        setTimeout(() => {
+            locked = false;
+            fb.textContent = '';
+            fb.className = 'feedback';
+            document.getElementById('stepAction').classList.add('hidden');
+            document.getElementById('stepReason').classList.remove('hidden');
+
+            const rdiv = document.getElementById('reasonButtons');
+            rdiv.innerHTML = '';
+            const order = shuffle(s.reasons.length);
+            order.forEach(origIdx => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-choice';
+                btn.textContent = s.reasons[origIdx];
+                btn.onclick = () => handleReason(origIdx);
+                rdiv.appendChild(btn);
+            });
+        }, 1200);
     } else {
-        fb.textContent = 'Not quite — think about what would actually help here.';
-        fb.className = 'feedback fb-wrong';
+        fb.textContent = "Let's think about that one again.";
+        fb.className = 'feedback fb-retry';
         setTimeout(() => { fb.textContent = ''; fb.className = 'feedback'; }, 2200);
     }
 }
 
-const DOJO_MIN = 60;
+function handleReason(origIdx) {
+    if (locked) return;
+    const s = scenarios[currentIndex];
+    const fb = document.getElementById('feedback');
+    if (origIdx === s.correctReason) {
+        locked = true;
+        fb.textContent = 'Good thinking.';
+        fb.className = 'feedback fb-good';
+        setTimeout(() => { currentIndex++; loadScenario(); }, 1400);
+    } else {
+        fb.textContent = "Let's think about that one again.";
+        fb.className = 'feedback fb-retry';
+        setTimeout(() => { fb.textContent = ''; fb.className = 'feedback'; }, 2200);
+    }
+}
 
-function checkDojo() {
-    const len = document.getElementById('dojoText').value.length;
-    const remaining = Math.max(0, DOJO_MIN - len);
-    const counter = document.getElementById('dojoCounter');
-    counter.textContent = remaining > 0 ? remaining + ' more characters needed' : '';
-    if (remaining === 0) document.getElementById('screenshotTip').classList.remove('hidden');
-    else document.getElementById('screenshotTip').classList.add('hidden');
+function handleDojo(idx) {
+    const correct = 0;
+    const btns = [document.getElementById('dojo0'), document.getElementById('dojo1'), document.getElementById('dojo2')];
+    const fb = document.getElementById('dojoFeedback');
+    if (idx === correct) {
+        btns.forEach(b => b.disabled = true);
+        btns[idx].style.background = 'var(--success-bg)';
+        btns[idx].style.borderColor = 'var(--success-border)';
+        btns[idx].style.color = 'var(--success)';
+        fb.textContent = 'Spot on! That is the real risk.';
+        fb.className = 'dojo-feedback dojo-fb-correct';
+        document.getElementById('screenshotTip').classList.remove('hidden');
+    } else {
+        fb.textContent = "Let's think about that one again.";
+        fb.className = 'dojo-feedback dojo-fb-retry';
+        setTimeout(() => { fb.textContent = ''; fb.className = 'dojo-feedback'; }, 2200);
+    }
 }
 
 loadScenario();
