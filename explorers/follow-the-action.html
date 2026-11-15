@@ -87,7 +87,7 @@
 
   <section class="ex-stage">
     <svg id="diagram" viewBox="0 0 1100 238" preserveAspectRatio="xMidYMid meet" role="img"
-         aria-label="Diagram of a computer system. Input: keyboard, mouse, camera, microphone. Process: CPU and memory (RAM). Output: speakers, screen, printer. Storage: SSD drive."></svg>
+         aria-label="Diagram of a computer system. Input: keyboard, mouse, camera, microphone. Process: CPU and memory (RAM). Output: speakers, screen, printer. Storage: SSD."></svg>
     <ol class="steps" id="steps" aria-live="polite" aria-label="Steps"></ol>
   </section>
 
@@ -159,7 +159,7 @@
       speakers:   { x: 700, y: 40,  w: 190, h: 46, label: "Speakers",     layout: "row" },
       screen:     { x: 700, y: 96,  w: 190, h: 46, label: "Screen",       layout: "row" },
       printer:    { x: 700, y: 152, w: 190, h: 46, label: "Printer",      layout: "row" },
-      ssd:        { x: 945, y: 87,  w: 130, h: 64, label: "SSD drive",    layout: "stack" }
+      ssd:        { x: 945, y: 87,  w: 130, h: 64, label: "SSD",          layout: "stack" }
     };
 
     /* Wires: every connection drawn in grey. Key is "from>to". */
@@ -171,7 +171,6 @@
       "cpu>speakers":   "M628,84 H665 V63 H700",
       "cpu>screen":     "M628,84 H665 V119 H700",
       "cpu>printer":    "M628,84 H665 V175 H700",
-      "screen>ssd":     "M890,119 H945",
       "ssd>ram":        "M1040,151 V230 H388 V204",
       "ram>cpu":        "M476,182 H540 V122",
       "cpu>ssd":        "M596,122 V221 H985 V151"
@@ -184,6 +183,9 @@
       },
       photo: {
         path: ["camera", "cpu", "screen", "ssd"],
+        /* The CPU sends the photo to the screen and to the SSD,
+           so the last leg starts at the CPU, not the screen. */
+        from: [null, "camera", "cpu", "cpu"],
         steps: ["Camera (input)", "CPU processes it", "Screen shows it (output)", "SSD saves it (storage)"]
       },
       print: {
@@ -294,6 +296,11 @@
       return p;
     }
 
+    /* Where leg i starts. Usually the part before it in the path. */
+    function legStart(action, i) {
+      return action.from ? action.from[i] : action.path[i - 1];
+    }
+
     function run(action) {
       clearAll();
       var myRun = runId;
@@ -301,7 +308,7 @@
       if (reduced.matches) {
         action.path.forEach(function (id, i) {
           arrive(action, i);
-          if (i > 0) makeTrail(action.path[i - 1], id);
+          if (i > 0) makeTrail(legStart(action, i), id);
         });
         return;
       }
@@ -315,7 +322,7 @@
           dot.setAttribute("visibility", "hidden");
           return;
         }
-        var path = makeTrail(action.path[i - 1], action.path[i]);
+        var path = makeTrail(legStart(action, i), action.path[i]);
         var len = path.getTotalLength();
         var duration = Math.max(350, len / SPEED * 1000);
         var start = null;

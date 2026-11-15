@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>If this, then that</title>
+<title>If, else</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
@@ -86,6 +86,8 @@
     background: var(--panel);
     border-radius: 8px 0 0 8px;
     padding: 4px 0 4px 5px;
+    display: flex;
+    align-items: center;
   }
   .blk {
     display: inline-flex;
@@ -102,6 +104,23 @@
     transition: background 0.15s, box-shadow 0.15s;
   }
   .blk.run { background: var(--blk-basic); box-shadow: 0 0 0 3px #111827, 0 0 0 7px var(--ring); position: relative; z-index: 1; }
+  /* The 5 x 5 pattern inside a "show leds" block. */
+  .ledgrid {
+    display: grid;
+    grid-template-columns: repeat(5, 8px);
+    grid-auto-rows: 8px;
+    gap: 2px;
+    padding: 3px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+  }
+  .ledgrid i { display: block; border-radius: 1.5px; background: rgba(0, 0, 0, 0.45); }
+  .ledgrid i.on { background: #fff; }
+  /* Three "show leds" blocks (cloud version): smaller patterns so it all fits. */
+  .cblk.three .ledgrid { grid-template-columns: repeat(5, 5px); grid-auto-rows: 5px; gap: 1px; padding: 2px; }
+  .cblk.three .blk { padding-top: 1px; padding-bottom: 1px; }
+  .cblk.three .cbody { padding-top: 3px; padding-bottom: 3px; }
   .runs {
     display: none;
     margin-left: 16px;
@@ -145,7 +164,7 @@
 <header class="ex-header">
   <div>
     <p class="ex-unit">Coding and Programming</p>
-    <h1>If this, then that</h1>
+    <h1>If, else</h1>
   </div>
   <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
 </header>
@@ -239,12 +258,18 @@
         '</span> then <span class="cond" id="' + id + '"></span>';
     }
     function body(icon) {
-      return '<div class="cbody"><span class="blk" data-icon="' + icon + '">show icon <span class="pill">' +
-        icon + '</span></span><span class="runs">this runs</span></div>';
+      /* A "show leds" block with the pattern drawn in it, as in MakeCode. */
+      var grid = '<span class="ledgrid" role="img" aria-label="' + icon + ' pattern">';
+      ICONS[icon].join("").split("").forEach(function (ch) {
+        grid += '<i' + (ch === "#" ? ' class="on"' : '') + '></i>';
+      });
+      grid += '</span>';
+      return '<div class="cbody"><span class="blk" data-icon="' + icon + '">show leds' + grid +
+        '</span><span class="runs">this runs</span></div>';
     }
 
     function buildBlocks() {
-      var h = '<div class="cblk">';
+      var h = '<div class="cblk' + (cloudOn ? ' three' : '') + '">';
       h += '<div class="row">if ' + cond(DARK, "c1") + '</div>' + body("moon");
       if (cloudOn) h += '<div class="row">else if ' + cond(CLOUDY, "c2") + '</div>' + body("cloud");
       h += '<div class="row">else</div>' + body("sun");

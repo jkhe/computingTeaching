@@ -133,7 +133,7 @@
   }
   .ap-break.near::before, .ap-break:focus-visible::before { border-top: 3px dashed #7C3AED; margin-top: -1px; }
   .ap-gap:focus-visible, .ap-break:focus-visible { outline: none; }
-  .ap-para-block { animation: ex-fade 0.25s ease; }
+  .ap-para-block.new { animation: ex-fade 0.25s ease; }
 
   /* ----- Side panel: live feedback ----- */
   .ap-side {
@@ -188,14 +188,15 @@
 <main class="ex-main">
   <section class="ex-goal" aria-label="Your goal">
     <span class="ex-goal-label">Your goal</span>
-    <p>Drag the blocks until all 4 line up on the same left edge.</p>
+    <p id="ap-goal">Drag the blocks until all 4 line up on the same left edge.</p>
   </section>
 
   <section class="ex-stage" id="ap-stage" aria-live="polite">
     <div class="ap-wrap" id="ap-wrap" aria-live="off">
       <div class="ap-poster" id="ap-poster">
         <div class="ap-layer" id="ap-align" role="group" aria-label="Poster. Four blocks you can move left and right.">
-          <div class="ap-guide" id="ap-guide"></div>
+          <div class="ap-guide"></div>
+          <div class="ap-guide"></div>
         </div>
         <div class="ap-layer" id="ap-para" hidden role="group" aria-label="Poster. One block of text you can split.">
           <div class="ap-text" id="ap-text"></div>
@@ -246,7 +247,7 @@
     var BLOCKS = [
       { text: "CHESS CLUB",                        title: true,  top: 20,  start: 152 },
       { text: "When: Tuesday lunchtime",           title: false, top: 102, start: 40 },
-      { text: "Where: Room 4",                     title: false, top: 164, start: 264 },
+      { text: "Where: Room 4",                     title: false, top: 164, start: 168 },
       { text: "Who: Everyone, beginners welcome",  title: false, top: 226, start: 96 }
     ];
     /* Each block can be grabbed anywhere in its own row of the poster. */
@@ -260,7 +261,7 @@
     var alignLayer = document.getElementById("ap-align");
     var paraLayer = document.getElementById("ap-para");
     var textEl = document.getElementById("ap-text");
-    var guide = document.getElementById("ap-guide");
+    var guides = alignLayer.querySelectorAll(".ap-guide");   // one line for each lined-up group
     var countEl = document.getElementById("ap-count");
     var dotsEl = document.getElementById("ap-dots");
     var tagEl = document.getElementById("ap-tag");
@@ -270,6 +271,10 @@
     var toggle = document.getElementById("ap-toggle");
     var nextCard = document.getElementById("ex-next");
     var side = document.querySelector(".ap-side");
+    var goalEl = document.getElementById("ap-goal");
+    var GOAL_ALIGN = goalEl.textContent;
+    var GOAL_PARA = "Split the text so each idea has its own block.";
+    var NOTE_BLOCKED = "This block will not fit there. Try a different edge.";
 
     var mode = "align";           // "align" or "para"
     var scale = 1;
@@ -278,6 +283,8 @@
     var lefts = [];               // current left edge of each block
     var widths = [];              // measured width of each block
     var drag = null;              // { i, startX, startLeft, held }
+    var blocked = false;          // the last move was stopped by the poster edge
+    var touched = false;          // the pupil has moved a block since the start
     var breaks = [];              // breaks[i] true = paragraph break after word i
     var dots = [];
 
@@ -304,9 +311,27 @@
     function maxLeft(i) { return Math.max(EDGE, W - widths[i] - EDGE); }
     function clamp(i, x) { return Math.max(EDGE, Math.min(maxLeft(i), Math.round(x))); }
 
+    /* Start positions. If this device's font makes the widest block wider,
+       pull any start edge back (on the 8-unit grid) so every block can
+       still reach every other block's edge. */
+    function startLefts() {
+      var limit = Infinity;
+      BLOCKS.forEach(function (b, i) { limit = Math.min(limit, maxLeft(i)); });
+      limit = Math.floor(limit / KEY_STEP) * KEY_STEP;
+      var out = BLOCKS.map(function (b) { return b.start; });
+      out.forEach(function (x, i) {
+        if (x <= limit) return;
+        x = limit;
+        while (out.indexOf(x) >= 0 && x - KEY_STEP >= EDGE) x -= KEY_STEP;   /* no two blocks start lined up */
+        out[i] = x;
+      });
+      return out;
+    }
+
     function measure() {
       if (alignLayer.hidden) return;
       els.forEach(function (el, i) { widths[i] = el.offsetWidth; });
+      if (!touched) lefts = startLefts();
       lefts = lefts.map(function (x, i) { return clamp(i, x); });
     }
 
@@ -320,6 +345,14 @@
         if (d < bestD) { bestD = d; best = other; }
       });
       return best;
+    }
+
+    /* Every group of two or more blocks that share a left edge. */
+    function linedUpGroups() {
+      var groups = {}, out = [];
+      lefts.forEach(function (x, i) { (groups[x] = groups[x] || []).push(i); });
+      Object.keys(groups).forEach(function (k) { if (groups[k].length >= 2) out.push(groups[k]); });
+      return out;
     }
 
     /* Biggest group of blocks that share a left edge. */
@@ -346,10 +379,15 @@
       var n = group.length >= 2 ? group.length : 0;
       var all = n === BLOCKS.length;
 
-      els.forEach(function (el, i) { el.classList.toggle("on-guide", n > 0 && group.indexOf(i) >= 0); });
-
-      if (n > 0) {
-        var first = group[0], last = group[group.length - 1];
+      /* One purple line for each group, so two separate pairs both show. */
+      var lined = linedUpGroups();
+      els.forEach(function (el, i) {
+        el.classList.toggle("on-guide", lined.some(function (g) { return g.indexOf(i) >= 0; }));
+      });
+      for (var k = 0; k < guides.length; k++) {
+        var guide = guides[k], g = lined[k];
+        if (!g) { guide.classList.remove("show"); continue; }
+        var first = g[0], last = g[g.length - 1];
         var top = all ? 8 : BLOCKS[first].top - 8;
         var bottom = all ? H - 8 : BLOCKS[last].top + els[last].offsetHeight + 8;
         guide.style.left = lefts[first] + "px";
@@ -357,8 +395,6 @@
         guide.style.height = (bottom - top) + "px";
         guide.classList.add("show");
         guide.classList.toggle("all", all);
-      } else {
-        guide.classList.remove("show");
       }
 
       var words = "Lined up: " + n + " of " + BLOCKS.length;
@@ -369,7 +405,9 @@
       tagEl.textContent = "All lined up";
       tagEl.classList.toggle("hide", !all);
       var note = all ? "Every block starts on the same edge." :
-                 (n > 0 ? "The purple line shows edges that match." : "");
+                 (blocked ? NOTE_BLOCKED :
+                 (lined.length > 1 ? "The purple lines show edges that match." :
+                 (n > 0 ? "The purple line shows edges that match." : "")));
       if (noteEl.textContent !== note) noteEl.textContent = note;
       return all;
     }
@@ -395,6 +433,7 @@
       if (i < 0) i = blockAt(e.clientY);
       e.preventDefault();
       drag = { i: i, id: e.pointerId, startX: e.clientX, startLeft: lefts[i], held: null };
+      blocked = false;
       try { alignLayer.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
       alignLayer.classList.add("dragging");
       els[i].focus({ preventScroll: true });
@@ -413,7 +452,9 @@
         drag.held = snap;
         x = snap !== null ? snap : clamp(i, raw);
       }
-      if (x !== lefts[i]) { lefts[i] = x; renderAlign(); }
+      /* The pointer has gone past where this block can go. */
+      var stopped = raw > maxLeft(i) + 2 || raw < EDGE - 2;
+      if (x !== lefts[i] || stopped !== blocked) { lefts[i] = x; blocked = stopped; touched = true; renderAlign(); }
     });
 
     function endDrag(e) {
@@ -436,13 +477,20 @@
       var dir = e.key === "ArrowLeft" ? -1 : (e.key === "ArrowRight" ? 1 : 0);
       if (!dir) return;
       e.preventDefault();
-      var target = clamp(i, lefts[i] + dir * KEY_STEP);
+      var want = lefts[i] + dir * KEY_STEP;
+      var target = clamp(i, want);
+      var stopped = want > maxLeft(i) || want < EDGE;
       /* Snap only to an edge that is ahead of where the block started,
          so a key press never moves the block backwards. */
       var snap = nearestEdge(i, target, SNAP);
       if (snap !== null && (snap - lefts[i]) * dir > 0) target = snap;
-      if (target === lefts[i]) return;
+      if (target === lefts[i]) {
+        if (stopped !== blocked) { blocked = stopped; renderAlign(); }
+        return;
+      }
       lefts[i] = target;
+      blocked = stopped;
+      touched = true;
       renderAlign();
       afterMove();
     }
@@ -453,13 +501,15 @@
       return 1 + breaks.filter(Boolean).length;
     }
 
-    function renderPara(focusGap) {
+    /* newStart: index of the first word of a block that was just made,
+       so only that block fades in. */
+    function renderPara(focusGap, newStart) {
       textEl.innerHTML = "";
       var para = null;
       WALL.forEach(function (word, i) {
         if (!para) {
           para = document.createElement("div");
-          para.className = "ap-para-block";
+          para.className = "ap-para-block" + (i === newStart ? " new" : "");
           textEl.appendChild(para);
         }
         var w = document.createElement("span");
@@ -505,14 +555,15 @@
     }
 
     function toggleGap(i, keepFocus) {
-      var note = "";
+      var note = "", made = -1;
       if (!breaks[i] && blockCount() >= MAX_BLOCKS) {
-        note = MAX_BLOCKS + " blocks is the most. Click a gap to join two blocks.";
+        note = MAX_BLOCKS + " blocks is the most. Click a dashed line to join two blocks.";
       } else {
         breaks[i] = !breaks[i];
+        if (breaks[i]) made = i + 1;
         Explorer.track();
       }
-      renderPara(keepFocus ? i : undefined);
+      renderPara(keepFocus ? i : undefined, made);
       noteEl.textContent = note;
     }
 
@@ -575,6 +626,8 @@
       hintEl.textContent = para ? "Click between two words to split the text" : "Drag a block left or right";
       keysEl.textContent = para ? "Click a dashed line to join the blocks again" : "Keyboard: press Tab, then the left and right arrow keys";
       toggle.textContent = para ? "Back to lining up" : "Try the paragraphs";
+      goalEl.textContent = para ? GOAL_PARA : GOAL_ALIGN;
+      blocked = false;
       noteEl.textContent = "";
       dotsEl.style.visibility = para ? "hidden" : "";
       if (para) { renderPara(); } else { measure(); renderAlign(); }
@@ -618,6 +671,8 @@
       unlockAfter: 10,
       onReset: function () {
         drag = null;
+        blocked = false;
+        touched = false;
         alignLayer.classList.remove("dragging");
         lefts = BLOCKS.map(function (b) { return b.start; });
         breaks = [];

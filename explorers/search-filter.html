@@ -121,7 +121,7 @@
     <button type="button" class="ex-btn" data-c="uk" aria-pressed="false">UK</button>
     <span class="sf-group" aria-hidden="true">Filters</span>
     <button type="button" class="ex-btn" data-c="video" aria-pressed="false">Videos only</button>
-    <button type="button" class="ex-btn" data-c="recent" aria-pressed="false">Last year</button>
+    <button type="button" class="ex-btn" data-c="recent" aria-pressed="false">Past year</button>
   </section>
 
   <section class="ex-next" id="ex-next" aria-live="polite">
@@ -145,14 +145,14 @@
 
        The search "dogs" starts at about 2,400,000 results. Each criterion
        that is switched on divides the count by a fixed factor:
-         puppy 6, teach 8, sit 5, UK 3, Videos only 4, Last year 3
+         puppy 6, teach 8, sit 5, UK 3, Videos only 4, Past year 3
        The answer is rounded to two significant figures and shown as
        "About N results". All six on gives about 280.
        ------------------------------------------------------------------ */
     var START_COUNT = 2400000;
     var FACTOR = { puppy: 6, teach: 8, sit: 5, uk: 3, video: 4, recent: 3 };
     var ORDER = ["puppy", "teach", "sit", "uk", "video", "recent"];
-    var BAR_TEXT = { puppy: "puppy", teach: "teach", sit: "sit", uk: "UK", video: "Videos only", recent: "Last year" };
+    var BAR_TEXT = { puppy: "puppy", teach: "teach", sit: "sit", uk: "UK", video: "Videos only", recent: "Past year" };
 
     /* Invented results, in ranked order. Every site name is made up.
        k = search words the result matches, uk = UK result,
@@ -184,11 +184,14 @@
 
       R("Dog sitting: we mind your dog", "StayPaws", "Shop", "Book a dog sitter for the weekend.", "sit", true, 4),
       R("Why does my dog sit on my feet?", "Petwise", "Article", "Five reasons dogs do this.", "sit", false, 26),
+      R("Dogs that sit like people", "ClipBarn", "Video", "Funny clips of dogs on sofas.", "sit", false, 3),
 
-      R("Teach an older dog to sit", "Dog Help Hub", "Article", "Tips for dogs over two years old.", "teach sit", false, 30),
-      R("My puppy will not sit still", "Petwise", "Article", "Why young puppies are so busy.", "puppy sit", false, 18),
+      R("Teach an older dog to sit", "Dog Help Hub", "Article", "Tips for dogs over two years old.", "teach sit", false, 10),
+      R("My puppy will not sit still", "Petwise", "Article", "Why young puppies are so busy.", "puppy sit", false, 8),
+      R("Teach your dog to sit still in the car", "Pawsitive Training", "Video", "Keep your dog calm on a drive.", "teach sit", false, 7),
+      R("My puppy tries to sit on the cat", "ClipBarn", "Video", "A funny clip of a puppy and a cat.", "puppy sit", false, 6),
 
-      R("Teach a puppy to walk on a lead", "Pawsitive Training", "Video", "Short walks first, then longer ones.", "puppy teach", false, 14),
+      R("Teach a puppy to walk on a lead", "Pawsitive Training", "Video", "Short walks first, then longer ones.", "puppy teach", false, 11),
       R("Teach your puppy to sit in 5 steps", "Pawsitive Training", "Article", "Hold a treat above its nose.", "puppy teach sit", false, 3, true),
       R("Teach your puppy its name", "Dog Help Hub", "Article", "Say the name, then give a treat.", "puppy teach", false, 24),
       R("Watch: teach a puppy to sit", "Pawsitive Training", "Video", "See each step with a real puppy.", "puppy teach sit", false, 5, true),
@@ -214,6 +217,8 @@
     var verdictEl = document.getElementById("sf-verdict");
     var resultsEl = document.getElementById("sf-results");
     var lastShown = [];
+    var lastAnswers = 0;      /* how many of the top results answered the question last time */
+    var justAdded = false;    /* the last click switched a criterion on */
 
     function matches(r) {
       var words = " " + r.k + " ";
@@ -296,12 +301,16 @@
         verdictEl.textContent = "These results answer the question";
         verdictEl.className = "sf-verdict good";
       } else if (answers >= 2) {
-        verdictEl.textContent = "Getting closer";
+        /* Adding a criterion can push good results out of the top four.
+           That is not "closer", so say so. */
+        verdictEl.textContent = (justAdded && answers < lastAnswers) ? "Some useful results went away" : "Getting closer";
         verdictEl.className = "sf-verdict ok";
       } else {
         verdictEl.textContent = "Most results don't answer the question";
         verdictEl.className = "sf-verdict bad";
       }
+      lastAnswers = answers;
+      justAdded = false;
 
       for (i = 0; i < buttons.length; i++) {
         buttons[i].setAttribute("aria-pressed", on[buttons[i].getAttribute("data-c")] ? "true" : "false");
@@ -312,6 +321,7 @@
       buttons[b].addEventListener("click", function () {
         var key = this.getAttribute("data-c");
         on[key] = !on[key];
+        justAdded = !!on[key];
         render();
         Explorer.track();
       });
@@ -322,6 +332,8 @@
       onReset: function () {
         on = {};
         lastShown = [];
+        lastAnswers = 0;
+        justAdded = false;
         render();
       }
     });
