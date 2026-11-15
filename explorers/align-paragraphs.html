@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Line it up</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/explorer.css">
+<style>
+  /* Page-specific styles only. */
+  /* The stage takes exactly the space left over, so the page never scrolls.
+     The poster is drawn at a fixed size (640 x 300) and scaled in JS to fit. */
+  .ex-main { min-height: 0; }
+  .ex-stage { flex: 1 1 0px; padding: 10px 16px; gap: 28px; align-items: flex-start; }
+
+  .ap-wrap {
+    flex-shrink: 0;
+    position: relative;
+    border: 2px solid var(--line-strong);
+    border-radius: 8px;
+    overflow: hidden;
+    box-sizing: content-box;
+  }
+  .ap-poster {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 640px;
+    height: 300px;
+    transform-origin: 0 0;
+    background: #FEF3C7;
+    color: #1F2937;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  .ap-layer { position: absolute; inset: 0; }
+  .ap-layer[hidden] { display: none; }
+
+  /* ----- Poster 1: blocks to drag ----- */
+  #ap-align { cursor: grab; touch-action: none; }
+  #ap-align.dragging { cursor: grabbing; }
+  .ap-block {
+    position: absolute;
+    left: 0;
+    white-space: nowrap;
+    font-weight: 800;
+    font-size: 25px;
+    line-height: 30px;
+    padding: 7px 10px;
+    border: 2px dashed rgba(31, 41, 55, 0.4);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.45);
+    cursor: grab;
+    touch-action: none;
+    will-change: transform;
+  }
+  .ap-block.title { font-size: 46px; line-height: 50px; padding: 4px 10px; letter-spacing: 1px; }
+  .ap-block.active {
+    border-style: solid;
+    border-color: #7C3AED;
+    background: #fff;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+    cursor: grabbing;
+    z-index: 3;
+  }
+  .ap-block.on-guide { border-left: 2px solid #7C3AED; }
+  .ap-block:focus-visible { outline: 3px solid #7C3AED; outline-offset: 2px; z-index: 3; }
+
+  /* The guide line: shown when left edges line up. */
+  .ap-guide {
+    position: absolute;
+    width: 0;
+    border-left: 3px dashed #7C3AED;
+    margin-left: -1px;
+    pointer-events: none;
+    z-index: 2;
+    display: none;
+  }
+  .ap-guide.show { display: block; }
+  .ap-guide.all { border-left-style: solid; }
+
+  /* ----- Poster 2: one wall of text to split ----- */
+  #ap-para { padding: 20px 28px; cursor: pointer; }
+  .ap-text { font-weight: 800; font-size: 23px; line-height: 1.3; }
+  .ap-word { pointer-events: none; }
+  .ap-gap {
+    display: inline-block;
+    position: relative;
+    width: 0.56em;
+    height: 1.25em;
+    vertical-align: middle;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+    white-space: pre;
+    overflow: hidden;
+    color: transparent;
+  }
+  .ap-gap::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 22%;
+    bottom: 22%;
+    width: 2px;
+    margin-left: -1px;
+    border-radius: 2px;
+    background: rgba(31, 41, 55, 0.22);
+  }
+  .ap-gap.near::before, .ap-gap:focus-visible::before {
+    top: 0; bottom: 0; width: 4px; margin-left: -2px; background: #7C3AED;
+  }
+  .ap-break {
+    display: block;
+    position: relative;
+    width: 100%;
+    height: 0.75em;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font: inherit;
+  }
+  .ap-break::before {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; top: 50%;
+    border-top: 2px dashed rgba(31, 41, 55, 0.25);
+  }
+  .ap-break.near::before, .ap-break:focus-visible::before { border-top: 3px dashed #7C3AED; margin-top: -1px; }
+  .ap-gap:focus-visible, .ap-break:focus-visible { outline: none; }
+  .ap-para-block.new { animation: ex-fade 0.25s ease; }
+
+  /* ----- Side panel: live feedback ----- */
+  .ap-side {
+    width: 250px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    text-align: center;
+  }
+  .ap-count { font-size: 30px; font-weight: 800; line-height: 1.2; white-space: nowrap; }
+  .ap-count.done { color: var(--good); }
+  .ap-dots { display: flex; gap: 8px; }
+  .ap-dot {
+    width: 34px; height: 12px; border-radius: 999px;
+    background: var(--line); border: 2px solid var(--line-strong);
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .ap-dot.on { background: #7C3AED; border-color: #7C3AED; }
+  .ap-dots.done .ap-dot { background: var(--good); border-color: var(--good); }
+  .ap-note { font-size: 16px; line-height: 1.3; color: var(--muted); min-height: 2.6em; }
+  .ex-tag.ap-tag { font-size: 20px; padding: 5px 18px; white-space: nowrap; }
+  .ap-tag.hide { visibility: hidden; }
+
+  .ap-keys { font-size: 16px; color: var(--muted); }
+  .ex-next p { flex: 1; }
+  .ex-next .ex-btn { flex-shrink: 0; }
+
+  @media (max-width: 1100px), (max-height: 620px) {
+    .ex-stage { gap: 18px; }
+    .ap-side { width: 200px; gap: 8px; }
+    .ap-count { font-size: 25px; }
+    .ap-dot { width: 28px; }
+    .ap-note { font-size: 14px; }
+    .ex-tag.ap-tag { font-size: 17px; padding: 3px 14px; }
+    .ap-keys { font-size: 14px; }
+  }
+</style>
+</head>
+<body class="unit-2">
+
+<header class="ex-header">
+  <div>
+    <p class="ex-unit">Working with Text and Images</p>
+    <h1>Line it up</h1>
+  </div>
+  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
+</header>
+
+<main class="ex-main">
+  <section class="ex-goal" aria-label="Your goal">
+    <span class="ex-goal-label">Your goal</span>
+    <p id="ap-goal">Drag the blocks until all 4 line up on the same left edge.</p>
+  </section>
+
+  <section class="ex-stage" id="ap-stage" aria-live="polite">
+    <div class="ap-wrap" id="ap-wrap" aria-live="off">
+      <div class="ap-poster" id="ap-poster">
+        <div class="ap-layer" id="ap-align" role="group" aria-label="Poster. Four blocks you can move left and right.">
+          <div class="ap-guide"></div>
+          <div class="ap-guide"></div>
+        </div>
+        <div class="ap-layer" id="ap-para" hidden role="group" aria-label="Poster. One block of text you can split.">
+          <div class="ap-text" id="ap-text"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ap-side">
+      <p class="ap-count" id="ap-count">Lined up: 0 of 4</p>
+      <div class="ap-dots" id="ap-dots" aria-hidden="true"></div>
+      <span class="ex-tag good ap-tag hide" id="ap-tag">All lined up</span>
+      <p class="ap-note" id="ap-note"></p>
+    </div>
+  </section>
+
+  <section class="ex-controls" aria-label="Control">
+    <span class="ex-control-label" id="ap-hint">Drag a block left or right</span>
+    <span class="ap-keys" id="ap-keys">Keyboard: press Tab, then the left and right arrow keys</span>
+  </section>
+
+  <section class="ex-next" id="ex-next" aria-live="polite">
+    <span class="ex-next-label">Next challenge</span>
+    <p>Split it so each idea has its own block. How many blocks did you make?</p>
+    <button type="button" class="ex-btn small" id="ap-toggle">Try the paragraphs</button>
+  </section>
+</main>
+
+<footer class="ex-footer">
+  <span class="ex-answer">Answer the question in Nearpod.</span>
+  <span>Working with Text and Images</span>
+</footer>
+
+<script src="shared/explorer.js"></script>
+<script>
+  (function () {
+    "use strict";
+
+    /* The poster is always laid out at 640 x 300 and then scaled to fit the
+       stage, so every position below is in poster units.
+       SNAP: a moving block jumps to another block's left edge when it comes
+       within 6 units of it. HOLD: once snapped, it stays snapped until the
+       pointer has moved 10 units away, which makes it easy to let go on the
+       line with a trackpad. Arrow keys move a block 8 units. */
+    var W = 640, H = 300, EDGE = 12, SNAP = 6, HOLD = 10, KEY_STEP = 8;
+    var GUIDE = "#7C3AED";
+    var MAX_BLOCKS = 6;          // most paragraph blocks allowed on poster 2
+
+    var BLOCKS = [
+      { text: "CHESS CLUB",                        title: true,  top: 20,  start: 152 },
+      { text: "When: Tuesday lunchtime",           title: false, top: 102, start: 40 },
+      { text: "Where: Room 4",                     title: false, top: 164, start: 168 },
+      { text: "Who: Everyone, beginners welcome",  title: false, top: 226, start: 96 }
+    ];
+    /* Each block can be grabbed anywhere in its own row of the poster. */
+    var ROW_EDGES = [0, 96, 158, 220, H];
+
+    var WALL = "Chess Club meets every Tuesday at lunchtime in Room 4 everyone is welcome including beginners and we have snacks".split(" ");
+
+    var stage = document.getElementById("ap-stage");
+    var wrap = document.getElementById("ap-wrap");
+    var poster = document.getElementById("ap-poster");
+    var alignLayer = document.getElementById("ap-align");
+    var paraLayer = document.getElementById("ap-para");
+    var textEl = document.getElementById("ap-text");
+    var guides = alignLayer.querySelectorAll(".ap-guide");   // one line for each lined-up group
+    var countEl = document.getElementById("ap-count");
+    var dotsEl = document.getElementById("ap-dots");
+    var tagEl = document.getElementById("ap-tag");
+    var noteEl = document.getElementById("ap-note");
+    var hintEl = document.getElementById("ap-hint");
+    var keysEl = document.getElementById("ap-keys");
+    var toggle = document.getElementById("ap-toggle");
+    var nextCard = document.getElementById("ex-next");
+    var side = document.querySelector(".ap-side");
+    var goalEl = document.getElementById("ap-goal");
+    var GOAL_ALIGN = goalEl.textContent;
+    var GOAL_PARA = "Split the text so each idea has its own block.";
+    var NOTE_BLOCKED = "This block will not fit there. Try a different edge.";
+
+    var mode = "align";           // "align" or "para"
+    var scale = 1;
+    var nextCardHeight = 64;
+    var els = [];                 // block elements
+    var lefts = [];               // current left edge of each block
+    var widths = [];              // measured width of each block
+    var drag = null;              // { i, startX, startLeft, held }
+    var blocked = false;          // the last move was stopped by the poster edge
+    var touched = false;          // the pupil has moved a block since the start
+    var breaks = [];              // breaks[i] true = paragraph break after word i
+    var dots = [];
+
+    /* ---------- Poster 1: line up the blocks ---------- */
+
+    BLOCKS.forEach(function (b, i) {
+      var el = document.createElement("div");
+      el.className = "ap-block" + (b.title ? " title" : "");
+      el.textContent = b.text;
+      el.style.top = b.top + "px";
+      el.setAttribute("role", "button");
+      el.setAttribute("tabindex", "0");
+      el.setAttribute("aria-label", "Block: " + b.text + ". Press the left or right arrow key to move it.");
+      el.addEventListener("keydown", function (e) { onKey(e, i); });
+      alignLayer.appendChild(el);
+      els.push(el);
+      lefts.push(b.start);
+      var d = document.createElement("span");
+      d.className = "ap-dot";
+      dotsEl.appendChild(d);
+      dots.push(d);
+    });
+
+    function maxLeft(i) { return Math.max(EDGE, W - widths[i] - EDGE); }
+    function clamp(i, x) { return Math.max(EDGE, Math.min(maxLeft(i), Math.round(x))); }
+
+    /* Start positions. If this device's font makes the widest block wider,
+       pull any start edge back (on the 8-unit grid) so every block can
+       still reach every other block's edge. */
+    function startLefts() {
+      var limit = Infinity;
+      BLOCKS.forEach(function (b, i) { limit = Math.min(limit, maxLeft(i)); });
+      limit = Math.floor(limit / KEY_STEP) * KEY_STEP;
+      var out = BLOCKS.map(function (b) { return b.start; });
+      out.forEach(function (x, i) {
+        if (x <= limit) return;
+        x = limit;
+        while (out.indexOf(x) >= 0 && x - KEY_STEP >= EDGE) x -= KEY_STEP;   /* no two blocks start lined up */
+        out[i] = x;
+      });
+      return out;
+    }
+
+    function measure() {
+      if (alignLayer.hidden) return;
+      els.forEach(function (el, i) { widths[i] = el.offsetWidth; });
+      if (!touched) lefts = startLefts();
+      lefts = lefts.map(function (x, i) { return clamp(i, x); });
+    }
+
+    /* The nearest other left edge within `range` of x, or null. */
+    function nearestEdge(i, x, range) {
+      var best = null, bestD = range + 0.001;
+      lefts.forEach(function (other, j) {
+        if (j === i) return;
+        if (other < EDGE || other > maxLeft(i)) return;
+        var d = Math.abs(other - x);
+        if (d < bestD) { bestD = d; best = other; }
+      });
+      return best;
+    }
+
+    /* Every group of two or more blocks that share a left edge. */
+    function linedUpGroups() {
+      var groups = {}, out = [];
+      lefts.forEach(function (x, i) { (groups[x] = groups[x] || []).push(i); });
+      Object.keys(groups).forEach(function (k) { if (groups[k].length >= 2) out.push(groups[k]); });
+      return out;
+    }
+
+    /* Biggest group of blocks that share a left edge. */
+    function biggestGroup() {
+      var groups = {};
+      lefts.forEach(function (x, i) { (groups[x] = groups[x] || []).push(i); });
+      var best = [];
+      Object.keys(groups).forEach(function (k) {
+        var g = groups[k];
+        var hasActive = drag && g.indexOf(drag.i) >= 0;
+        var bestHasActive = drag && best.indexOf(drag.i) >= 0;
+        if (g.length > best.length || (g.length === best.length && hasActive && !bestHasActive)) best = g;
+      });
+      return best;
+    }
+
+    function renderAlign() {
+      els.forEach(function (el, i) {
+        el.style.transform = "translateX(" + lefts[i] + "px)";
+        el.classList.toggle("active", !!drag && drag.i === i);
+      });
+
+      var group = biggestGroup();
+      var n = group.length >= 2 ? group.length : 0;
+      var all = n === BLOCKS.length;
+
+      /* One purple line for each group, so two separate pairs both show. */
+      var lined = linedUpGroups();
+      els.forEach(function (el, i) {
+        el.classList.toggle("on-guide", lined.some(function (g) { return g.indexOf(i) >= 0; }));
+      });
+      for (var k = 0; k < guides.length; k++) {
+        var guide = guides[k], g = lined[k];
+        if (!g) { guide.classList.remove("show"); continue; }
+        var first = g[0], last = g[g.length - 1];
+        var top = all ? 8 : BLOCKS[first].top - 8;
+        var bottom = all ? H - 8 : BLOCKS[last].top + els[last].offsetHeight + 8;
+        guide.style.left = lefts[first] + "px";
+        guide.style.top = top + "px";
+        guide.style.height = (bottom - top) + "px";
+        guide.classList.add("show");
+        guide.classList.toggle("all", all);
+      }
+
+      var words = "Lined up: " + n + " of " + BLOCKS.length;
+      if (countEl.textContent !== words) countEl.textContent = words;
+      countEl.classList.toggle("done", all);
+      dotsEl.classList.toggle("done", all);
+      dots.forEach(function (d, i) { d.classList.toggle("on", i < n); });
+      tagEl.textContent = "All lined up";
+      tagEl.classList.toggle("hide", !all);
+      var note = all ? "Every block starts on the same edge." :
+                 (blocked ? NOTE_BLOCKED :
+                 (lined.length > 1 ? "The purple lines show edges that match." :
+                 (n > 0 ? "The purple line shows edges that match." : "")));
+      if (noteEl.textContent !== note) noteEl.textContent = note;
+      return all;
+    }
+
+    function afterMove() {
+      Explorer.track();
+      if (biggestGroup().length === BLOCKS.length) Explorer.unlock();
+    }
+
+    function blockAt(clientY) {
+      var r = poster.getBoundingClientRect();
+      var y = (clientY - r.top) / scale;
+      for (var i = 0; i < BLOCKS.length; i++) {
+        if (y < ROW_EDGES[i + 1]) return i;
+      }
+      return BLOCKS.length - 1;
+    }
+
+    alignLayer.addEventListener("pointerdown", function (e) {
+      if (mode !== "align" || drag) return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      var i = els.indexOf(e.target);
+      if (i < 0) i = blockAt(e.clientY);
+      e.preventDefault();
+      drag = { i: i, id: e.pointerId, startX: e.clientX, startLeft: lefts[i], held: null };
+      blocked = false;
+      try { alignLayer.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
+      alignLayer.classList.add("dragging");
+      els[i].focus({ preventScroll: true });
+      renderAlign();
+    });
+
+    alignLayer.addEventListener("pointermove", function (e) {
+      if (!drag || e.pointerId !== drag.id) return;
+      var i = drag.i;
+      var raw = drag.startLeft + (e.clientX - drag.startX) / scale;
+      var x;
+      if (drag.held !== null && Math.abs(raw - drag.held) <= HOLD && lefts.some(function (o, j) { return j !== i && o === drag.held; })) {
+        x = drag.held;
+      } else {
+        var snap = nearestEdge(i, raw, SNAP);
+        drag.held = snap;
+        x = snap !== null ? snap : clamp(i, raw);
+      }
+      /* The pointer has gone past where this block can go. */
+      var stopped = raw > maxLeft(i) + 2 || raw < EDGE - 2;
+      if (x !== lefts[i] || stopped !== blocked) { lefts[i] = x; blocked = stopped; touched = true; renderAlign(); }
+    });
+
+    function endDrag(e) {
+      if (!drag || (e && e.pointerId !== drag.id)) return;
+      var moved = lefts[drag.i] !== drag.startLeft;
+      try { alignLayer.releasePointerCapture(drag.id); } catch (err) { /* already released */ }
+      drag = null;
+      alignLayer.classList.remove("dragging");
+      renderAlign();
+      if (moved) afterMove();
+    }
+    alignLayer.addEventListener("pointerup", endDrag);
+    alignLayer.addEventListener("pointercancel", endDrag);
+    alignLayer.addEventListener("lostpointercapture", endDrag);
+    window.addEventListener("blur", function () { endDrag(null); });
+    alignLayer.addEventListener("dragstart", function (e) { e.preventDefault(); });
+
+    function onKey(e, i) {
+      if (mode !== "align") return;
+      var dir = e.key === "ArrowLeft" ? -1 : (e.key === "ArrowRight" ? 1 : 0);
+      if (!dir) return;
+      e.preventDefault();
+      var want = lefts[i] + dir * KEY_STEP;
+      var target = clamp(i, want);
+      var stopped = want > maxLeft(i) || want < EDGE;
+      /* Snap only to an edge that is ahead of where the block started,
+         so a key press never moves the block backwards. */
+      var snap = nearestEdge(i, target, SNAP);
+      if (snap !== null && (snap - lefts[i]) * dir > 0) target = snap;
+      if (target === lefts[i]) {
+        if (stopped !== blocked) { blocked = stopped; renderAlign(); }
+        return;
+      }
+      lefts[i] = target;
+      blocked = stopped;
+      touched = true;
+      renderAlign();
+      afterMove();
+    }
+
+    /* ---------- Poster 2: split the wall of text ---------- */
+
+    function blockCount() {
+      return 1 + breaks.filter(Boolean).length;
+    }
+
+    /* newStart: index of the first word of a block that was just made,
+       so only that block fades in. */
+    function renderPara(focusGap, newStart) {
+      textEl.innerHTML = "";
+      var para = null;
+      WALL.forEach(function (word, i) {
+        if (!para) {
+          para = document.createElement("div");
+          para.className = "ap-para-block" + (i === newStart ? " new" : "");
+          textEl.appendChild(para);
+        }
+        var w = document.createElement("span");
+        w.className = "ap-word";
+        w.textContent = word;
+        para.appendChild(w);
+        if (i === WALL.length - 1) return;
+        var b = document.createElement("button");
+        b.type = "button";
+        b.setAttribute("data-gap", i);
+        b.textContent = " ";
+        if (breaks[i]) {
+          b.className = "ap-break";
+          b.setAttribute("aria-label", "Join the blocks after " + word + " and before " + WALL[i + 1]);
+          textEl.appendChild(b);
+          para = null;
+        } else {
+          b.className = "ap-gap";
+          b.setAttribute("aria-label", "Split between " + word + " and " + WALL[i + 1]);
+          para.appendChild(b);
+        }
+      });
+
+      /* Shrink the text a little if this device's font makes it too tall. */
+      var size = 23;
+      textEl.style.fontSize = size + "px";
+      while (textEl.offsetHeight > H - 40 && size > 15) {
+        size -= 1;
+        textEl.style.fontSize = size + "px";
+      }
+
+      var n = blockCount();
+      var words = "Blocks: " + n;
+      if (countEl.textContent !== words) countEl.textContent = words;
+      countEl.classList.remove("done");
+      dotsEl.classList.remove("done");
+      tagEl.classList.add("hide");
+
+      if (typeof focusGap === "number") {
+        var again = textEl.querySelector('[data-gap="' + focusGap + '"]');
+        if (again) again.focus({ preventScroll: true });
+      }
+    }
+
+    function toggleGap(i, keepFocus) {
+      var note = "", made = -1;
+      if (!breaks[i] && blockCount() >= MAX_BLOCKS) {
+        note = MAX_BLOCKS + " blocks is the most. Click a dashed line to join two blocks.";
+      } else {
+        breaks[i] = !breaks[i];
+        if (breaks[i]) made = i + 1;
+        Explorer.track();
+      }
+      renderPara(keepFocus ? i : undefined, made);
+      noteEl.textContent = note;
+    }
+
+    /* A click anywhere on the text picks the nearest place between two words,
+       so pupils do not need to hit a tiny target. */
+    function nearestGap(clientX, clientY) {
+      var best = null, bestD = 60 * scale;
+      var nodes = textEl.querySelectorAll("[data-gap]");
+      for (var k = 0; k < nodes.length; k++) {
+        var r = nodes[k].getBoundingClientRect();
+        var dx, dy;
+        if (nodes[k].className.indexOf("ap-break") >= 0) {
+          dx = 0;
+          dy = clientY < r.top ? r.top - clientY : (clientY > r.bottom ? clientY - r.bottom : 0);
+          dy *= 2.5;
+        } else {
+          dx = Math.abs(clientX - (r.left + r.width / 2));
+          dy = clientY < r.top ? r.top - clientY : (clientY > r.bottom ? clientY - r.bottom : 0);
+          dy *= 3;
+        }
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (d < bestD) { bestD = d; best = nodes[k]; }
+      }
+      return best;
+    }
+
+    function clearNear() {
+      var old = textEl.querySelectorAll(".near");
+      for (var k = 0; k < old.length; k++) old[k].classList.remove("near");
+    }
+
+    paraLayer.addEventListener("pointermove", function (e) {
+      if (e.pointerType === "touch") return;
+      var n = nearestGap(e.clientX, e.clientY);
+      if (n && n.classList.contains("near")) return;
+      clearNear();
+      if (n) n.classList.add("near");
+    });
+    paraLayer.addEventListener("pointerleave", clearNear);
+
+    paraLayer.addEventListener("click", function (e) {
+      if (mode !== "para") return;
+      var btn = e.target.closest ? e.target.closest("[data-gap]") : null;
+      /* detail is 0 when a button is pressed with Enter or Space. */
+      if (btn && e.detail === 0) { toggleGap(Number(btn.getAttribute("data-gap")), true); return; }
+      var n = btn || nearestGap(e.clientX, e.clientY);
+      if (!n) return;
+      toggleGap(Number(n.getAttribute("data-gap")), false);
+      var again = nearestGap(e.clientX, e.clientY);
+      if (again) again.classList.add("near");
+    });
+
+    /* ---------- Switching, layout, reset ---------- */
+
+    function setMode(m) {
+      mode = m;
+      var para = mode === "para";
+      alignLayer.hidden = para;
+      paraLayer.hidden = !para;
+      hintEl.textContent = para ? "Click between two words to split the text" : "Drag a block left or right";
+      keysEl.textContent = para ? "Click a dashed line to join the blocks again" : "Keyboard: press Tab, then the left and right arrow keys";
+      toggle.textContent = para ? "Back to lining up" : "Try the paragraphs";
+      goalEl.textContent = para ? GOAL_PARA : GOAL_ALIGN;
+      blocked = false;
+      noteEl.textContent = "";
+      dotsEl.style.visibility = para ? "hidden" : "";
+      if (para) { renderPara(); } else { measure(); renderAlign(); }
+    }
+
+    toggle.addEventListener("click", function () { setMode(mode === "align" ? "para" : "align"); });
+
+    function measureNextCard() {
+      if (nextCard.classList.contains("show")) { nextCardHeight = nextCard.offsetHeight; return; }
+      var s = nextCard.style;
+      s.display = "flex"; s.visibility = "hidden"; s.position = "absolute"; s.width = stage.offsetWidth + "px";
+      nextCardHeight = nextCard.offsetHeight;
+      s.display = ""; s.visibility = ""; s.position = ""; s.width = "";
+    }
+
+    function layout() {
+      var cs = getComputedStyle(stage);
+      var innerH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      var innerW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      /* Leave room for the Next challenge card so the poster does not change
+         size when the card appears. */
+      if (!nextCard.classList.contains("show")) {
+        innerH -= nextCardHeight + (parseFloat(getComputedStyle(stage.parentNode).rowGap) || 12);
+      }
+      var gap = parseFloat(cs.columnGap) || 28;
+      var availW = innerW - side.offsetWidth - gap - 4;
+      var availH = innerH - 4;
+      scale = Math.max(0.6, Math.min(1.5, availW / W, availH / H));
+      poster.style.transform = "scale(" + scale + ")";
+      wrap.style.width = Math.round(W * scale) + "px";
+      wrap.style.height = Math.round(H * scale) + "px";
+      side.style.height = (Math.round(H * scale) + 4) + "px";
+    }
+
+    function refresh() {
+      measure();
+      if (mode === "align") renderAlign(); else renderPara();
+    }
+
+    Explorer.init({
+      unlockAfter: 10,
+      onReset: function () {
+        drag = null;
+        blocked = false;
+        touched = false;
+        alignLayer.classList.remove("dragging");
+        lefts = BLOCKS.map(function (b) { return b.start; });
+        breaks = [];
+        measure();
+        setMode("align");
+        layout();
+      }
+    });
+
+    measureNextCard();
+    layout();
+    measure();
+    setMode("align");
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function () { measureNextCard(); layout(); refresh(); });
+    }
+    if (window.ResizeObserver) new ResizeObserver(layout).observe(stage);
+    window.addEventListener("resize", function () { measureNextCard(); layout(); });
+  })();
+</script>
+</body>
+</html>

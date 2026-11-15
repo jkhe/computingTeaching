@@ -30,6 +30,7 @@
   .c-leader { stroke: #6B7280; stroke-width: 1.5; }
   .c-cell { fill: #F9FAFB; stroke: var(--line-strong); stroke-width: 2; }
   .c-cell-val { font-size: 30px; font-weight: 800; }
+  #chart.no-anim * { animation: none !important; }
   @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
   @keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
   @keyframes spin { from { transform: scale(0.8) rotate(-25deg); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -135,13 +136,24 @@
     var svg = document.getElementById("chart");
     var verdictEl = document.getElementById("verdict");
     var swapBtn = document.getElementById("swap");
+    var goalEl = document.querySelector(".ex-goal p");
     var buttons = Array.prototype.slice.call(document.querySelectorAll(".btn-row .ex-btn"));
 
     var setIndex = 0;
     var type = null;
 
-    /* Plot area inside the 1100 x 225 drawing */
+    /* The drawing is 1100 units wide. Its height (H) follows the space
+       on screen, so the chart always fills the stage. */
+    var H = 225;
     var X0 = 84, X1 = 1084, Y0 = 170, YTOP = 36, YMAX = 250;
+
+    function measure() {
+      var box = svg.getBoundingClientRect();
+      var h = box.width > 0 ? 1100 * box.height / box.width : 225;
+      H = Math.round(Math.max(190, Math.min(430, h)));
+      Y0 = H - 55;
+      svg.setAttribute("viewBox", "0 0 1100 " + H);
+    }
 
     function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
     function yOf(v) { return Y0 - (v / YMAX) * (Y0 - YTOP); }
@@ -161,10 +173,10 @@
       out += '<line class="c-axis" x1="' + X0 + '" x2="' + X0 + '" y1="' + YTOP + '" y2="' + Y0 + '"/>';
       out += '<line class="c-axis" x1="' + X0 + '" x2="' + X1 + '" y1="' + Y0 + '" y2="' + Y0 + '"/>';
       out += '<text class="c-axis-title" transform="translate(20,' + ((Y0 + YTOP) / 2) + ') rotate(-90)" text-anchor="middle">Sound level</text>';
-      out += '<text class="c-axis-title" x="' + ((X0 + X1) / 2) + '" y="217" text-anchor="middle">' + set.xTitle + '</text>';
+      out += '<text class="c-axis-title" x="' + ((X0 + X1) / 2) + '" y="' + (H - 8) + '" text-anchor="middle">' + set.xTitle + '</text>';
       var band = (X1 - X0) / set.values.length;
       set.labels.forEach(function (label, i) {
-        out += '<text class="c-cat" x="' + r1(X0 + band * (i + 0.5)) + '" y="189" text-anchor="middle">' + esc(label) + '</text>';
+        out += '<text class="c-cat" x="' + r1(X0 + band * (i + 0.5)) + '" y="' + (Y0 + 19) + '" text-anchor="middle">' + esc(label) + '</text>';
       });
       return out;
     }
@@ -195,7 +207,8 @@
     }
 
     function pieChart(set) {
-      var cx = 550, cy = 126, r = 78;
+      var cy = Math.round((H + 28) / 2);
+      var cx = 550, r = Math.round(Math.min(150, (H - 28) / 2 - 24));
       var total = set.values.reduce(function (a, b) { return a + b; }, 0);
       var slices = "", labels = "";
       var angle = -Math.PI / 2;
@@ -221,21 +234,30 @@
     function dataTable(set) {
       var n = set.values.length;
       var band = 1088 / n;
-      var out = '<text class="c-axis-title" x="550" y="52" text-anchor="middle">' + esc(set.tableHead) + '</text>';
+      var top = Math.round((H + 24) / 2) - 68;
+      var out = '<text class="c-axis-title" x="550" y="' + top + '" text-anchor="middle">' + esc(set.tableHead) + '</text>';
       set.values.forEach(function (v, i) {
         var x = 6 + band * i;
-        out += '<rect class="c-cell" x="' + r1(x + 5) + '" y="68" width="' + r1(band - 10) + '" height="104" rx="10"/>';
-        out += '<text class="c-cat" x="' + r1(x + band / 2) + '" y="100" text-anchor="middle">' + esc(set.labels[i]) + '</text>';
-        out += '<text class="c-cell-val" x="' + r1(x + band / 2) + '" y="148" text-anchor="middle">' + v + '</text>';
+        out += '<rect class="c-cell" x="' + r1(x + 5) + '" y="' + (top + 16) + '" width="' + r1(band - 10) + '" height="104" rx="10"/>';
+        out += '<text class="c-cat" x="' + r1(x + band / 2) + '" y="' + (top + 48) + '" text-anchor="middle">' + esc(set.labels[i]) + '</text>';
+        out += '<text class="c-cell-val" x="' + r1(x + band / 2) + '" y="' + (top + 96) + '" text-anchor="middle">' + v + '</text>';
       });
       return out;
     }
 
     var NAMES = { bar: "Bar chart", line: "Line chart", pie: "Pie chart" };
 
-    function render() {
+    var GOALS = [
+      'Pick the chart that answers "Which place was loudest?" the fastest.',
+      'Pick the chart that answers the new question the fastest.'
+    ];
+
+    function render(quiet) {
       var set = SETS[setIndex];
       var body;
+      measure();
+      svg.classList.toggle("no-anim", quiet === true);
+      goalEl.textContent = GOALS[setIndex];
       if (type === "bar") body = barChart(set);
       else if (type === "line") body = lineChart(set);
       else if (type === "pie") body = pieChart(set);
@@ -281,6 +303,15 @@
     });
 
     render();
+
+    /* Redraw (without the animation) when the space changes, for example
+       when the Next challenge card appears. */
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () {
+        var box = svg.getBoundingClientRect();
+        if (box.width > 0 && Math.abs(1100 * box.height / box.width - H) > 3) render(true);
+      }).observe(svg);
+    }
   })();
 </script>
 </body>

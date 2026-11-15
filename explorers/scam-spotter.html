@@ -186,7 +186,7 @@
           { label: "Fake link", why: "Look closely. It has the number 0, not the letter o." }
         ],
         head: [
-          { cls: "subject", parts: [{ t: "A thank you gift" }] },
+          { cls: "subject", parts: [{ t: "News from Pixelfort" }] },
           { avatar: true, parts: [{ t: "From: Pixelfort <rewards@pixelfort.example>" }] }
         ],
         body: [
@@ -234,7 +234,6 @@
 
     function choose(el, part) {
       var msg = MESSAGES[current];
-      Explorer.track();
       var done = found.order.length === msg.signs.length;   /* keep the summary on screen once all are found */
       if (part.sign === undefined) {
         el.classList.remove("safe");
@@ -339,7 +338,8 @@
     swapBtn.addEventListener("click", function () { load(current === 0 ? 1 : 0); });
 
     Explorer.init({
-      unlockAfter: 9,
+      /* The Next challenge unlocks only when every sign is found (see choose). */
+      unlockAfter: Infinity,
       onReset: function () { load(0); }
     });
 
