@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Explorer name</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/explorer.css">
+<style>
+  /* Page-specific styles only. Reuse shared classes wherever possible. */
+</style>
+</head>
+<body class="unit-2">
+
+<header class="ex-header">
+  <div>
+    <p class="ex-unit">Working with Text and Images</p>
+    <h1>Explorer name</h1>
+  </div>
+  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
+</header>
+
+<main class="ex-main">
+  <section class="ex-goal" aria-label="Your goal">
+    <span class="ex-goal-label">Your goal</span>
+    <p>One clear question pupils answer by using the control.</p>
+  </section>
+
+  <section class="ex-stage" aria-live="polite">
+    <!-- The visual -->
+  </section>
+
+  <section class="ex-controls" aria-label="Control">
+    <label class="ex-control-label" for="control">Thing to change</label>
+    <input class="ex-slider" type="range" id="control" min="0" max="10" value="5">
+    <span class="ex-readout" id="readout">5</span>
+  </section>
+
+  <section class="ex-next" id="ex-next" aria-live="polite">
+    <span class="ex-next-label">Next challenge</span>
+    <p>A harder question that appears once pupils have explored.</p>
+  </section>
+</main>
+
+<footer class="ex-footer">
+  <span class="ex-answer">Answer the question in Nearpod.</span>
+  <span>Working with Text and Images</span>
+</footer>
+
+<script src="shared/explorer.js"></script>
+<script>
+  (function () {
+    "use strict";
+    var control = document.getElementById("control");
+    var readout = document.getElementById("readout");
+
+    function render() {
+      readout.textContent = control.value;
+    }
+
+    control.addEventListener("input", function () {
+      render();
+      Explorer.track();
+    });
+
+    Explorer.init({
+      unlockAfter: 6,
+      onReset: function () {
+        control.value = 5;
+        render();
+      }
+    });
+
+    render();
+  })();
+</script>
+</body>
+</html>
