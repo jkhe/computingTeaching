@@ -9,67 +9,80 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared/explorer.css">
 <style>
-  /* Page-specific styles only. Reuse shared classes wherever possible. */
+  /* Page-specific styles only: the visual, the control and the Start demo. */
+  .my-demo-thumb {
+    position: absolute; left: 60px; top: 70px; width: 30px; height: 30px;
+    border-radius: 50%; background: var(--accent);
+    animation: my-demo 3.2s ease-in-out infinite;
+  }
+  .my-demo-track { position: absolute; left: 60px; right: 60px; top: 79px; height: 12px; border-radius: 999px; background: var(--line); }
+  .my-demo .ex-ghost { left: 8px; top: 12px; }
+  @keyframes my-demo { 0%, 15% { transform: none; } 60%, 100% { transform: translateX(170px); } }
+  @media (prefers-reduced-motion: reduce) { .my-demo-thumb { animation: none; } }
 </style>
 </head>
-<body class="unit-2">
+<!-- Body classes: the unit colour (unit-1 to unit-6) and ex-v2. -->
+<body class="unit-2 ex-v2">
 
-<header class="ex-header">
-  <div>
-    <p class="ex-unit">Working with Text and Images</p>
-    <h1>Explorer name</h1>
+<!-- SCREEN 1: Start. Title, WHY (max 12 words), HOW (looping demo + 2 to 5 word label), one button. -->
+<section class="ex-screen ex-start" id="ex-start">
+  <h1>Explorer name</h1>
+  <p class="ex-why">Why this matters for your own work.</p>
+  <div class="ex-demo my-demo" aria-hidden="true">
+    <span class="my-demo-track"></span>
+    <span class="my-demo-thumb">
+      <!-- The ghost pointer. Copy this SVG as it is. -->
+      <svg class="ex-ghost" viewBox="0 0 24 24"><path d="M5 2l14 11h-7.2l4 7.6-3 1.6-4-7.7L5 19z"/></svg>
+    </span>
   </div>
-  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
-</header>
+  <p class="ex-how">Move the slider.</p>
+  <button type="button" class="ex-btn primary big" id="ex-go">Start</button>
+</section>
 
-<main class="ex-main">
-  <section class="ex-goal" aria-label="Your goal">
-    <span class="ex-goal-label">Your goal</span>
-    <p>One clear question pupils answer by using the control.</p>
-  </section>
+<!-- SCREEN 2: Explore. One instruction line, the visual, one status line. -->
+<section class="ex-screen" id="ex-explore" hidden>
+  <div class="ex-top">
+    <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
+    <p class="ex-instruction" id="ex-instruction">The goal, in one short sentence.</p>
+    <!-- explorer.js adds the "Try the challenge" / "I'm finished" choice here. -->
+    <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
+  </div>
+  <div class="ex-area">
+    <!-- The visual, as large as possible, with the control next to what it changes. -->
+    <input class="ex-slider" type="range" id="control" min="0" max="10" value="5" aria-label="Thing to change">
+    <p class="ex-status" id="ex-status" role="status"></p>
+  </div>
+</section>
 
-  <section class="ex-stage" aria-live="polite">
-    <!-- The visual -->
-  </section>
-
-  <section class="ex-controls" aria-label="Control">
-    <label class="ex-control-label" for="control">Thing to change</label>
-    <input class="ex-slider" type="range" id="control" min="0" max="10" value="5">
-    <span class="ex-readout" id="readout">5</span>
-  </section>
-
-  <section class="ex-next" id="ex-next" aria-live="polite">
-    <span class="ex-next-label">Next challenge</span>
-    <p>A harder question that appears once pupils have explored.</p>
-  </section>
-</main>
-
-<footer class="ex-footer">
-  <span class="ex-answer">Answer the question in Nearpod.</span>
-  <span>Working with Text and Images</span>
-</footer>
+<!-- SCREEN 3: Finished is added by explorer.js. -->
 
 <script src="shared/explorer.js"></script>
 <script>
   (function () {
     "use strict";
     var control = document.getElementById("control");
-    var readout = document.getElementById("readout");
 
     function render() {
-      readout.textContent = control.value;
+      Explorer.status("Value: " + control.value);
     }
 
     control.addEventListener("input", function () {
       render();
-      Explorer.track();
+      Explorer.used();          // stops the pulse and checks for success
     });
 
-    Explorer.init({
-      unlockAfter: 6,
-      onReset: function () {
-        control.value = 5;
-        render();
+    Explorer.setup({
+      pulse: "#control",
+      success: function () { return Number(control.value) === 10; },   // the real goal state, never a click count
+      successText: "You found it.",
+      hint: "Try the far right.",
+      hintAfter: 60,
+      onReset: function () { control.value = 5; render(); },
+      challenge: {
+        text: "The challenge, in one short sentence.",
+        start: function () { render(); },
+        success: function () { return Number(control.value) === 0; },
+        hint: "Try the far left."
       }
     });
 
