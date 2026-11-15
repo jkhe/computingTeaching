@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>If this, then that</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/explorer.css">
+<style>
+  /* Block colours: close to the usual block-coding category colours,
+     darkened where needed so white text passes 4.5:1. */
+  :root {
+    --blk-logic: #007C80;  /* Logic (teal) */
+    --blk-basic: #1565C0;  /* Basic (blue) */
+    --blk-input: #B4009E;  /* Input (magenta) */
+    --ring: #FACC15;
+  }
+
+  .ss-stage { padding: 10px 16px; }
+  .ss-cols {
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    justify-content: space-evenly;
+    align-items: center;
+    gap: 16px;
+  }
+  .ss-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .ss-cap {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ----- Code blocks ----- */
+  .cblk {
+    background: var(--blk-logic);
+    border-radius: 8px;
+    padding-bottom: 10px;
+    min-width: 480px;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 3px 10px 3px 14px;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+  .pill {
+    background: #fff;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 0 10px;
+    line-height: 24px;
+  }
+  .pill.input { background: var(--blk-input); color: #fff; border: 2px solid #fff; line-height: 20px; }
+  .cond {
+    margin-left: auto;
+    background: #fff;
+    border-radius: 6px;
+    padding: 0 9px;
+    line-height: 24px;
+    font-size: 15px;
+    color: var(--text);
+    min-width: 152px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .cond.true { color: var(--good); box-shadow: 0 0 0 3px var(--ring); }
+  .cond.skip { color: #4B5563; background: #E6F2F2; }
+  .cbody {
+    margin-left: 20px;
+    background: var(--panel);
+    border-radius: 8px 0 0 8px;
+    padding: 4px 0 4px 5px;
+  }
+  .blk {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 32px;
+    padding: 3px 12px;
+    border-radius: 8px;
+    background: #6B7280;   /* grey = this part is not running */
+    color: #fff;
+    font-size: 17px;
+    font-weight: 800;
+    white-space: nowrap;
+    transition: background 0.15s, box-shadow 0.15s;
+  }
+  .blk.run { background: var(--blk-basic); box-shadow: 0 0 0 3px #111827, 0 0 0 7px var(--ring); position: relative; z-index: 1; }
+  .runs {
+    display: none;
+    margin-left: 16px;
+    font-size: 15px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .blk.run + .runs { display: inline; }
+
+  /* ----- micro:bit ----- */
+  .mb { width: 200px; height: auto; display: block; }
+  .led { fill: #4A1F1F; }
+  .led.on { fill: #FF4D3D; filter: drop-shadow(0 0 3px #FF4D3D); }
+  .mb text { font-family: var(--font); font-weight: 800; font-size: 11px; fill: #E5E7EB; }
+  .ss-shows { font-size: 18px; font-weight: 800; min-height: 26px; }
+
+  /* ----- Light scene ----- */
+  .scene { width: 220px; height: auto; display: block; border-radius: 12px; border: 2px solid var(--line-strong); }
+
+  .ex-next .ex-btn { flex-shrink: 0; margin-left: auto; }
+
+  @media (max-width: 1100px), (max-height: 620px) {
+    .ss-stage { padding: 8px 8px; }
+    .ss-cols { gap: 10px; }
+    .cblk { min-width: 420px; padding-bottom: 8px; }
+    .row { font-size: 15px; min-height: 30px; padding: 2px 8px 2px 10px; gap: 5px; }
+    .blk { font-size: 15px; min-height: 28px; }
+    .pill { line-height: 22px; padding: 0 8px; }
+    .pill.input { line-height: 18px; }
+    .cond { font-size: 14px; min-width: 138px; line-height: 22px; }
+    .cbody { padding: 3px 0 3px 5px; }
+    .mb { width: 170px; }
+    .scene { width: 190px; }
+    .ss-cap { font-size: 13px; }
+    .ss-shows { font-size: 16px; min-height: 23px; }
+  }
+</style>
+</head>
+<body class="unit-5">
+
+<header class="ex-header">
+  <div>
+    <p class="ex-unit">Coding and Programming</p>
+    <h1>If this, then that</h1>
+  </div>
+  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
+</header>
+
+<main class="ex-main">
+  <section class="ex-goal" aria-label="Your goal">
+    <span class="ex-goal-label">Your goal</span>
+    <p>Find the exact light level where the picture changes from moon to sun.</p>
+  </section>
+
+  <section class="ex-stage ss-stage">
+    <div class="ss-cols">
+      <div class="ss-col">
+        <span class="ss-cap">The program</span>
+        <div id="blocks"></div>
+      </div>
+      <div class="ss-col">
+        <span class="ss-cap">The micro:bit</span>
+        <svg class="mb" id="mb" viewBox="0 0 200 168" role="img" aria-label="micro:bit"></svg>
+        <p class="ss-shows" id="shows" aria-live="polite"></p>
+      </div>
+      <div class="ss-col">
+        <span class="ss-cap">The light</span>
+        <svg class="scene" id="scene" viewBox="0 0 220 168" role="img" aria-label="The light outside">
+          <rect id="sky" x="0" y="0" width="220" height="168" fill="#0B1026"/>
+          <g id="stars" fill="#FFFFFF">
+            <circle cx="24" cy="22" r="1.8"/><circle cx="58" cy="48" r="1.4"/><circle cx="92" cy="18" r="1.6"/>
+            <circle cx="130" cy="40" r="1.4"/><circle cx="163" cy="16" r="1.8"/><circle cx="196" cy="52" r="1.5"/>
+            <circle cx="40" cy="78" r="1.3"/><circle cx="178" cy="84" r="1.3"/><circle cx="112" cy="66" r="1.2"/>
+          </g>
+          <circle id="sunglow" cx="150" cy="180" r="34" fill="#FEF08A" opacity="0.35"/>
+          <circle id="sun" cx="150" cy="180" r="22" fill="#FDE047"/>
+          <path id="hillback" d="M0 128 Q60 92 120 122 T220 108 V168 H0 Z" fill="#14351F"/>
+          <path id="hillfront" d="M0 146 Q70 118 140 142 T220 136 V168 H0 Z" fill="#0F2A1D"/>
+          <g id="tree">
+            <rect x="44" y="118" width="6" height="22" fill="#3B2A1A"/>
+            <circle id="leaves" cx="47" cy="108" r="17" fill="#0F2A1D"/>
+          </g>
+        </svg>
+        <p class="ss-shows">&nbsp;</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="ex-controls" aria-label="Control">
+    <label class="ex-control-label" for="light">Light level</label>
+    <input class="ex-slider" type="range" id="light" min="0" max="255" step="1" value="128">
+    <span class="ex-readout" id="readout" aria-live="polite">128</span>
+  </section>
+
+  <section class="ex-next" id="ex-next" aria-live="polite">
+    <span class="ex-next-label">Next challenge</span>
+    <p>Now find where the cloud starts and where it stops.</p>
+    <button type="button" class="ex-btn small" id="swap">Add a cloud</button>
+  </section>
+</main>
+
+<footer class="ex-footer">
+  <span class="ex-answer">Answer the question in Nearpod.</span>
+  <span>Coding and Programming</span>
+</footer>
+
+<script src="shared/explorer.js"></script>
+<script>
+  (function () {
+    "use strict";
+
+    /* Fact: the micro:bit light sensor gives a light level from 0 (dark) to 255 (bright). */
+    var START = 128;
+    var DARK = 50;     /* below this: moon */
+    var CLOUDY = 150;  /* below this (cloud version only): cloud */
+
+    var ICONS = {
+      moon:  [".###.", "..###", "...##", "..###", ".###."],
+      sun:   ["#.#.#", ".###.", "#####", ".###.", "#.#.#"],
+      cloud: [".....", ".##..", "####.", "#####", "....."]
+    };
+
+    var slider = document.getElementById("light");
+    var readout = document.getElementById("readout");
+    var blocksEl = document.getElementById("blocks");
+    var mb = document.getElementById("mb");
+    var shows = document.getElementById("shows");
+    var swapBtn = document.getElementById("swap");
+    var cloudOn = false;
+    var leds = [];
+    var lastIcon = "";
+
+    function cond(limit, id) {
+      return '<span class="pill input">light level</span> &lt; <span class="pill">' + limit +
+        '</span> then <span class="cond" id="' + id + '"></span>';
+    }
+    function body(icon) {
+      return '<div class="cbody"><span class="blk" data-icon="' + icon + '">show icon <span class="pill">' +
+        icon + '</span></span><span class="runs">this runs</span></div>';
+    }
+
+    function buildBlocks() {
+      var h = '<div class="cblk">';
+      h += '<div class="row">if ' + cond(DARK, "c1") + '</div>' + body("moon");
+      if (cloudOn) h += '<div class="row">else if ' + cond(CLOUDY, "c2") + '</div>' + body("cloud");
+      h += '<div class="row">else</div>' + body("sun");
+      h += '</div>';
+      blocksEl.innerHTML = h;
+    }
+
+    function drawMicrobit() {
+      var NS = "http://www.w3.org/2000/svg";
+      var h = '<rect x="2" y="2" width="196" height="164" rx="18" fill="#1F2937"/>';
+      for (var p = 0; p < 5; p++) {
+        h += '<rect x="' + (17 + p * 36) + '" y="140" width="22" height="26" rx="3" fill="#D4A72C"/>';
+        h += '<circle cx="' + (28 + p * 36) + '" cy="151" r="5" fill="#1F2937"/>';
+      }
+      h += '<circle cx="24" cy="72" r="12" fill="#9CA3AF"/><circle cx="24" cy="72" r="7" fill="#111827"/>';
+      h += '<circle cx="176" cy="72" r="12" fill="#9CA3AF"/><circle cx="176" cy="72" r="7" fill="#111827"/>';
+      h += '<text x="24" y="100" text-anchor="middle">A</text><text x="176" y="100" text-anchor="middle">B</text>';
+      mb.innerHTML = h;
+      for (var r = 0; r < 5; r++) {
+        for (var c = 0; c < 5; c++) {
+          var led = document.createElementNS(NS, "rect");
+          led.setAttribute("x", 51 + c * 21);
+          led.setAttribute("y", 20 + r * 22);
+          led.setAttribute("width", 14);
+          led.setAttribute("height", 16);
+          led.setAttribute("rx", 3);
+          led.setAttribute("class", "led");
+          mb.appendChild(led);
+          leds.push(led);
+        }
+      }
+    }
+
+    function setLeds(pattern) {
+      for (var i = 0; i < 25; i++) {
+        var on = pattern[Math.floor(i / 5)].charAt(i % 5) === "#";
+        leds[i].setAttribute("class", on ? "led on" : "led");
+      }
+    }
+
+    /* Blend two hex colours. t = 0 gives a, t = 1 gives b. */
+    function mix(a, b, t) {
+      var out = "#";
+      for (var i = 1; i < 7; i += 2) {
+        var x = parseInt(a.substr(i, 2), 16), y = parseInt(b.substr(i, 2), 16);
+        var v = Math.round(x + (y - x) * t).toString(16);
+        out += v.length < 2 ? "0" + v : v;
+      }
+      return out;
+    }
+
+    function drawScene(v) {
+      var t = v / 255;
+      var sunY = 180 - t * 138;
+      document.getElementById("sky").setAttribute("fill", mix("#0B1026", "#8FD0FA", t));
+      document.getElementById("stars").setAttribute("opacity", Math.max(0, 1 - t * 3.2).toFixed(2));
+      document.getElementById("sun").setAttribute("cy", sunY);
+      document.getElementById("sunglow").setAttribute("cy", sunY);
+      document.getElementById("hillback").setAttribute("fill", mix("#14351F", "#5FB760", t));
+      document.getElementById("hillfront").setAttribute("fill", mix("#0F2A1D", "#3F9B46", t));
+      document.getElementById("leaves").setAttribute("fill", mix("#0A2014", "#2E7D32", t));
+    }
+
+    function setCond(id, v, limit, checked) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      if (!checked) {
+        el.className = "cond skip";
+        el.textContent = "not checked";
+        return;
+      }
+      var ok = v < limit;
+      el.className = ok ? "cond true" : "cond";
+      el.textContent = v + " < " + limit + " is " + (ok ? "true" : "false");
+    }
+
+    function render() {
+      var v = Number(slider.value);
+      var icon = v < DARK ? "moon" : (cloudOn && v < CLOUDY ? "cloud" : "sun");
+      readout.textContent = v;
+      setCond("c1", v, DARK, true);
+      setCond("c2", v, CLOUDY, v >= DARK);
+      var blks = blocksEl.querySelectorAll(".blk");
+      for (var i = 0; i < blks.length; i++) {
+        blks[i].classList.toggle("run", blks[i].getAttribute("data-icon") === icon);
+      }
+      setLeds(ICONS[icon]);
+      mb.setAttribute("aria-label", "micro:bit shows a " + icon);
+      if (icon !== lastIcon) {
+        shows.textContent = "Shows: " + icon;
+        lastIcon = icon;
+      }
+      drawScene(v);
+    }
+
+    slider.addEventListener("input", render);
+    /* Count one change each time the pupil lets go of the slider or presses a key. */
+    slider.addEventListener("change", function () {
+      Explorer.track();
+    });
+
+    swapBtn.addEventListener("click", function () {
+      cloudOn = !cloudOn;
+      swapBtn.textContent = cloudOn ? "Take the cloud away" : "Add a cloud";
+      buildBlocks();
+      render();
+    });
+
+    Explorer.init({
+      unlockAfter: 8,
+      onReset: function () {
+        cloudOn = false;
+        swapBtn.textContent = "Add a cloud";
+        slider.value = START;
+        lastIcon = "";
+        buildBlocks();
+        render();
+      }
+    });
+
+    drawMicrobit();
+    buildBlocks();
+    render();
+  })();
+</script>
+</body>
+</html>

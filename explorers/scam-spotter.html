@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spot the scam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/explorer.css">
+<style>
+  .ex-main { gap: 10px; }
+  .ex-stage { align-items: stretch; gap: 12px; padding: 8px; }
+  .ex-controls { padding: 8px 18px; }
+  .ex-next { padding: 6px 18px; }
+
+  /* The message, in a plain mail-app frame */
+  .sc-mail {
+    flex: 1 1 auto; min-width: 0;
+    border: 2px solid var(--line-strong); border-radius: 12px; overflow: hidden;
+    display: flex; flex-direction: column; background: var(--panel);
+  }
+  .sc-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: #F3F4F6; border-bottom: 2px solid var(--line-strong);
+    padding: 1px 12px; font-size: 14px; font-weight: 800; color: var(--muted);
+  }
+  .sc-bar svg { flex-shrink: 0; }
+  .sc-head { padding: 4px 10px 3px; border-bottom: 2px solid var(--line); }
+  .sc-body { padding: 4px 10px 5px; display: flex; flex-direction: column; gap: 1px; flex: 1; justify-content: space-between; }
+  .sc-line { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; font-size: 17px; line-height: 1.3; }
+  .sc-head .sc-line.subject { font-size: 20px; font-weight: 800; }
+  .sc-avatar {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--muted); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0;
+  }
+
+  /* Every part of the message can be clicked. All parts look the same until clicked. */
+  .sc-part {
+    display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 0 6px; border-radius: 8px; border: 2px solid transparent; cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .sc-part:hover { background: #F3F4F6; }
+  .sc-part.found { background: var(--bad-soft); border-color: var(--bad); cursor: default; }
+  .sc-part.safe { animation: sc-safe 1.2s ease; }
+  @keyframes sc-safe { 0%, 60% { background: #E5E7EB; border-color: var(--muted); } 100% { background: transparent; border-color: transparent; } }
+  .sc-flag {
+    font-size: 13px; font-weight: 800; color: #fff; background: var(--bad);
+    border-radius: 999px; padding: 0 10px; white-space: nowrap; animation: ex-fade 0.3s ease;
+  }
+  .sc-fakebtn {
+    display: inline-block; background: #1F2937; color: #fff; font-weight: 800; font-size: 16px;
+    border-radius: 8px; padding: 1px 16px;
+  }
+  .sc-addr { font-size: 15px; color: var(--muted); }
+  .sc-addr b { color: var(--text); font-weight: 800; letter-spacing: 0.5px; }
+
+  /* The list of signs found */
+  .sc-side {
+    flex: 0 0 270px; display: flex; flex-direction: column; gap: 5px;
+    border: 2px solid var(--line); border-radius: 12px; padding: 8px 10px; background: var(--bg);
+  }
+  .sc-side h2 { font-size: 14px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .sc-list { list-style: none; display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .sc-list li {
+    flex: 1; max-height: 40px; min-height: 26px; display: flex; align-items: center; gap: 8px;
+    border: 2px dashed var(--line-strong); border-radius: 10px; padding: 0 10px;
+    font-size: 16px; font-weight: 800; color: var(--muted); background: var(--panel);
+  }
+  .sc-list li.on { border: 2px solid var(--bad); background: var(--bad-soft); color: var(--bad); animation: ex-fade 0.3s ease; }
+
+  .ex-controls { justify-content: flex-start; flex-wrap: nowrap; }
+  .ex-controls .ex-control-label, .ex-controls .ex-readout { flex-shrink: 0; }
+  .sc-feedback { flex: 1; font-size: 18px; font-weight: 800; min-height: 26px; line-height: 1.25; }
+  .sc-feedback.good { color: var(--good); }
+  .sc-feedback.bad { color: var(--bad); }
+  .ex-next p { flex: 1; }
+
+  @media (max-width: 1100px), (max-height: 620px) {
+    .sc-line { font-size: 15px; }
+    .sc-head .sc-line.subject { font-size: 17px; }
+    .sc-side { flex-basis: 220px; }
+    .sc-list li { font-size: 14px; min-height: 22px; }
+    .sc-feedback { font-size: 15px; }
+    .sc-flag { font-size: 12px; }
+    .sc-addr { font-size: 14px; }
+    .sc-bar { font-size: 13px; padding: 2px 10px; }
+    .sc-avatar { width: 22px; height: 22px; font-size: 13px; }
+    .ex-controls { padding: 6px 12px; }
+    .ex-next { padding: 4px 14px; }
+    .ex-stage { padding: 6px; }
+    .ex-controls .ex-control-label { font-size: 16px; }
+  }
+</style>
+</head>
+<body class="unit-1">
+
+<header class="ex-header">
+  <div>
+    <p class="ex-unit">Online Safety</p>
+    <h1>Spot the scam</h1>
+  </div>
+  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
+</header>
+
+<main class="ex-main">
+  <section class="ex-goal" aria-label="Your goal">
+    <span class="ex-goal-label">Your goal</span>
+    <p id="sc-goal">Find all 6 warning signs in this message.</p>
+  </section>
+
+  <section class="ex-stage">
+    <div class="sc-mail" aria-label="Message">
+      <div class="sc-bar">
+        <svg width="20" height="16" viewBox="0 0 20 16" aria-hidden="true"><rect x="1" y="1" width="18" height="14" rx="2" fill="#fff" stroke="#6B7280" stroke-width="2"/><path d="M2 3l8 6 8-6" fill="none" stroke="#6B7280" stroke-width="2"/></svg>
+        <span>Inbox</span>
+      </div>
+      <div class="sc-head" id="sc-head"></div>
+      <div class="sc-body" id="sc-body"></div>
+    </div>
+    <div class="sc-side">
+      <h2>Warning signs found</h2>
+      <ol class="sc-list" id="sc-list"></ol>
+    </div>
+  </section>
+
+  <section class="ex-controls" aria-label="Control">
+    <span class="ex-control-label">Click the parts that look wrong</span>
+    <span class="ex-readout" id="sc-count" aria-live="polite">Found 0 of 6</span>
+    <p class="sc-feedback" id="sc-feedback" aria-live="polite"></p>
+  </section>
+
+  <section class="ex-next" id="ex-next" aria-live="polite">
+    <span class="ex-next-label">Next challenge</span>
+    <p id="sc-next-text">This message is harder. It has only 3 warning signs.</p>
+    <button type="button" class="ex-btn small primary" id="sc-swap">Try a harder message</button>
+  </section>
+</main>
+
+<footer class="ex-footer">
+  <span class="ex-answer">Answer the question in Nearpod.</span>
+  <span>Online Safety</span>
+</footer>
+
+<script src="shared/explorer.js"></script>
+<script>
+  (function () {
+    "use strict";
+
+    /* Both messages are invented. ParcelPoint and Pixelfort are made-up names
+       and every address uses the reserved .example ending, so none can be real.
+       Nothing on this page is a real link.
+
+       Each part: t = text, sign = index into signs (or missing if the part is normal).
+       kind "link" draws a pretend button with its address shown beside it. */
+    var MESSAGES = [
+      {
+        initial: "P",
+        signs: [
+          { label: "Odd sender address", why: "The real company's address ends in parcelpoint.example." },
+          { label: "Does not use your name", why: "A real company usually knows your name." },
+          { label: "Spelling mistake", why: "It should say \"Your parcel\". Scams often have mistakes." },
+          { label: "Rushes you", why: "Scams rush you so you do not stop and think." },
+          { label: "Asks for card details", why: "Never type card details after clicking a link in a message." },
+          { label: "Fake link", why: "Look closely. It has the number 1, not the letter l." }
+        ],
+        head: [
+          { cls: "subject", parts: [{ t: "Your parcel delivery" }] },
+          { avatar: true, parts: [{ t: "From: ParcelPoint <support@parcelpoint-help.example>", sign: 0 }] }
+        ],
+        body: [
+          [{ t: "Dear customer,", sign: 1 }],
+          [{ t: "You parcel is waiting at our depot.", sign: 2 }, { t: "We tried to deliver it today." }],
+          [{ t: "Pay within 2 hours or your parcel will be returned.", sign: 3 }],
+          [{ t: "Enter your card details to pay the £1.99 fee.", sign: 4 }],
+          [{ kind: "link", button: "Pay now", addr: "parce1point.example/pay", sign: 5 }],
+          [{ t: "Thank you, The ParcelPoint Team" }, { t: "www.parcelpoint.example" }]
+        ]
+      },
+      {
+        initial: "P",
+        signs: [
+          { label: "Rushes you", why: "Scams rush you so you do not stop and think." },
+          { label: "Asks for your password", why: "A message should never ask you to log in to get a prize." },
+          { label: "Fake link", why: "Look closely. It has the number 0, not the letter o." }
+        ],
+        head: [
+          { cls: "subject", parts: [{ t: "A thank you gift" }] },
+          { avatar: true, parts: [{ t: "From: Pixelfort <rewards@pixelfort.example>" }] }
+        ],
+        body: [
+          [{ t: "Hi Jay_Plays," }],
+          [{ t: "Thank you for playing Pixelfort this year." }],
+          [{ t: "Claim 5,000 free coins in the next 10 minutes or they are gone.", sign: 0 }],
+          [{ t: "Log in with your password to get your coins.", sign: 1 }],
+          [{ kind: "link", button: "Claim coins", addr: "pixelf0rt.example/login", sign: 2 }],
+          [{ t: "See you in the game, The Pixelfort Team" }, { t: "www.pixelfort.example" }]
+        ]
+      }
+    ];
+
+    var SUMMARY = "If you spot warning signs: don't click, tell an adult, report it.";
+
+    var headEl = document.getElementById("sc-head");
+    var bodyEl = document.getElementById("sc-body");
+    var listEl = document.getElementById("sc-list");
+    var countEl = document.getElementById("sc-count");
+    var feedbackEl = document.getElementById("sc-feedback");
+    var swapBtn = document.getElementById("sc-swap");
+    var nextText = document.getElementById("sc-next-text");
+
+    var current = 0, found = [];
+
+    function say(text, cls) {
+      feedbackEl.textContent = text;
+      feedbackEl.className = "sc-feedback" + (cls ? " " + cls : "");
+    }
+
+    function updateCount() {
+      var msg = MESSAGES[current];
+      var n = found.filter(Boolean).length;
+      countEl.textContent = "Found " + n + " of " + msg.signs.length;
+      var items = listEl.children, shown = 0;
+      /* Fill the list in the order the signs were found. */
+      for (var i = 0; i < items.length; i++) { items[i].className = ""; items[i].textContent = ""; }
+      found.order.forEach(function (signIndex) {
+        items[shown].className = "on";
+        items[shown].textContent = msg.signs[signIndex].label;
+        shown += 1;
+      });
+      return n;
+    }
+
+    function choose(el, part) {
+      var msg = MESSAGES[current];
+      Explorer.track();
+      var done = found.order.length === msg.signs.length;   /* keep the summary on screen once all are found */
+      if (part.sign === undefined) {
+        el.classList.remove("safe");
+        void el.offsetWidth;            /* restart the short grey flash */
+        el.classList.add("safe");
+        if (!done) say("That part looks normal.", "");
+        return;
+      }
+      if (found[part.sign]) {
+        if (!done) say("You already found that one.", "");
+        return;
+      }
+      found[part.sign] = true;
+      found.order.push(part.sign);
+      el.classList.add("found");
+      el.setAttribute("aria-label", el.getAttribute("data-name") + ". Warning sign: " + msg.signs[part.sign].label);
+      var flag = document.createElement("span");
+      flag.className = "sc-flag";
+      flag.textContent = msg.signs[part.sign].label;
+      el.appendChild(flag);
+      var n = updateCount();
+      if (n === msg.signs.length) {
+        say(SUMMARY, "good");
+        Explorer.unlock();
+      } else {
+        say(msg.signs[part.sign].why, "bad");
+      }
+    }
+
+    function makePart(part) {
+      var el = document.createElement("span");
+      el.className = "sc-part";
+      el.setAttribute("role", "button");
+      el.setAttribute("tabindex", "0");
+      if (part.kind === "link") {
+        var b = document.createElement("span");
+        b.className = "sc-fakebtn";
+        b.textContent = part.button;
+        var a = document.createElement("span");
+        a.className = "sc-addr";
+        a.appendChild(document.createTextNode("Link goes to: "));
+        var strong = document.createElement("b");
+        strong.textContent = part.addr;
+        a.appendChild(strong);
+        el.appendChild(b);
+        el.appendChild(a);
+        el.setAttribute("data-name", part.button + " button. Link goes to " + part.addr);
+      } else {
+        var s = document.createElement("span");
+        s.textContent = part.t;
+        el.appendChild(s);
+        el.setAttribute("data-name", part.t);
+      }
+      el.setAttribute("aria-label", el.getAttribute("data-name"));
+      el.addEventListener("click", function () { choose(el, part); });
+      el.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
+          e.preventDefault();
+          choose(el, part);
+        }
+      });
+      return el;
+    }
+
+    function makeLine(parts, cls, avatar, initial) {
+      var line = document.createElement("div");
+      line.className = "sc-line" + (cls ? " " + cls : "");
+      if (avatar) {
+        var av = document.createElement("span");
+        av.className = "sc-avatar";
+        av.setAttribute("aria-hidden", "true");
+        av.textContent = initial;
+        line.appendChild(av);
+      }
+      parts.forEach(function (p) { line.appendChild(makePart(p)); });
+      return line;
+    }
+
+    function load(index) {
+      current = index;
+      var msg = MESSAGES[current];
+      found = [];
+      found.order = [];
+      headEl.textContent = "";
+      bodyEl.textContent = "";
+      listEl.textContent = "";
+      msg.head.forEach(function (h) { headEl.appendChild(makeLine(h.parts, h.cls, h.avatar, msg.initial)); });
+      msg.body.forEach(function (parts) { bodyEl.appendChild(makeLine(parts)); });
+      msg.signs.forEach(function () { listEl.appendChild(document.createElement("li")); });
+      updateCount();
+      say("", "");
+      document.getElementById("sc-goal").textContent = "Find all " + msg.signs.length + " warning signs in this message.";
+      if (current === 0) {
+        nextText.textContent = "This message is harder. It has only 3 warning signs.";
+        swapBtn.textContent = "Try a harder message";
+      } else {
+        nextText.textContent = "Find the 3 warning signs. The sender's address looks right this time.";
+        swapBtn.textContent = "Back to the first message";
+      }
+    }
+
+    swapBtn.addEventListener("click", function () { load(current === 0 ? 1 : 0); });
+
+    Explorer.init({
+      unlockAfter: 9,
+      onReset: function () { load(0); }
+    });
+
+    load(0);
+  })();
+</script>
+</body>
+</html>

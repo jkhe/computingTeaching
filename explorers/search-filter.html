@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search criteria</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/explorer.css">
+<style>
+  .ex-stage { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 10px; padding: 10px 12px; }
+
+  /* Mock search bar */
+  .sf-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    border: 2px solid var(--line-strong); border-radius: 999px; padding: 5px 16px; min-height: 46px;
+    background: var(--panel);
+  }
+  .sf-bar svg { flex-shrink: 0; }
+  .sf-term {
+    font-size: 19px; font-weight: 800; color: var(--text);
+    background: #F3F4F6; border-radius: 8px; padding: 1px 10px;
+  }
+  .sf-term.added { background: var(--accent-soft); color: var(--accent); border: 2px solid var(--accent); padding: 0 9px; animation: ex-fade 0.25s ease; }
+  .sf-term.filter { background: var(--accent); color: #fff; border-radius: 999px; padding: 1px 12px; font-size: 16px; animation: ex-fade 0.25s ease; }
+  .sf-bar .sf-gap { flex: 1; }
+
+  .sf-row { display: flex; gap: 12px; flex: 1; min-height: 0; }
+
+  /* Count and verdict */
+  .sf-summary {
+    flex: 0 0 250px; display: flex; flex-direction: column; justify-content: center; gap: 6px;
+    border: 2px solid var(--line); border-radius: 14px; padding: 10px 14px; background: var(--bg);
+  }
+  .sf-summary h2 { font-size: 14px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .sf-count { font-size: 38px; font-weight: 800; line-height: 1.05; color: var(--text); }
+  .sf-count small { display: block; font-size: 16px; font-weight: 800; color: var(--muted); }
+  .sf-verdict { font-size: 18px; font-weight: 800; line-height: 1.25; border-radius: 10px; padding: 6px 10px; border: 2px solid currentColor; }
+  .sf-verdict.bad { color: var(--bad); background: var(--bad-soft); }
+  .sf-verdict.ok { color: var(--ok); background: var(--ok-soft); }
+  .sf-verdict.good { color: var(--good); background: var(--good-soft); }
+
+  /* Top results */
+  .sf-results { flex: 1; min-width: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; }
+  .sf-card {
+    border: 2px solid var(--line-strong); border-left-width: 8px; border-radius: 12px; padding: 5px 10px 6px;
+    display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; background: var(--panel); position: relative;
+  }
+  .sf-card.answers { padding-top: 16px; }
+  .sf-card.new { animation: ex-fade 0.3s ease; }
+  .sf-card.answers { border-color: var(--good); background: var(--good-soft); }
+  .sf-title { font-size: 19px; font-weight: 800; line-height: 1.25; color: #1F2937; }
+  .sf-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 8px; font-size: 14px; color: var(--muted); line-height: 1.3; }
+  .sf-meta .sf-source { font-weight: 800; color: var(--accent); }
+  .sf-type { font-size: 13px; font-weight: 800; border-radius: 6px; padding: 0 8px; border: 2px solid currentColor; }
+  .sf-type.video { color: #6D28D9; background: #F5F3FF; }
+  .sf-type.article { color: #374151; background: #F3F4F6; }
+  .sf-type.shop { color: var(--ok); background: var(--ok-soft); }
+  .sf-snip { font-size: 16px; line-height: 1.3; color: var(--text); }
+  .sf-yes { position: absolute; top: 0; right: 0; font-size: 13px; font-weight: 800; color: #fff; background: var(--good); border-radius: 0 8px 0 10px; padding: 1px 10px; white-space: nowrap; }
+
+  /* One row of criteria chips */
+  .ex-controls { gap: 8px 10px; }
+  .sf-group { font-size: 15px; font-weight: 800; color: var(--muted); margin-left: 10px; }
+  .ex-controls .ex-btn { border-radius: 999px; min-width: 64px; }
+
+  @media (max-width: 1100px), (max-height: 620px) {
+    .sf-summary { flex-basis: 215px; padding: 8px 10px; }
+    .sf-count { font-size: 30px; }
+    .sf-count small { font-size: 14px; }
+    .sf-verdict { font-size: 15px; }
+    .sf-title { font-size: 16px; }
+    .sf-card.answers { padding-top: 14px; }
+    .sf-yes { font-size: 12px; }
+    .sf-snip { font-size: 14px; }
+    .sf-meta { font-size: 13px; }
+    .sf-term { font-size: 17px; }
+    .sf-bar { min-height: 40px; padding: 3px 14px; }
+    .ex-stage { gap: 8px; padding: 8px 10px; }
+    .ex-controls .ex-btn { padding: 6px 12px; }
+    .ex-controls .ex-control-label { font-size: 16px; }
+    .sf-group { margin-left: 4px; font-size: 14px; }
+  }
+</style>
+</head>
+<body class="unit-3">
+
+<header class="ex-header">
+  <div>
+    <p class="ex-unit">Finding and Selecting Information</p>
+    <h1>Search criteria</h1>
+  </div>
+  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
+</header>
+
+<main class="ex-main">
+  <section class="ex-goal" aria-label="Your goal">
+    <span class="ex-goal-label">Your goal</span>
+    <p>Choose criteria until the top results all answer: how do I teach a puppy to sit?</p>
+  </section>
+
+  <section class="ex-stage">
+    <div class="sf-bar" id="sf-bar" aria-label="Search" aria-live="polite"></div>
+    <div class="sf-row">
+      <div class="sf-summary" aria-live="polite">
+        <h2>Results</h2>
+        <div class="sf-count" id="sf-count"></div>
+        <div class="sf-verdict" id="sf-verdict"></div>
+      </div>
+      <div class="sf-results" id="sf-results" aria-label="Top 4 results"></div>
+    </div>
+  </section>
+
+  <section class="ex-controls" aria-label="Control" id="sf-controls">
+    <span class="ex-control-label">Add criteria</span>
+    <span class="sf-group" aria-hidden="true">Words</span>
+    <button type="button" class="ex-btn" data-c="puppy" aria-pressed="false">puppy</button>
+    <button type="button" class="ex-btn" data-c="teach" aria-pressed="false">teach</button>
+    <button type="button" class="ex-btn" data-c="sit" aria-pressed="false">sit</button>
+    <button type="button" class="ex-btn" data-c="uk" aria-pressed="false">UK</button>
+    <span class="sf-group" aria-hidden="true">Filters</span>
+    <button type="button" class="ex-btn" data-c="video" aria-pressed="false">Videos only</button>
+    <button type="button" class="ex-btn" data-c="recent" aria-pressed="false">Last year</button>
+  </section>
+
+  <section class="ex-next" id="ex-next" aria-live="polite">
+    <span class="ex-next-label">Next challenge</span>
+    <p>Which ONE filter would help most if you want to watch how it's done?</p>
+  </section>
+</main>
+
+<footer class="ex-footer">
+  <span class="ex-answer">Answer the question in Nearpod.</span>
+  <span>Finding and Selecting Information</span>
+</footer>
+
+<script src="shared/explorer.js"></script>
+<script>
+  (function () {
+    "use strict";
+
+    /* ------------------------------------------------------------------
+       RESULTS COUNT MODEL (illustrative only, not real search data)
+
+       The search "dogs" starts at about 2,400,000 results. Each criterion
+       that is switched on divides the count by a fixed factor:
+         puppy 6, teach 8, sit 5, UK 3, Videos only 4, Last year 3
+       The answer is rounded to two significant figures and shown as
+       "About N results". All six on gives about 280.
+       ------------------------------------------------------------------ */
+    var START_COUNT = 2400000;
+    var FACTOR = { puppy: 6, teach: 8, sit: 5, uk: 3, video: 4, recent: 3 };
+    var ORDER = ["puppy", "teach", "sit", "uk", "video", "recent"];
+    var BAR_TEXT = { puppy: "puppy", teach: "teach", sit: "sit", uk: "UK", video: "Videos only", recent: "Last year" };
+
+    /* Invented results, in ranked order. Every site name is made up.
+       k = search words the result matches, uk = UK result,
+       m = how many months old it is, ans = it answers
+       "How do I teach a puppy to sit?" */
+    function R(title, source, type, snip, k, uk, m, ans) {
+      return { title: title, source: source, type: type, snip: snip, k: k, uk: uk, m: m, ans: !!ans };
+    }
+    var RESULTS = [
+      R("Dogs: facts for kids", "Animal Fact File", "Article", "Where dogs come from and how they live.", "", false, 30),
+      R("Dog food delivered to your door", "Bowl and Bone", "Shop", "Free delivery on your first order.", "", true, 2),
+      R("Ten funny dog clips", "ClipBarn", "Video", "Dogs falling off sofas and chasing tails.", "", false, 4),
+      R("A guide to dog breeds", "Dog Help Hub", "Article", "Big dogs, small dogs and everything between.", "", false, 50),
+      R("Top 100 dog names", "Petwise", "Article", "The most popular names this year.", "", true, 7),
+      R("Dog beds, bowls and leads", "Tails and Trails", "Shop", "Everything your dog needs.", "", true, 3),
+      R("Dogs looking for a home", "Second Chance Kennels", "Article", "Meet the dogs waiting to be adopted.", "", true, 1),
+      R("Dog show highlights", "ClipBarn", "Video", "The best moments from the summer show.", "", true, 5),
+      R("Dog park walks", "ClipBarn", "Video", "A relaxing walk with three dogs.", "", true, 9),
+      R("Meet our rescue dogs", "Second Chance Kennels", "Video", "A short film about the kennels.", "", true, 11),
+
+      R("Puppy food: what to buy", "Bowl and Bone", "Shop", "Food made for growing puppies.", "puppy", true, 6),
+      R("Cute puppy clips", "ClipBarn", "Video", "Ten minutes of sleepy puppies.", "puppy", false, 2),
+      R("Bringing a new puppy home", "Dog Help Hub", "Article", "What to get ready before the first day.", "puppy", false, 28),
+      R("Puppy toys and chews", "Tails and Trails", "Shop", "Safe toys for small teeth.", "puppy", true, 8),
+      R("When do puppies stop growing?", "Animal Fact File", "Article", "Most are fully grown by age two.", "puppy", false, 40),
+
+      R("Teach an old dog new tricks", "Dog Help Hub", "Article", "Older dogs can still learn.", "teach", false, 36),
+      R("Teach your dog to fetch", "Pawsitive Training", "Video", "Start with a ball your dog likes.", "teach", false, 10),
+
+      R("Dog sitting: we mind your dog", "StayPaws", "Shop", "Book a dog sitter for the weekend.", "sit", true, 4),
+      R("Why does my dog sit on my feet?", "Petwise", "Article", "Five reasons dogs do this.", "sit", false, 26),
+
+      R("Teach an older dog to sit", "Dog Help Hub", "Article", "Tips for dogs over two years old.", "teach sit", false, 30),
+      R("My puppy will not sit still", "Petwise", "Article", "Why young puppies are so busy.", "puppy sit", false, 18),
+
+      R("Teach a puppy to walk on a lead", "Pawsitive Training", "Video", "Short walks first, then longer ones.", "puppy teach", false, 14),
+      R("Teach your puppy to sit in 5 steps", "Pawsitive Training", "Article", "Hold a treat above its nose.", "puppy teach sit", false, 3, true),
+      R("Teach your puppy its name", "Dog Help Hub", "Article", "Say the name, then give a treat.", "puppy teach", false, 24),
+      R("Watch: teach a puppy to sit", "Pawsitive Training", "Video", "See each step with a real puppy.", "puppy teach sit", false, 5, true),
+      R("Teach a puppy where to toilet", "Petwise", "Article", "Take your puppy outside often.", "puppy teach", true, 9),
+      R("Puppy classes: we teach manners", "Wagging School", "Shop", "Book six weekly classes.", "puppy teach", true, 2),
+
+      R("How to teach a puppy to sit", "Dog Help Hub", "Article", "A simple guide with pictures.", "puppy teach sit", false, 38, true),
+      R("Teach a puppy to sit with treats", "Petwise", "Video", "Reward your puppy as soon as it sits.", "puppy teach sit", false, 9, true),
+      R("Vet tips: teach your puppy to sit", "Vet Corner", "Video", "A vet shows the steps slowly.", "puppy teach sit", true, 8, true),
+      R("Teach your puppy to sit and stay", "The Kennel Guide", "Article", "First lessons for a new puppy.", "puppy teach sit", true, 6, true),
+      R("Puppy classes: we teach sit and stay", "Wagging School", "Shop", "Classes in your town from £12.", "puppy teach sit", true, 2),
+      R("Find a trainer to teach your puppy to sit", "Trainer Finder", "Shop", "A list of dog trainers near you.", "puppy teach sit", true, 7),
+      R("Teach a puppy to sit: common mistakes", "Dog Help Hub", "Video", "What to do if your puppy jumps up.", "puppy teach sit", false, 1, true),
+      R("Advert: we teach your puppy to sit", "Wagging School", "Video", "A short advert for puppy classes.", "puppy teach sit", true, 4),
+      R("Open day: watch us teach a puppy to sit", "Wagging School", "Video", "Come and visit our puppy school.", "puppy teach sit", true, 3),
+      R("Dog show: can he teach his puppy to sit?", "ClipBarn", "Video", "A funny clip from a village show.", "puppy teach sit", true, 10)
+    ];
+
+    var on = {};
+    var buttons = document.querySelectorAll("#sf-controls .ex-btn");
+    var barEl = document.getElementById("sf-bar");
+    var countEl = document.getElementById("sf-count");
+    var verdictEl = document.getElementById("sf-verdict");
+    var resultsEl = document.getElementById("sf-results");
+    var lastShown = [];
+
+    function matches(r) {
+      var words = " " + r.k + " ";
+      if (on.puppy && words.indexOf(" puppy ") < 0) return false;
+      if (on.teach && words.indexOf(" teach ") < 0) return false;
+      if (on.sit && words.indexOf(" sit ") < 0) return false;
+      if (on.uk && !r.uk) return false;
+      if (on.video && r.type !== "Video") return false;
+      if (on.recent && r.m > 12) return false;
+      return true;
+    }
+
+    function ageText(m) {
+      if (m < 12) return m === 1 ? "1 month ago" : m + " months ago";
+      var y = Math.floor(m / 12);
+      return y === 1 ? "1 year ago" : y + " years ago";
+    }
+
+    function countText() {
+      var n = START_COUNT;
+      ORDER.forEach(function (c) { if (on[c]) n = n / FACTOR[c]; });
+      var mag = Math.pow(10, Math.floor(Math.log(n) / Math.LN10) - 1);
+      n = Math.round(n / mag) * mag;
+      return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function el(tag, cls, text) {
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text !== undefined) e.textContent = text;
+      return e;
+    }
+
+    function render() {
+      var i;
+      /* Search bar */
+      barEl.textContent = "";
+      var svgNS = "http://www.w3.org/2000/svg";
+      var svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("width", "24"); svg.setAttribute("height", "24"); svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
+      var c = document.createElementNS(svgNS, "circle");
+      c.setAttribute("cx", "10"); c.setAttribute("cy", "10"); c.setAttribute("r", "6.5"); c.setAttribute("fill", "none"); c.setAttribute("stroke", "#6B7280"); c.setAttribute("stroke-width", "3");
+      var l = document.createElementNS(svgNS, "path");
+      l.setAttribute("d", "M15 15l6 6"); l.setAttribute("stroke", "#6B7280"); l.setAttribute("stroke-width", "3"); l.setAttribute("stroke-linecap", "round");
+      svg.appendChild(c); svg.appendChild(l);
+      barEl.appendChild(svg);
+      barEl.appendChild(el("span", "sf-term", "dogs"));
+      ["puppy", "teach", "sit", "uk"].forEach(function (k) {
+        if (on[k]) barEl.appendChild(el("span", "sf-term added", BAR_TEXT[k]));
+      });
+      barEl.appendChild(el("span", "sf-gap"));
+      ["video", "recent"].forEach(function (k) {
+        if (on[k]) barEl.appendChild(el("span", "sf-term filter", "Filter: " + BAR_TEXT[k]));
+      });
+
+      /* Top four results */
+      var top = RESULTS.filter(matches).slice(0, 4);
+      var answers = 0;
+      resultsEl.textContent = "";
+      top.forEach(function (r) {
+        if (r.ans) answers += 1;
+        var card = el("div", "sf-card" + (r.ans ? " answers" : "") + (lastShown.indexOf(r) < 0 ? " new" : ""));
+        card.appendChild(el("div", "sf-title", r.title));
+        var meta = el("div", "sf-meta");
+        meta.appendChild(el("span", "sf-type " + r.type.toLowerCase(), r.type));
+        meta.appendChild(el("span", "sf-source", r.source));
+        meta.appendChild(el("span", "", ageText(r.m)));
+        card.appendChild(meta);
+        if (r.ans) card.appendChild(el("div", "sf-yes", "Answers the question"));
+        card.appendChild(el("div", "sf-snip", r.snip));
+        resultsEl.appendChild(card);
+      });
+      lastShown = top;
+
+      /* Count and verdict */
+      countEl.textContent = "";
+      countEl.appendChild(el("small", "", "About"));
+      countEl.appendChild(document.createTextNode(countText()));
+      if (answers === 4) {
+        verdictEl.textContent = "These results answer the question";
+        verdictEl.className = "sf-verdict good";
+      } else if (answers >= 2) {
+        verdictEl.textContent = "Getting closer";
+        verdictEl.className = "sf-verdict ok";
+      } else {
+        verdictEl.textContent = "Most results don't answer the question";
+        verdictEl.className = "sf-verdict bad";
+      }
+
+      for (i = 0; i < buttons.length; i++) {
+        buttons[i].setAttribute("aria-pressed", on[buttons[i].getAttribute("data-c")] ? "true" : "false");
+      }
+    }
+
+    for (var b = 0; b < buttons.length; b++) {
+      buttons[b].addEventListener("click", function () {
+        var key = this.getAttribute("data-c");
+        on[key] = !on[key];
+        render();
+        Explorer.track();
+      });
+    }
+
+    Explorer.init({
+      unlockAfter: 6,
+      onReset: function () {
+        on = {};
+        lastShown = [];
+        render();
+      }
+    });
+
+    render();
+  })();
+</script>
+</body>
+</html>

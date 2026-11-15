@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Send a file</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/explorer.css">
+<style>
+  .ex-stage { flex-direction: column; align-items: stretch; justify-content: center; gap: 6px; padding: 10px 14px 6px; }
+  .lanes { flex: 1; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+  .lane {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 330px 1fr 220px;
+    align-items: center;
+    gap: 20px;
+    border: 2px solid var(--line);
+    border-radius: 12px;
+    padding: 4px 16px;
+    min-height: 0;
+  }
+  .lane-name { display: flex; align-items: center; gap: 12px; }
+  .lane-name svg { width: 42px; height: 42px; flex-shrink: 0; }
+  .lane-name svg * { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .lane-title { font-size: 19px; font-weight: 800; line-height: 1.2; }
+  .lane-sub { font-size: 14px; color: var(--muted); line-height: 1.25; }
+  .lane-mid { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .track {
+    position: relative;
+    height: 18px;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .fill {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 0;
+    border-radius: 999px;
+    background: var(--accent);
+  }
+  .lane.blocked .fill { background: var(--bad); }
+  .lane .ex-tag { font-size: 14px; padding: 1px 12px; align-self: flex-start; line-height: 1.4; }
+  .lane .ex-tag[hidden] { display: none; }
+  .lane-time { text-align: right; line-height: 1.2; }
+  .time-big { font-size: 22px; font-weight: 800; color: var(--text); }
+  .lane.blocked .time-big { color: var(--bad); }
+  .lane.idle .time-big { color: var(--muted); font-size: 18px; }
+  .time-small { font-size: 14px; color: var(--muted); min-height: 17px; }
+  .note { text-align: center; font-size: 14px; color: var(--muted); line-height: 1.3; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+  @media (max-width: 1100px), (max-height: 620px) {
+    .lane { grid-template-columns: 250px 1fr 190px; gap: 14px; padding: 3px 12px; }
+    .lane-name svg { width: 34px; height: 34px; }
+    .lane-title { font-size: 17px; }
+    .lane-sub { font-size: 13px; }
+    .time-big { font-size: 19px; }
+    .lane.idle .time-big { font-size: 16px; }
+    .time-small, .note, .lane .ex-tag { font-size: 13px; }
+    .track { height: 14px; }
+    .lane-mid { gap: 3px; }
+  }
+</style>
+</head>
+<body class="unit-3">
+
+<header class="ex-header">
+  <div>
+    <p class="ex-unit">Finding and Selecting Information</p>
+    <h1>Send a file</h1>
+  </div>
+  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
+</header>
+
+<main class="ex-main">
+  <section class="ex-goal" aria-label="Your goal">
+    <span class="ex-goal-label">Your goal</span>
+    <p>Which is the best way to send a 1.5 GB film to someone in another town?</p>
+  </section>
+
+  <section class="ex-stage" aria-live="polite">
+    <div class="lanes">
+
+      <div class="lane idle" id="lane-email">
+        <div class="lane-name">
+          <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="9" width="30" height="22" rx="3"/><path d="M6 11l14 11 14-11"/></svg>
+          <div>
+            <p class="lane-title">Email attachment</p>
+            <p class="lane-sub">Most email services stop at about 25&nbsp;MB</p>
+          </div>
+        </div>
+        <div class="lane-mid">
+          <div class="track"><div class="fill"></div></div>
+          <span class="ex-tag" hidden></span>
+        </div>
+        <div class="lane-time"><p class="time-big">Pick a file</p><p class="time-small"></p></div>
+      </div>
+
+      <div class="lane idle" id="lane-cloud">
+        <div class="lane-name">
+          <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 30a7 7 0 0 1-1-13.9A10 10 0 0 1 30 14a8 8 0 0 1-1 16z"/><path d="M20 27v-9M16 21l4-4 4 4"/></svg>
+          <div>
+            <p class="lane-title">Cloud link</p>
+            <p class="lane-sub">Upload, then share the link</p>
+          </div>
+        </div>
+        <div class="lane-mid">
+          <div class="track"><div class="fill"></div></div>
+          <span class="ex-tag good">Anyone with the link can download it</span>
+        </div>
+        <div class="lane-time"><p class="time-big">Pick a file</p><p class="time-small"></p></div>
+      </div>
+
+      <div class="lane idle" id="lane-usb">
+        <div class="lane-name">
+          <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="12" y="15" width="16" height="21" rx="3"/><path d="M15 15V5h10v10M18.5 9.5v1M21.5 9.5v1"/></svg>
+          <div>
+            <p class="lane-title">USB stick</p>
+            <p class="lane-sub">Copy the file, then carry it</p>
+          </div>
+        </div>
+        <div class="lane-mid">
+          <div class="track"><div class="fill"></div></div>
+          <span class="ex-tag ok">You have to hand it over in person</span>
+        </div>
+        <div class="lane-time"><p class="time-big">Pick a file</p><p class="time-small"></p></div>
+      </div>
+
+    </div>
+    <p class="note">Times are estimates for a typical school connection.</p>
+  </section>
+
+  <section class="ex-controls" aria-label="Control">
+    <span class="ex-control-label" id="file-label">File to send</span>
+    <div class="btn-row" role="group" aria-labelledby="file-label">
+      <button type="button" class="ex-btn" data-mb="4" aria-pressed="false">Photo (4 MB)</button>
+      <button type="button" class="ex-btn" data-mb="8" aria-pressed="false">Song (8 MB)</button>
+      <button type="button" class="ex-btn" data-mb="300" aria-pressed="false">Class project (300 MB)</button>
+      <button type="button" class="ex-btn" data-mb="1500" aria-pressed="false">Film (1.5 GB)</button>
+    </div>
+  </section>
+
+  <section class="ex-next" id="ex-next" aria-live="polite">
+    <span class="ex-next-label">Next challenge</span>
+    <p>When might a USB stick be the better choice?</p>
+  </section>
+</main>
+
+<footer class="ex-footer">
+  <span class="ex-answer">Answer the question in Nearpod.</span>
+  <span>Finding and Selecting Information</span>
+</footer>
+
+<script src="shared/explorer.js"></script>
+<script>
+  (function () {
+    "use strict";
+
+    /* ESTIMATES AND ASSUMPTIONS (all in one place)
+       - Email and cloud upload: about 2.5 MB per second
+         (a typical school connection, about 20 Mbps upload).
+       - USB stick copy: about 30 MB per second (an ordinary USB stick).
+       - Email attachment limit: 25 MB. Most email services stop at about
+         this size (Gmail's documented limit is 25 MB).
+       - 1 GB is treated as 1,000 MB, so the film is 1,500 MB.
+       - time in seconds = file size in MB / speed in MB per second.
+       - USB time is copy time only. It does not include carrying the stick.
+       Results: photo 1.6 s / 0.13 s, song 3.2 s / 0.27 s,
+                project 120 s / 10 s, film 600 s / 50 s (net / USB). */
+    var NET_MB_PER_S = 2.5;
+    var USB_MB_PER_S = 30;
+    var EMAIL_LIMIT_MB = 25;
+
+    var buttons = Array.prototype.slice.call(document.querySelectorAll(".btn-row .ex-btn"));
+    var lanes = {
+      email: document.getElementById("lane-email"),
+      cloud: document.getElementById("lane-cloud"),
+      usb: document.getElementById("lane-usb")
+    };
+
+    function words(seconds) {
+      if (seconds < 1) return "less than 1 second";
+      if (seconds < 60) {
+        var s = Math.round(seconds);
+        return "about " + s + (s === 1 ? " second" : " seconds");
+      }
+      var m = Math.round(seconds / 60);
+      return "about " + m + (m === 1 ? " minute" : " minutes");
+    }
+
+    /* The bar is not real time. Longer waits get a longer bar animation,
+       squeezed so that 10 minutes plays in about 3 seconds. */
+    function barSeconds(seconds) {
+      return 0.5 + 0.9 * Math.log(1 + seconds) / Math.LN10;
+    }
+
+    function setBar(lane, percent, seconds) {
+      var fill = lane.querySelector(".fill");
+      fill.style.transition = "none";
+      fill.style.width = "0";
+      void fill.offsetWidth; /* restart the animation */
+      fill.style.transition = "width " + seconds.toFixed(2) + "s linear";
+      fill.style.width = percent + "%";
+    }
+
+    function setTime(lane, big, small) {
+      lane.querySelector(".time-big").textContent = big;
+      lane.querySelector(".time-small").textContent = small;
+    }
+
+    function clearLane(lane) {
+      var fill = lane.querySelector(".fill");
+      fill.style.transition = "none";
+      fill.style.width = "0";
+      lane.classList.remove("blocked");
+      lane.classList.add("idle");
+      setTime(lane, "Pick a file", "");
+    }
+
+    function send(mb) {
+      var netTime = mb / NET_MB_PER_S;
+      var usbTime = mb / USB_MB_PER_S;
+      var emailTag = lanes.email.querySelector(".ex-tag");
+
+      Object.keys(lanes).forEach(function (k) { lanes[k].classList.remove("idle", "blocked"); });
+
+      if (mb > EMAIL_LIMIT_MB) {
+        lanes.email.classList.add("blocked");
+        setBar(lanes.email, 12, 0.5);
+        setTime(lanes.email, "Cannot send", "");
+        emailTag.className = "ex-tag bad";
+        emailTag.textContent = "Too big";
+      } else {
+        setBar(lanes.email, 100, barSeconds(netTime));
+        setTime(lanes.email, words(netTime), "to send");
+        emailTag.className = "ex-tag good";
+        emailTag.textContent = "Small enough to send";
+      }
+      emailTag.hidden = false;
+
+      setBar(lanes.cloud, 100, barSeconds(netTime));
+      setTime(lanes.cloud, words(netTime), "to upload");
+
+      setBar(lanes.usb, 100, barSeconds(usbTime));
+      setTime(lanes.usb, words(usbTime), "to copy");
+    }
+
+    buttons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        buttons.forEach(function (b) { b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
+        send(Number(btn.getAttribute("data-mb")));
+        Explorer.track();
+      });
+    });
+
+    function reset() {
+      buttons.forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+      Object.keys(lanes).forEach(function (k) { clearLane(lanes[k]); });
+      lanes.email.querySelector(".ex-tag").hidden = true;
+    }
+
+    Explorer.init({ unlockAfter: 5, onReset: reset });
+    reset();
+  })();
+</script>
+</body>
+</html>
