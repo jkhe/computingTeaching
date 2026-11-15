@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resolution</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/explorer.css">
+<style>
+  /* Page-specific styles only. */
+  /* The stage takes exactly the space left over, so the page never scrolls.
+     The canvases are then sized in JS to fit the stage. */
+  .ex-main { min-height: 0; }
+  .ex-stage { flex: 1 1 0px; padding: 10px 16px; gap: 28px; align-items: flex-start; }
+
+  .rz-fig { display: flex; flex-direction: column; gap: 4px; }
+  .rz-cap {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 20px;
+    height: 20px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .rz-cap strong { color: var(--text); font-weight: 800; }
+
+  #rz-big {
+    display: block;
+    border-radius: 6px;
+    background: #17365D;
+  }
+
+  .rz-realbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #F3F4F6;
+    border: 2px dashed var(--line-strong);
+    border-radius: 6px;
+  }
+  #rz-real {
+    display: block;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+  }
+
+  .ex-controls input[type="range"].ex-slider { width: min(460px, 38vw); }
+  .ex-readout { min-width: 15.5em; text-align: left; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body class="unit-2">
+
+<header class="ex-header">
+  <div>
+    <p class="ex-unit">Working with Text and Images</p>
+    <h1>Resolution</h1>
+  </div>
+  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
+</header>
+
+<main class="ex-main">
+  <section class="ex-goal" aria-label="Your goal">
+    <span class="ex-goal-label">Your goal</span>
+    <p>Find the fewest pixels where you can still read every word.</p>
+  </section>
+
+  <section class="ex-stage" id="rz-stage">
+    <div class="rz-fig">
+      <p class="rz-cap"><strong>Poster size</strong></p>
+      <canvas id="rz-big" role="img" aria-label="A poster shown large."></canvas>
+    </div>
+    <div class="rz-fig">
+      <p class="rz-cap" id="rz-realcap" aria-live="polite"><strong>Real size</strong></p>
+      <div class="rz-realbox" id="rz-realbox">
+        <canvas id="rz-real" aria-hidden="true"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="ex-controls" aria-label="Control">
+    <label class="ex-control-label" for="rz-slider">Pixels across</label>
+    <input class="ex-slider" type="range" id="rz-slider" min="0" max="12" step="1" value="0">
+    <span class="ex-readout" id="rz-readout" aria-live="polite"></span>
+  </section>
+
+  <section class="ex-next" id="ex-next" aria-live="polite">
+    <span class="ex-next-label">Next challenge</span>
+    <p>More pixels makes a bigger file. Why not always use the most pixels?</p>
+  </section>
+</main>
+
+<footer class="ex-footer">
+  <span class="ex-answer">Answer the question in Nearpod.</span>
+  <span>Working with Text and Images</span>
+</footer>
+
+<script src="shared/explorer.js"></script>
+<script>
+  (function () {
+    "use strict";
+
+    /* The poster is drawn once at 1536 x 1152 (4:3). Every slider step divides
+       1536 exactly, so each low-resolution pixel is a true average of a whole
+       square of the original (a box filter). Nothing is faked: the picture on
+       screen is the real N-pixel-wide image, drawn back up with smoothing off. */
+    var SRC_W = 1536, SRC_H = 1152;
+    var STEPS = [8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512];
+    var START_INDEX = 0;
+    var NEXT_CARD_HEIGHT = 51;   // height of the one-line Next challenge card in px
+    var FONT_STACK = '"Arial Rounded MT Bold", "Arial Rounded MT", "Nunito", Arial, sans-serif';
+
+    var stage = document.getElementById("rz-stage");
+    var big = document.getElementById("rz-big");
+    var real = document.getElementById("rz-real");
+    var realBox = document.getElementById("rz-realbox");
+    var realCap = document.getElementById("rz-realcap");
+    var slider = document.getElementById("rz-slider");
+    var readout = document.getElementById("rz-readout");
+
+    var srcData = null;      // Uint8ClampedArray of the full-size poster
+    var cache = {};          // N -> small canvas holding the N-pixel-wide image
+    var lastIndex = START_INDEX;
+    var view = { w: 0, h: 0, boxW: 0, boxH: 0 };
+
+    function commas(n) {
+      return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    }
+
+    function fitFont(ctx, text, weight, startPx, maxWidth) {
+      var px = startPx;
+      ctx.font = weight + " " + px + "px " + FONT_STACK;
+      var w = ctx.measureText(text).width;
+      if (w > maxWidth) {
+        px = Math.floor(px * maxWidth / w);
+        ctx.font = weight + " " + px + "px " + FONT_STACK;
+      }
+      return px;
+    }
+
+    function drawBook(ctx, x, y, w, h, fill, band) {
+      ctx.fillStyle = fill;
+      ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = band;
+      ctx.fillRect(x + 70, y, 44, h);
+      ctx.fillRect(x + w - 114, y, 44, h);
+      ctx.fillStyle = "#FFF8E7";            // page edges
+      ctx.fillRect(x + w - 26, y + 20, 26, h - 40);
+    }
+
+    function drawPoster() {
+      var c = document.createElement("canvas");
+      c.width = SRC_W;
+      c.height = SRC_H;
+      var ctx = c.getContext("2d", { willReadFrequently: true });
+
+      ctx.fillStyle = "#17365D";
+      ctx.fillRect(0, 0, SRC_W, SRC_H);
+
+      ctx.fillStyle = "#FFF8E7";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      fitFont(ctx, "BOOK CLUB", 800, 236, 1300);
+      ctx.fillText("BOOK CLUB", SRC_W / 2, 300);
+
+      // A stack of three books, made from rectangles.
+      drawBook(ctx, 478, 410, 560, 130, "#F2695C", "#B93E33");
+      drawBook(ctx, 408, 540, 700, 130, "#F5B841", "#C98A12");
+      drawBook(ctx, 448, 670, 640, 130, "#6FCFA9", "#2F8F6B");
+
+      ctx.fillStyle = "#FFF8E7";
+      fitFont(ctx, "Every Thursday, Lunchtime", 800, 104, 1380);
+      ctx.fillText("Every Thursday, Lunchtime", SRC_W / 2, 1010);
+
+      srcData = ctx.getImageData(0, 0, SRC_W, SRC_H).data;
+      cache = {};
+    }
+
+    /* Average each f x f square of the big poster into one pixel. */
+    function lowRes(n) {
+      if (cache[n]) return cache[n];
+      var f = SRC_W / n;
+      var m = SRC_H / f;
+      var c = document.createElement("canvas");
+      c.width = n;
+      c.height = m;
+      var ctx = c.getContext("2d");
+      var out = ctx.createImageData(n, m);
+      var o = out.data;
+      var area = f * f;
+      for (var y = 0; y < m; y++) {
+        for (var x = 0; x < n; x++) {
+          var r = 0, g = 0, b = 0;
+          for (var yy = 0; yy < f; yy++) {
+            var i = ((y * f + yy) * SRC_W + x * f) * 4;
+            for (var xx = 0; xx < f; xx++) {
+              r += srcData[i]; g += srcData[i + 1]; b += srcData[i + 2];
+              i += 4;
+            }
+          }
+          var j = (y * n + x) * 4;
+          o[j] = r / area; o[j + 1] = g / area; o[j + 2] = b / area; o[j + 3] = 255;
+        }
+      }
+      ctx.putImageData(out, 0, 0);
+      cache[n] = c;
+      return c;
+    }
+
+    function layout() {
+      var cs = getComputedStyle(stage);
+      var innerH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      var innerW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      var gap = parseFloat(cs.columnGap) || 28;
+      // Keep room for the Next challenge card before it appears, so the poster
+      // stays the same size when the card arrives (a size change would change
+      // how easy the words are to read part-way through the task).
+      var nextCard = document.getElementById("ex-next");
+      if (!nextCard.classList.contains("show")) {
+        var mainGap = parseFloat(getComputedStyle(stage.parentNode).rowGap) || 12;
+        innerH -= NEXT_CARD_HEIGHT + mainGap;
+      }
+      var h = Math.max(150, Math.min(330, Math.floor(innerH - 24)));
+      var w = Math.round(h * 4 / 3);
+      if (w > innerW * 0.5) { w = Math.floor(innerW * 0.5); h = Math.round(w * 3 / 4); }
+      var boxW = Math.max(120, Math.min(540, Math.floor(innerW - w - gap)));
+      view = { w: w, h: h, boxW: boxW - 4, boxH: h - 4 };   // minus the dashed border
+      big.style.width = w + "px";
+      big.style.height = h + "px";
+      realBox.style.width = boxW + "px";
+      realBox.style.height = h + "px";
+    }
+
+    function render() {
+      if (!srcData) return;
+      var n = STEPS[Number(slider.value)];
+      var img = lowRes(n);
+      var m = img.height;
+      var dpr = window.devicePixelRatio || 1;
+
+      // Big view: the small image stretched to the same poster size every time.
+      var bw = Math.round(view.w * dpr), bh = Math.round(view.h * dpr);
+      if (big.width !== bw || big.height !== bh) { big.width = bw; big.height = bh; }
+      var bctx = big.getContext("2d");
+      // Smoothing stays OFF whenever the image is being stretched, so each pixel
+      // shows as a block. It is only on when the image has more pixels than the
+      // space on screen and has to be shrunk to fit.
+      bctx.imageSmoothingEnabled = n > bw;
+      bctx.imageSmoothingQuality = "high";
+      bctx.clearRect(0, 0, bw, bh);
+      bctx.drawImage(img, 0, 0, n, m, 0, 0, bw, bh);
+
+      // Real size: one image pixel on one screen pixel.
+      real.width = n;
+      real.height = m;
+      real.getContext("2d").drawImage(img, 0, 0);
+      var cw = n / dpr, ch = m / dpr;
+      real.style.width = cw + "px";
+      real.style.height = ch + "px";
+      var tooBig = cw > view.boxW || ch > view.boxH;
+      var cap = tooBig ? "<strong>Real size</strong> (too big to fit here)" : "<strong>Real size</strong>";
+      if (realCap.innerHTML !== cap) realCap.innerHTML = cap;
+
+      var text = n + " × " + m + " = " + commas(n * m) + " pixels";
+      readout.textContent = text;
+      slider.setAttribute("aria-valuetext", n + " by " + m + ", " + commas(n * m) + " pixels");
+      big.setAttribute("aria-label", "The poster drawn with " + n + " pixels across, stretched to poster size.");
+    }
+
+    slider.addEventListener("input", function () {
+      var i = Number(slider.value);
+      if (i === lastIndex) return;
+      lastIndex = i;
+      render();
+      Explorer.track();
+    });
+
+    Explorer.init({
+      unlockAfter: 8,
+      onReset: function () {
+        slider.value = START_INDEX;
+        lastIndex = START_INDEX;
+        render();
+      }
+    });
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () { layout(); render(); }).observe(stage);
+    } else {
+      window.addEventListener("resize", function () { layout(); render(); });
+    }
+
+    // Draw straight away with whatever font is ready, then again once the
+    // rounded font has loaded so the poster text matches the page.
+    layout();
+    drawPoster();
+    render();
+    if (document.fonts && document.fonts.ready) {
+      var redraw = function () { drawPoster(); render(); };
+      document.fonts.ready.then(redraw);
+      if (document.fonts.load) {
+        document.fonts.load('800 100px "Nunito"').then(redraw, function () {});
+      }
+    }
+  })();
+</script>
+</body>
+</html>

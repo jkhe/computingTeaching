@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sort to find it</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/explorer.css">
+<style>
+  :root {
+    --rh: 23px;   /* row height */
+    --hh: 48px;   /* heading height */
+    --stripe: #ECEFF3;
+  }
+
+  /* This page needs every pixel of height for 12 rows. */
+  .ex-main { gap: 8px; padding-top: 10px; padding-bottom: 4px; }
+  .sf-stage {
+    padding: 5px 10px;
+    align-items: flex-start;
+  }
+  /* Stripes are painted behind the rows, so they stay still while rows move. */
+  .sf-wrap {
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    background-image: repeating-linear-gradient(to bottom,
+      #FFFFFF 0, #FFFFFF var(--rh), var(--stripe) var(--rh), var(--stripe) calc(var(--rh) * 2));
+    background-position: 0 calc(var(--hh) + 4px);
+    background-repeat: no-repeat;
+  }
+  table.sf {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .sf col.place { width: 32%; }
+  .sf th {
+    padding: 0 3px 4px;
+    height: calc(var(--hh) + 4px);
+    background: var(--panel);
+  }
+  .sf th:first-child { padding-left: 0; }
+  .sf th:last-child { padding-right: 0; }
+  .sortbtn {
+    width: 100%;
+    height: var(--hh);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    font-family: var(--font);
+    color: var(--text);
+    background: var(--panel);
+    border: 2px solid var(--line-strong);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .sortbtn:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .sortbtn:focus-visible { outline: 3px solid var(--accent); outline-offset: -5px; }
+  .sortbtn .name { font-size: 18px; font-weight: 800; line-height: 1.15; }
+  .sortbtn .dir {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--muted);
+  }
+  .sortbtn svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .sortbtn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .sortbtn.active .dir { color: #fff; }
+  .sortbtn.active:focus-visible { outline-color: #fff; }
+
+  .sf td {
+    height: var(--rh);
+    line-height: var(--rh);
+    padding: 0 14px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    font-variant-numeric: tabular-nums;
+  }
+  .sf td:first-child { text-align: left; }
+  .sf td.sorted { background: rgba(15, 118, 110, 0.14); font-weight: 800; color: #1F2937; }
+  .sf tbody tr { will-change: transform; }
+
+  .sf-controls { padding: 3px 18px; gap: 4px 28px; }
+  .sf-controls .ex-readout { min-width: 9ch; line-height: 1.3; }
+  .ex-next { padding-top: 7px; padding-bottom: 7px; }
+
+  @media (max-width: 1100px), (max-height: 620px) {
+    :root { --rh: 20px; --hh: 40px; }
+    .ex-main { gap: 6px; padding-top: 8px; }
+    table.sf { font-size: 16px; }
+    .sortbtn .name { font-size: 16px; }
+    .sortbtn .dir { font-size: 13px; }
+    .sf-stage { padding: 5px 8px; }
+    .sf-controls { padding: 2px 12px; }
+    .sf-controls .ex-control-label { font-size: 16px; }
+    .sf td { padding: 0 10px; }
+  }
+</style>
+</head>
+<body class="unit-6">
+
+<header class="ex-header">
+  <div>
+    <p class="ex-unit">Handling Data</p>
+    <h1>Sort to find it</h1>
+  </div>
+  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
+</header>
+
+<main class="ex-main">
+  <section class="ex-goal" aria-label="Your goal">
+    <span class="ex-goal-label">Your goal</span>
+    <p>Find the quietest place on average, in as few clicks as you can.</p>
+  </section>
+
+  <section class="ex-stage sf-stage">
+    <div class="sf-wrap">
+      <table class="sf" id="table">
+        <caption class="ex-visually-hidden">Sound readings in the park, from 0 (silent) to 255 (very loud)</caption>
+        <colgroup><col class="place"><col><col><col><col></colgroup>
+        <thead><tr id="head"></tr></thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+    <p class="ex-visually-hidden" id="live" aria-live="polite"></p>
+  </section>
+
+  <section class="ex-controls sf-controls" aria-label="Control">
+    <span class="ex-control-label">Click a column heading to sort the rows.</span>
+    <span class="ex-readout" id="clicks" aria-live="polite">Clicks: 0</span>
+  </section>
+
+  <section class="ex-next" id="ex-next" aria-live="polite">
+    <span class="ex-next-label">Next challenge</span>
+    <p>Which place had the loudest single reading? Which column did you sort?</p>
+  </section>
+</main>
+
+<footer class="ex-footer">
+  <span class="ex-answer">Answer the question in Nearpod.</span>
+  <span>Handling Data</span>
+</footer>
+
+<script src="shared/explorer.js"></script>
+<script>
+  (function () {
+    "use strict";
+
+    /* Invented sound readings (micro:bit sound level, 0 to 255).
+       The average is worked out below, rounded to a whole number.
+       Built so that:
+       - Lavender garden is quietest on average, but Pond is lowest in Reading 1.
+       - Playground is loudest on average, but the loudest single reading
+         (236) is at Cafe by the road, in Reading 2. */
+    var DATA = [
+      ["Main gate", 149, 160, 144],
+      ["Basketball cage", 169, 188, 171],
+      ["Pond", 36, 52, 53],
+      ["By the tennis courts", 138, 151, 137],
+      ["Playground", 207, 195, 201],
+      ["Picnic area", 73, 79, 76],
+      ["Car park", 127, 140, 132],
+      ["Lavender garden", 41, 33, 40],
+      ["Cafe by the road", 121, 236, 117],
+      ["Bandstand", 84, 97, 86],
+      ["Middle of the park", 58, 71, 63],
+      ["Dog walking area", 118, 104, 114]
+    ];
+    var COLS = ["Place", "Reading 1", "Reading 2", "Reading 3", "Average"];
+
+    var ICON_UP = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5 11 10.5H1Z" fill="currentColor"/></svg>';
+    var ICON_DOWN = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10.5 11 1.5H1Z" fill="currentColor"/></svg>';
+    var ICON_BOTH = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0.5 9.5 5H2.5ZM6 11.5 9.5 7H2.5Z" fill="currentColor"/></svg>';
+
+    var head = document.getElementById("head");
+    var body = document.getElementById("body");
+    var clicksEl = document.getElementById("clicks");
+    var live = document.getElementById("live");
+    var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    var rows = [];      /* { values: [...], tr: element } */
+    var sortCol = -1;   /* -1 = not sorted yet */
+    var ascending = true;
+    var clicks = 0;
+
+    function build() {
+      var i, c;
+      for (c = 0; c < COLS.length; c++) {
+        var th = document.createElement("th");
+        th.setAttribute("scope", "col");
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "sortbtn";
+        btn.setAttribute("data-col", c);
+        btn.innerHTML = '<span class="name">' + COLS[c] + '</span><span class="dir"></span>';
+        btn.addEventListener("click", onSort);
+        th.appendChild(btn);
+        head.appendChild(th);
+      }
+      for (i = 0; i < DATA.length; i++) {
+        var d = DATA[i];
+        var avg = Math.round((d[1] + d[2] + d[3]) / 3);
+        var values = [d[0], d[1], d[2], d[3], avg];
+        var tr = document.createElement("tr");
+        for (c = 0; c < values.length; c++) {
+          var cell = document.createElement("td");
+          cell.textContent = values[c];
+          tr.appendChild(cell);
+        }
+        rows.push({ values: values, tr: tr, start: i });
+      }
+    }
+
+    function dirWords(col, asc) {
+      if (col === 0) return asc ? "A to Z" : "Z to A";
+      return asc ? "Smallest first" : "Biggest first";
+    }
+
+    function order() {
+      var list = rows.slice();
+      if (sortCol < 0) {
+        list.sort(function (a, b) { return a.start - b.start; });
+        return list;
+      }
+      list.sort(function (a, b) {
+        var x = a.values[sortCol], y = b.values[sortCol], r;
+        if (sortCol === 0) r = x.localeCompare(y);
+        else r = x - y;
+        if (r === 0) r = a.values[0].localeCompare(b.values[0]);
+        return ascending ? r : -r;
+      });
+      return list;
+    }
+
+    function render(animate) {
+      var i, c, first = [];
+      var list = order();
+      if (animate) {
+        for (i = 0; i < rows.length; i++) first.push(rows[i].tr.getBoundingClientRect().top);
+      }
+      for (i = 0; i < list.length; i++) {
+        body.appendChild(list[i].tr);
+        var cells = list[i].tr.children;
+        for (c = 0; c < cells.length; c++) cells[c].className = c === sortCol ? "sorted" : "";
+      }
+      /* FLIP: start each row where it was, then let it glide to its new place. */
+      if (animate && !reduced.matches) {
+        for (i = 0; i < rows.length; i++) {
+          var tr = rows[i].tr;
+          tr.style.transition = "none";
+          tr.style.transform = "";
+          var dy = first[i] - tr.getBoundingClientRect().top;
+          tr.style.transform = dy ? "translateY(" + dy + "px)" : "";
+        }
+        body.getBoundingClientRect();
+        for (i = 0; i < rows.length; i++) {
+          rows[i].tr.style.transition = "transform 0.5s ease";
+          rows[i].tr.style.transform = "";
+        }
+      } else {
+        for (i = 0; i < rows.length; i++) {
+          rows[i].tr.style.transition = "none";
+          rows[i].tr.style.transform = "";
+        }
+      }
+      var btns = head.querySelectorAll(".sortbtn");
+      for (c = 0; c < btns.length; c++) {
+        var active = c === sortCol;
+        btns[c].classList.toggle("active", active);
+        btns[c].querySelector(".dir").innerHTML = active
+          ? (ascending ? ICON_UP : ICON_DOWN) + "<span>" + dirWords(c, ascending) + "</span>"
+          : ICON_BOTH + "<span>Sort</span>";
+        btns[c].parentNode.setAttribute("aria-sort", active ? (ascending ? "ascending" : "descending") : "none");
+      }
+      clicksEl.textContent = "Clicks: " + clicks;
+    }
+
+    function onSort(e) {
+      var col = Number(e.currentTarget.getAttribute("data-col"));
+      if (col === sortCol) ascending = !ascending;
+      else { sortCol = col; ascending = true; }
+      clicks += 1;
+      render(true);
+      live.textContent = "Sorted by " + COLS[col] + ", " + dirWords(col, ascending) + ". Top row: " +
+        body.firstElementChild.firstElementChild.textContent + ".";
+      Explorer.track();
+    }
+
+    Explorer.init({
+      unlockAfter: 4,
+      onReset: function () {
+        sortCol = -1;
+        ascending = true;
+        clicks = 0;
+        live.textContent = "";
+        render(false);
+      }
+    });
+
+    build();
+    render(false);
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watch the variable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/explorer.css">
+<style>
+  /* Block colours: close to the usual block-coding category colours,
+     darkened where needed so white text passes 4.5:1. */
+  :root {
+    --blk-var: #D0123A;    /* Variables (red) */
+    --blk-loop: #107C10;   /* Loops (green) */
+    --blk-basic: #1565C0;  /* Basic (blue) */
+    --ring: #FACC15;
+  }
+
+  .vb-stage {
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 16px;
+  }
+  .vb-status {
+    font-size: 20px;
+    font-weight: 800;
+    min-height: 29px;
+    text-align: center;
+  }
+  .vb-cols {
+    flex: 1;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1.25fr 1fr 1fr;
+    align-items: center;
+    justify-items: center;
+    gap: 16px;
+  }
+  .vb-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .vb-cap {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* ----- Code blocks ----- */
+  .blocks {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  .blk {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 39px;
+    padding: 4px 14px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 19px;
+    font-weight: 800;
+    white-space: nowrap;
+    transition: box-shadow 0.15s;
+  }
+  .blk.var { background: var(--blk-var); }
+  .blk.basic { background: var(--blk-basic); }
+  .blk.current { box-shadow: 0 0 0 3px #111827, 0 0 0 7px var(--ring); position: relative; z-index: 1; }
+  .pill {
+    background: #fff;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 0 12px;
+    line-height: 28px;
+  }
+  .cblk {
+    background: var(--blk-loop);
+    border-radius: 8px;
+    padding-bottom: 12px;
+  }
+  .cblk > .blk { background: transparent; }
+  .cbody {
+    margin-left: 20px;
+    background: var(--panel);
+    border-radius: 8px 0 0 8px;
+    padding: 5px 0 5px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+    min-width: 255px;
+  }
+  .iter {
+    font-size: 14px;
+    background: #0B5A0B;
+    border-radius: 6px;
+    padding: 2px 8px;
+    visibility: hidden;
+  }
+  .iter.on { visibility: visible; }
+
+  /* ----- Variable box ----- */
+  .vbox {
+    position: relative;
+    width: 200px;
+    height: 122px;
+    margin-top: 14px;
+    border: 5px solid var(--text);
+    border-radius: 14px;
+    background: #FFF7ED;
+    overflow: hidden;
+  }
+  .vbox-wrap { position: relative; }
+  .vname {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    background: var(--blk-var);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
+    border-radius: 999px;
+    padding: 1px 16px;
+  }
+  .vval {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 8px;
+    font-size: 76px;
+    font-weight: 800;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .vval.in { animation: vb-in 0.35s ease-out; }
+  .vval.out { animation: vb-out 0.35s ease-in forwards; }
+  @keyframes vb-in { from { transform: translateY(100%); } to { transform: none; } }
+  @keyframes vb-out { from { transform: none; } to { transform: translateY(-100%); } }
+  .vhist {
+    font-size: 16px;
+    font-weight: 800;
+    min-height: 23px;
+    color: var(--text);
+  }
+
+  /* ----- micro:bit ----- */
+  .mb { width: 204px; height: auto; display: block; }
+  .led { fill: #4A1F1F; }
+  .led.on { fill: #FF4D3D; filter: drop-shadow(0 0 3px #FF4D3D); }
+  .mb text { font-family: var(--font); font-weight: 800; font-size: 11px; fill: #E5E7EB; }
+
+  .ex-next .ex-btn { flex-shrink: 0; margin-left: auto; }
+
+  @media (max-width: 1100px), (max-height: 620px) {
+    .vb-stage { padding: 8px 10px; gap: 6px; }
+    .vb-status { font-size: 18px; min-height: 26px; }
+    .blk { font-size: 16px; min-height: 34px; padding: 4px 12px; }
+    .pill { line-height: 24px; padding: 0 10px; }
+    .cbody { min-width: 205px; }
+    .cblk { padding-bottom: 10px; }
+    .vbox { width: 170px; height: 104px; margin-top: 12px; }
+    .vval { font-size: 60px; }
+    .mb { width: 172px; }
+    .vb-cap { font-size: 13px; }
+  }
+</style>
+</head>
+<body class="unit-5">
+
+<header class="ex-header">
+  <div>
+    <p class="ex-unit">Coding and Programming</p>
+    <h1>Watch the variable</h1>
+  </div>
+  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
+</header>
+
+<main class="ex-main">
+  <section class="ex-goal" aria-label="Your goal">
+    <span class="ex-goal-label">Your goal</span>
+    <p>Predict the number the micro:bit shows. Then run it step by step to check.</p>
+  </section>
+
+  <section class="ex-stage vb-stage">
+    <p class="vb-status" id="status" aria-live="polite">Predict: what number will the micro:bit show?</p>
+    <div class="vb-cols">
+      <div class="vb-col">
+        <span class="vb-cap">The program</span>
+        <div class="blocks" id="blocks"></div>
+      </div>
+      <div class="vb-col">
+        <span class="vb-cap">The variable</span>
+        <div class="vbox-wrap">
+          <span class="vname">score</span>
+          <div class="vbox" id="vbox" role="img" aria-label="Variable score holds 0"></div>
+        </div>
+        <p class="vhist" id="vhist"></p>
+      </div>
+      <div class="vb-col">
+        <span class="vb-cap">The micro:bit</span>
+        <svg class="mb" id="mb" viewBox="0 0 200 168" role="img" aria-label="micro:bit screen is blank"></svg>
+      </div>
+    </div>
+  </section>
+
+  <section class="ex-controls" aria-label="Control">
+    <button type="button" class="ex-btn primary" id="step">Run next step</button>
+    <span class="ex-readout" id="count" aria-live="polite">Step 0 of 8</span>
+  </section>
+
+  <section class="ex-next" id="ex-next" aria-live="polite">
+    <span class="ex-next-label">Next challenge</span>
+    <p>This program should show 6, but it shows 2. Step through it. What is wrong?</p>
+    <button type="button" class="ex-btn small" id="swap">Try the broken program</button>
+  </section>
+</main>
+
+<footer class="ex-footer">
+  <span class="ex-answer">Answer the question in Nearpod.</span>
+  <span>Coding and Programming</span>
+</footer>
+
+<script src="shared/explorer.js"></script>
+<script>
+  (function () {
+    "use strict";
+
+    /* Assumption: in block coding for the micro:bit a number variable
+       holds 0 before anything is stored in it, so the box starts at 0. */
+
+    var LOOPS = 3;
+    var CHANGE = 2;
+
+    var SET = '<div class="blk var" data-b="set">set <span class="pill">score</span> to <span class="pill">0</span></div>';
+    var CHG = '<div class="blk var" data-b="chg">change <span class="pill">score</span> by <span class="pill">' + CHANGE + '</span></div>';
+    var SHOW = '<div class="blk basic" data-b="show">show number <span class="pill">score</span></div>';
+    function loop(inner) {
+      return '<div class="cblk"><div class="blk" data-b="rep">repeat <span class="pill">' + LOOPS +
+        '</span> times <span class="iter" id="iter">time 1 of 3</span></div><div class="cbody">' + inner + '</div></div>';
+    }
+
+    /* Program 1: set once, then loop. Program 2: the set is inside the loop (the bug). */
+    var PROGRAMS = {
+      1: { html: SET + loop(CHG) + SHOW, steps: buildSteps(false) },
+      2: { html: loop(SET + CHG) + SHOW, steps: buildSteps(true) }
+    };
+
+    function buildSteps(setInside) {
+      var s = [];
+      if (!setInside) s.push({ b: "set" });
+      for (var i = 1; i <= LOOPS; i++) {
+        s.push({ b: "rep", iter: i });
+        if (setInside) s.push({ b: "set" });
+        s.push({ b: "chg" });
+      }
+      s.push({ b: "show" });
+      return s;
+    }
+
+    /* 5 x 5 digit patterns for the LED screen */
+    var FONT = {
+      "0": [".###.", "#...#", "#...#", "#...#", ".###."],
+      "1": ["..#..", ".##..", "..#..", "..#..", ".###."],
+      "2": ["###..", "...#.", ".##..", "#....", "####."],
+      "3": ["###..", "...#.", ".##..", "...#.", "###.."],
+      "4": ["..##.", ".#.#.", "#..#.", "#####", "...#."],
+      "5": ["#####", "#....", "####.", "....#", "####."],
+      "6": [".###.", "#....", "####.", "#...#", ".###."],
+      "7": ["#####", "...#.", "..#..", ".#...", "#...."],
+      "8": [".###.", "#...#", ".###.", "#...#", ".###."],
+      "9": [".###.", "#...#", ".####", "....#", ".###."]
+    };
+
+    var blocksEl = document.getElementById("blocks");
+    var statusEl = document.getElementById("status");
+    var vbox = document.getElementById("vbox");
+    var vhist = document.getElementById("vhist");
+    var mb = document.getElementById("mb");
+    var stepBtn = document.getElementById("step");
+    var countEl = document.getElementById("count");
+    var swapBtn = document.getElementById("swap");
+
+    var prog = 1, index = 0, score = 0, history = [], digitTimer = null;
+    var leds = [];
+
+    function drawMicrobit() {
+      var NS = "http://www.w3.org/2000/svg";
+      var h = '<rect x="2" y="2" width="196" height="164" rx="18" fill="#1F2937"/>';
+      /* edge connector */
+      for (var p = 0; p < 5; p++) {
+        h += '<rect x="' + (17 + p * 36) + '" y="140" width="22" height="26" rx="3" fill="#D4A72C"/>';
+        h += '<circle cx="' + (28 + p * 36) + '" cy="151" r="5" fill="#1F2937"/>';
+      }
+      /* buttons */
+      h += '<circle cx="24" cy="72" r="12" fill="#9CA3AF"/><circle cx="24" cy="72" r="7" fill="#111827"/>';
+      h += '<circle cx="176" cy="72" r="12" fill="#9CA3AF"/><circle cx="176" cy="72" r="7" fill="#111827"/>';
+      h += '<text x="24" y="100" text-anchor="middle">A</text><text x="176" y="100" text-anchor="middle">B</text>';
+      mb.innerHTML = h;
+      for (var r = 0; r < 5; r++) {
+        for (var c = 0; c < 5; c++) {
+          var led = document.createElementNS(NS, "rect");
+          led.setAttribute("x", 51 + c * 21);
+          led.setAttribute("y", 20 + r * 22);
+          led.setAttribute("width", 14);
+          led.setAttribute("height", 16);
+          led.setAttribute("rx", 3);
+          led.setAttribute("class", "led");
+          mb.appendChild(led);
+          leds.push(led);
+        }
+      }
+    }
+
+    function setLeds(pattern) {
+      for (var i = 0; i < 25; i++) {
+        var on = pattern && pattern[Math.floor(i / 5)].charAt(i % 5) === "#";
+        leds[i].setAttribute("class", on ? "led on" : "led");
+      }
+    }
+
+    function clearScreen() {
+      if (digitTimer) { clearInterval(digitTimer); digitTimer = null; }
+      setLeds(null);
+      mb.setAttribute("aria-label", "micro:bit screen is blank");
+    }
+
+    /* One digit stays on. Two or more digits show one after another. */
+    function showNumber(n) {
+      var text = String(n), i = 0;
+      clearScreen();
+      mb.setAttribute("aria-label", "micro:bit shows " + text);
+      setLeds(FONT[text.charAt(0)]);
+      if (text.length > 1) {
+        digitTimer = setInterval(function () {
+          i = (i + 1) % (text.length + 1);
+          setLeds(i < text.length ? FONT[text.charAt(i)] : null);
+        }, 800);
+      }
+    }
+
+    function setValue(v, animate) {
+      var olds = vbox.querySelectorAll(".vval");
+      var i;
+      for (i = 0; i < olds.length; i++) {
+        if (!animate || olds[i].classList.contains("out")) vbox.removeChild(olds[i]);
+      }
+      var cur = vbox.querySelector(".vval");
+      if (cur) {
+        cur.className = "vval out";
+        cur.addEventListener("animationend", function () {
+          if (cur.parentNode) cur.parentNode.removeChild(cur);
+        });
+      }
+      var el = document.createElement("span");
+      el.className = animate ? "vval in" : "vval";
+      el.textContent = v;
+      vbox.appendChild(el);
+      vbox.setAttribute("aria-label", "Variable score holds " + v);
+    }
+
+    function highlight(id) {
+      var all = blocksEl.querySelectorAll(".blk");
+      for (var i = 0; i < all.length; i++) {
+        all[i].classList.toggle("current", all[i].getAttribute("data-b") === id);
+      }
+    }
+
+    function total() { return PROGRAMS[prog].steps.length; }
+
+    function renderCount() {
+      countEl.textContent = "Step " + index + " of " + total();
+      stepBtn.textContent = index >= total() ? "Run again" : "Run next step";
+    }
+
+    function restart() {
+      index = 0;
+      score = 0;
+      history = [];
+      blocksEl.innerHTML = PROGRAMS[prog].html;
+      statusEl.textContent = "Predict: what number will the micro:bit show?";
+      vhist.textContent = "";
+      setValue(0, false);
+      clearScreen();
+      renderCount();
+    }
+
+    function runStep() {
+      if (index >= total()) { restart(); return; }
+      var step = PROGRAMS[prog].steps[index];
+      var iter = document.getElementById("iter");
+      index += 1;
+      highlight(step.b);
+      if (step.b === "set") {
+        score = 0;
+        history.push(score);
+        setValue(score, true);
+        statusEl.textContent = "score is set to 0.";
+      } else if (step.b === "rep") {
+        iter.textContent = "time " + step.iter + " of " + LOOPS;
+        iter.classList.add("on");
+        statusEl.textContent = "Loop: time " + step.iter + " of " + LOOPS + ".";
+      } else if (step.b === "chg") {
+        var before = score;
+        score += CHANGE;
+        history.push(score);
+        setValue(score, true);
+        statusEl.textContent = "score changes from " + before + " to " + score + ".";
+      } else {
+        iter.classList.remove("on");
+        showNumber(score);
+        statusEl.textContent = "The micro:bit shows " + score + ".";
+      }
+      if (history.length) vhist.textContent = "Values so far: " + history.join(", ");
+      renderCount();
+    }
+
+    stepBtn.addEventListener("click", function () {
+      runStep();
+      Explorer.track();
+    });
+
+    swapBtn.addEventListener("click", function () {
+      prog = prog === 1 ? 2 : 1;
+      swapBtn.textContent = prog === 1 ? "Try the broken program" : "Back to the first program";
+      restart();
+    });
+
+    Explorer.init({
+      unlockAfter: 8,
+      onReset: function () {
+        prog = 1;
+        swapBtn.textContent = "Try the broken program";
+        restart();
+      }
+    });
+
+    drawMicrobit();
+    restart();
+  })();
+</script>
+</body>
+</html>

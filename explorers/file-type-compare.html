@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PNG or JPG?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/explorer.css">
+<style>
+  /* Page-specific styles only. */
+  /* The stage takes exactly the space left over, so the page never scrolls.
+     The canvases are then sized in JS to fit the stage. */
+  .ex-main { min-height: 0; }
+  .ex-stage {
+    flex: 1 1 0px;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .ft-row { display: flex; justify-content: center; gap: 28px; }
+  .ft-panel { display: flex; align-items: stretch; gap: 12px; }
+  .ft-view { display: block; border-radius: 6px; border: 2px solid var(--line-strong); }
+
+  .ft-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    width: 158px;
+  }
+  .ft-name {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1;
+    color: #fff;
+    background: var(--text);
+    border-radius: 8px;
+    padding: 5px 12px;
+  }
+  .ft-zoomwrap { display: flex; flex-direction: column; gap: 2px; }
+  .ft-zoomcap { font-size: 14px; font-weight: 800; line-height: 18px; color: var(--muted); }
+  .ft-zoom {
+    display: block;
+    border: 3px solid var(--text);
+    border-radius: 6px;
+    image-rendering: pixelated;
+  }
+  .ft-size {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ft-compare {
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 26px;
+    height: 26px;
+    color: var(--accent);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .ex-controls input[type="range"].ex-slider { width: min(480px, 42vw); }
+  .ex-readout { min-width: 7.5em; text-align: left; font-variant-numeric: tabular-nums; }
+
+  @media (max-width: 1100px), (max-height: 620px) {
+    .ft-row { gap: 16px; }
+    .ft-panel { gap: 10px; }
+    .ft-side { width: 140px; }
+    .ft-size { font-size: 25px; }
+    .ft-name { font-size: 18px; }
+    .ft-compare { font-size: 17px; }
+  }
+</style>
+</head>
+<body class="unit-2">
+
+<header class="ex-header">
+  <div>
+    <p class="ex-unit">Working with Text and Images</p>
+    <h1>PNG or JPG?</h1>
+  </div>
+  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
+</header>
+
+<main class="ex-main">
+  <section class="ex-goal" aria-label="Your goal">
+    <span class="ex-goal-label">Your goal</span>
+    <p>Find the lowest JPG quality where the words still look clean.</p>
+  </section>
+
+  <section class="ex-stage" id="ft-stage">
+    <div class="ft-row">
+      <div class="ft-panel">
+        <canvas class="ft-view" id="ft-png-view" role="img" aria-label="The poster saved as a PNG. The area around the logo is see-through."></canvas>
+        <div class="ft-side">
+          <span class="ft-name">PNG</span>
+          <div class="ft-zoomwrap">
+            <span class="ft-zoomcap">Zoomed in</span>
+            <canvas class="ft-zoom" id="ft-png-zoom" aria-hidden="true"></canvas>
+          </div>
+          <span class="ft-size" id="ft-png-size">&nbsp;</span>
+        </div>
+      </div>
+      <div class="ft-panel">
+        <canvas class="ft-view" id="ft-jpg-view" role="img" aria-label="The poster saved as a JPG. The area around the logo is a white box."></canvas>
+        <div class="ft-side">
+          <span class="ft-name">JPG</span>
+          <div class="ft-zoomwrap">
+            <span class="ft-zoomcap">Zoomed in</span>
+            <canvas class="ft-zoom" id="ft-jpg-zoom" aria-hidden="true"></canvas>
+          </div>
+          <span class="ft-size" id="ft-jpg-size">&nbsp;</span>
+        </div>
+      </div>
+    </div>
+    <p class="ft-compare" id="ft-compare" aria-live="polite">&nbsp;</p>
+  </section>
+
+  <section class="ex-controls" aria-label="Control">
+    <label class="ex-control-label" for="ft-slider">JPG quality</label>
+    <input class="ex-slider" type="range" id="ft-slider" min="5" max="100" step="5" value="100">
+    <span class="ex-readout" id="ft-readout" aria-live="polite"></span>
+  </section>
+
+  <section class="ex-next" id="ex-next" aria-live="polite">
+    <span class="ex-next-label">Next challenge</span>
+    <p>Your logo needs a see-through background. Which file type should you export?</p>
+  </section>
+</main>
+
+<footer class="ex-footer">
+  <span class="ex-answer">Answer the question in Nearpod.</span>
+  <span>Working with Text and Images</span>
+</footer>
+
+<script src="shared/explorer.js"></script>
+<script>
+  (function () {
+    "use strict";
+
+    /* How this page stays honest:
+       - One source poster (640 x 480) is drawn on a canvas, with a see-through
+         square around the logo.
+       - PNG size  = the real size of canvas.toDataURL("image/png").
+       - JPG size  = the real size of canvas.toDataURL("image/jpeg", quality),
+         after the poster is drawn onto white (JPG has no see-through).
+       - The JPG panel shows that real JPG, decoded again by the browser.
+       - Sizes are shown in KB with 1 KB = 1,000 bytes.
+       - The sky has fine grain added from a fixed-seed generator so it behaves
+         like a photo (photos have slightly different colour in every pixel).
+         The seed is fixed so the sizes are the same on every visit with the
+         same browser and font. */
+    var SRC_W = 640, SRC_H = 480;
+    var START_QUALITY = 100;
+    var NEXT_CARD_HEIGHT = 51;   // height of the one-line Next challenge card in px
+    var FONT_STACK = '"Arial Rounded MT Bold", "Arial Rounded MT", "Nunito", Arial, sans-serif';
+    var HOLE = { x: 506, y: 14, s: 120 };   // the see-through square round the logo
+
+    var stage = document.getElementById("ft-stage");
+    var pngView = document.getElementById("ft-png-view");
+    var jpgView = document.getElementById("ft-jpg-view");
+    var pngZoom = document.getElementById("ft-png-zoom");
+    var jpgZoom = document.getElementById("ft-jpg-zoom");
+    var pngSizeEl = document.getElementById("ft-png-size");
+    var jpgSizeEl = document.getElementById("ft-jpg-size");
+    var compareEl = document.getElementById("ft-compare");
+    var slider = document.getElementById("ft-slider");
+    var readout = document.getElementById("ft-readout");
+
+    var source = document.createElement("canvas");
+    source.width = SRC_W; source.height = SRC_H;
+    var flat = document.createElement("canvas");     // source drawn onto white, for JPG
+    flat.width = SRC_W; flat.height = SRC_H;
+
+    var pngBytes = 0;
+    var jpgBytes = 0;
+    var jpgImage = null;          // the decoded JPG that is on screen
+    var jpgToken = 0;
+    var lastValue = START_QUALITY;
+    var textBox = { left: 100, top: 220 };   // set when the title is drawn
+    var view = { w: 320, h: 240, zoom: 144 };
+
+    /* Small fixed-seed random number generator (mulberry32). */
+    function rng(seed) {
+      return function () {
+        seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+        var t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+        t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+        return ((t ^ t >>> 14) >>> 0) / 4294967296;
+      };
+    }
+
+    function dataUrlBytes(url) {
+      var b64 = url.substring(url.indexOf(",") + 1);
+      var pad = 0;
+      if (b64.charAt(b64.length - 1) === "=") pad++;
+      if (b64.charAt(b64.length - 2) === "=") pad++;
+      return b64.length * 3 / 4 - pad;
+    }
+
+    function kb(bytes) {
+      var k = bytes / 1000;
+      var n = k < 10 ? Math.round(k * 10) / 10 : Math.round(k);
+      return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " KB";
+    }
+
+    function drawSource() {
+      var ctx = source.getContext("2d", { willReadFrequently: true });
+      ctx.clearRect(0, 0, SRC_W, SRC_H);
+
+      // Sunset sky: a soft gradient with lots of colours, like a photo.
+      var sky = ctx.createLinearGradient(0, 0, 0, SRC_H);
+      sky.addColorStop(0, "#3B2F86");
+      sky.addColorStop(0.3, "#D4588A");
+      sky.addColorStop(0.62, "#F89A5C");
+      sky.addColorStop(1, "#FFD98A");
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, SRC_W, SRC_H);
+
+      var sun = ctx.createRadialGradient(320, 410, 10, 320, 410, 260);
+      sun.addColorStop(0, "rgba(255, 246, 205, 0.95)");
+      sun.addColorStop(0.25, "rgba(255, 236, 170, 0.55)");
+      sun.addColorStop(1, "rgba(255, 236, 170, 0)");
+      ctx.fillStyle = sun;
+      ctx.fillRect(0, 0, SRC_W, SRC_H);
+
+      // Hills.
+      ctx.fillStyle = "#4A2C6B";
+      ctx.beginPath();
+      ctx.moveTo(0, 420);
+      ctx.bezierCurveTo(120, 360, 230, 380, 330, 425);
+      ctx.bezierCurveTo(440, 470, 540, 390, 640, 400);
+      ctx.lineTo(640, 480); ctx.lineTo(0, 480); ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = "#2A1B47";
+      ctx.beginPath();
+      ctx.moveTo(0, 455);
+      ctx.bezierCurveTo(150, 425, 260, 470, 380, 452);
+      ctx.bezierCurveTo(480, 436, 560, 450, 640, 440);
+      ctx.lineTo(640, 480); ctx.lineTo(0, 480); ctx.closePath();
+      ctx.fill();
+
+      // Photo-like grain (see the note at the top).
+      var img = ctx.getImageData(0, 0, SRC_W, SRC_H);
+      var d = img.data;
+      var rand = rng(20261);
+      for (var i = 0; i < d.length; i += 4) {
+        var l = (rand() + rand() - 1) * 6;          // brightness grain
+        d[i] += l + (rand() - 0.5) * 3;
+        d[i + 1] += l + (rand() - 0.5) * 3;
+        d[i + 2] += l + (rand() - 0.5) * 3;
+      }
+      ctx.putImageData(img, 0, 0);
+
+      // Crisp title.
+      ctx.fillStyle = "#1B1440";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "alphabetic";
+      var px = 100;
+      ctx.font = "800 " + px + "px " + FONT_STACK;
+      var w = ctx.measureText("FILM CLUB").width;
+      if (w > 540) {
+        px = Math.floor(px * 540 / w);
+        ctx.font = "800 " + px + "px " + FONT_STACK;
+        w = ctx.measureText("FILM CLUB").width;
+      }
+      var baseline = 300;
+      ctx.fillText("FILM CLUB", SRC_W / 2, baseline);
+      textBox = { left: Math.round(SRC_W / 2 - w / 2), top: Math.round(baseline - px * 0.72) };
+
+      // Round logo with a see-through square around it.
+      ctx.clearRect(HOLE.x, HOLE.y, HOLE.s, HOLE.s);
+      var cx = HOLE.x + HOLE.s / 2, cy = HOLE.y + HOLE.s / 2;
+      ctx.fillStyle = "#1B1440";
+      ctx.beginPath(); ctx.arc(cx, cy, 52, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#FFD98A";
+      ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(cx, cy, 42, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = "#FFD98A";
+      ctx.beginPath();
+      ctx.moveTo(cx - 13, cy - 22); ctx.lineTo(cx + 24, cy); ctx.lineTo(cx - 13, cy + 22);
+      ctx.closePath(); ctx.fill();
+
+      // JPG cannot be see-through, so the poster goes onto white first.
+      var fctx = flat.getContext("2d");
+      fctx.fillStyle = "#FFFFFF";
+      fctx.fillRect(0, 0, SRC_W, SRC_H);
+      fctx.drawImage(source, 0, 0);
+
+      pngBytes = dataUrlBytes(source.toDataURL("image/png"));
+    }
+
+    function checker(ctx, w, h, cell) {
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = "#C9CDD4";
+      for (var y = 0; y * cell < h; y++) {
+        for (var x = (y % 2); x * cell < w; x += 2) {
+          ctx.fillRect(x * cell, y * cell, cell, cell);
+        }
+      }
+    }
+
+    function zoomRegion() {
+      var s = Math.round(view.zoom / 4);        // 4 times bigger on screen
+      var x = Math.max(0, Math.min(SRC_W - s, textBox.left - Math.round(s * 0.3)));
+      var y = Math.max(0, Math.min(SRC_H - s, textBox.top - Math.round(s * 0.3)));
+      return { x: x, y: y, s: s };
+    }
+
+    function paint(viewCanvas, zoomCanvas, image) {
+      var dpr = window.devicePixelRatio || 1;
+      var w = Math.round(view.w * dpr), h = Math.round(view.h * dpr);
+      if (viewCanvas.width !== w || viewCanvas.height !== h) { viewCanvas.width = w; viewCanvas.height = h; }
+      var ctx = viewCanvas.getContext("2d");
+      checker(ctx, w, h, Math.round(9 * dpr));
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(image, 0, 0, SRC_W, SRC_H, 0, 0, w, h);
+
+      // Outline showing which part is zoomed in.
+      var r = zoomRegion();
+      var k = w / SRC_W;
+      ctx.lineWidth = Math.max(2, Math.round(2 * dpr));
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.strokeRect(r.x * k - 2, r.y * k - 2, r.s * k + 4, r.s * k + 4);
+      ctx.strokeStyle = "#374151";
+      ctx.strokeRect(r.x * k, r.y * k, r.s * k, r.s * k);
+
+      // Zoom: every image pixel drawn 4 times bigger, smoothing off.
+      if (zoomCanvas.width !== r.s || zoomCanvas.height !== r.s) { zoomCanvas.width = r.s; zoomCanvas.height = r.s; }
+      var zctx = zoomCanvas.getContext("2d");
+      zctx.imageSmoothingEnabled = false;
+      zctx.clearRect(0, 0, r.s, r.s);
+      zctx.drawImage(image, r.x, r.y, r.s, r.s, 0, 0, r.s, r.s);
+    }
+
+    function compareText() {
+      if (!pngBytes || !jpgBytes) return " ";
+      var ratio = pngBytes / jpgBytes;
+      if (ratio >= 1.5) return "The JPG is " + Math.round(ratio) + " times smaller";
+      if (ratio > 1.05) return "The JPG is a bit smaller";
+      if (ratio >= 0.95) return "The two files are about the same size";
+      return "The JPG is bigger";
+    }
+
+    function showNumbers(q) {
+      readout.textContent = "Quality " + q + "%";
+      slider.setAttribute("aria-valuetext", "Quality " + q + " percent, JPG " + kb(jpgBytes));
+      pngSizeEl.textContent = kb(pngBytes);
+      jpgSizeEl.textContent = kb(jpgBytes);
+      compareEl.textContent = compareText();
+    }
+
+    /* Make the real JPG at this quality, measure it, then show it. */
+    function encode() {
+      var q = Number(slider.value);
+      var url = flat.toDataURL("image/jpeg", q / 100);
+      jpgBytes = dataUrlBytes(url);
+      showNumbers(q);
+      var token = ++jpgToken;
+      var img = new Image();
+      img.onload = function () {
+        if (token !== jpgToken) return;      // a newer one is on its way
+        jpgImage = img;
+        paint(jpgView, jpgZoom, jpgImage);
+      };
+      img.src = url;
+    }
+
+    function layout() {
+      var cs = getComputedStyle(stage);
+      var innerH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      var innerW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      // Keep room for the Next challenge card so nothing changes size when it arrives.
+      if (!document.getElementById("ex-next").classList.contains("show")) {
+        innerH -= NEXT_CARD_HEIGHT + (parseFloat(getComputedStyle(stage.parentNode).rowGap) || 12);
+      }
+      var row = stage.querySelector(".ft-row");
+      var side = stage.querySelector(".ft-side");
+      var rowGap = parseFloat(getComputedStyle(row).columnGap) || 28;
+      var panelGap = parseFloat(getComputedStyle(side.parentNode).columnGap) || 12;
+      var sideW = side.offsetWidth;
+
+      var h = Math.floor(innerH - 26 - 6 - 4);            // compare line, gap, borders
+      h = Math.max(150, Math.min(300, h));
+      var w = Math.round(h * 4 / 3);
+      var maxW = Math.floor((innerW - rowGap) / 2 - sideW - panelGap - 4);
+      if (w > maxW) { w = maxW; h = Math.round(w * 3 / 4); }
+
+      // Zoom box: as big as fits beside the name and the size, in steps of 4.
+      var zoom = Math.min(sideW - 6, h + 4 - 34 - 20 - 36 - 16);
+      zoom = Math.max(88, Math.floor(zoom / 4) * 4);
+      view = { w: w, h: h, zoom: zoom };
+
+      [pngView, jpgView].forEach(function (c) { c.style.width = w + "px"; c.style.height = h + "px"; });
+      [pngZoom, jpgZoom].forEach(function (c) { c.style.width = zoom + "px"; c.style.height = zoom + "px"; });
+    }
+
+    function repaint() {
+      paint(pngView, pngZoom, source);
+      if (jpgImage) paint(jpgView, jpgZoom, jpgImage);
+    }
+
+    function build() {
+      drawSource();
+      paint(pngView, pngZoom, source);
+      encode();
+    }
+
+    slider.addEventListener("input", function () {
+      var v = Number(slider.value);
+      if (v === lastValue) return;
+      lastValue = v;
+      encode();
+      Explorer.track();
+    });
+
+    Explorer.init({
+      unlockAfter: 8,
+      onReset: function () {
+        slider.value = START_QUALITY;
+        lastValue = START_QUALITY;
+        encode();
+      }
+    });
+
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () { layout(); repaint(); }).observe(stage);
+    } else {
+      window.addEventListener("resize", function () { layout(); repaint(); });
+    }
+
+    // Draw straight away, then again once the rounded font has loaded so the
+    // poster text matches the page.
+    layout();
+    build();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(build);
+      if (document.fonts.load) {
+        document.fonts.load('800 100px "Nunito"').then(build, function () {});
+      }
+    }
+  })();
+</script>
+</body>
+</html>
