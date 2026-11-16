@@ -18,87 +18,71 @@
     --ring: #FACC15;
   }
 
-  .ss-stage { padding: 10px 16px; }
-  .ss-cols {
+  .ss-row {
+    flex: 0 1 auto;
+    min-height: 0;
+    margin-bottom: 16px;
     width: 100%;
+    max-width: 1240px;
     display: grid;
     grid-template-columns: auto auto auto;
     justify-content: space-evenly;
     align-items: center;
-    gap: 16px;
-  }
-  .ss-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-  }
-  .ss-cap {
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--muted);
+    gap: 20px;
   }
 
   /* ----- Code blocks ----- */
   .cblk {
     background: var(--blk-logic);
     border-radius: 8px;
-    padding-bottom: 10px;
-    min-width: 480px;
+    padding-bottom: 12px;
+    min-width: 500px;
   }
   .row {
     display: flex;
     align-items: center;
-    gap: 7px;
-    min-height: 34px;
+    gap: 8px;
+    min-height: 40px;
     padding: 3px 10px 3px 14px;
     color: #fff;
-    font-size: 17px;
+    font-size: 20px;
     font-weight: 800;
     white-space: nowrap;
   }
-  .pill {
-    background: #fff;
-    color: var(--text);
-    border-radius: 999px;
-    padding: 0 10px;
-    line-height: 24px;
-  }
-  .pill.input { background: var(--blk-input); color: #fff; border: 2px solid #fff; line-height: 20px; }
+  .pill { background: #fff; color: var(--text); border-radius: 999px; padding: 0 11px; line-height: 28px; }
+  .pill.input { background: var(--blk-input); color: #fff; border: 2px solid #fff; line-height: 24px; }
   .cond {
     margin-left: auto;
     background: #fff;
     border-radius: 6px;
-    padding: 0 9px;
-    line-height: 24px;
-    font-size: 15px;
+    padding: 0 10px;
+    line-height: 28px;
+    font-size: 17px;
     color: var(--text);
-    min-width: 152px;
+    min-width: 168px;
     text-align: center;
     font-variant-numeric: tabular-nums;
   }
   .cond.true { color: var(--good); box-shadow: 0 0 0 3px var(--ring); }
   .cond.skip { color: #4B5563; background: #E6F2F2; }
   .cbody {
-    margin-left: 20px;
-    background: var(--panel);
+    margin-left: 22px;
+    background: var(--bg);
     border-radius: 8px 0 0 8px;
-    padding: 4px 0 4px 5px;
+    padding: 5px 0 5px 6px;
     display: flex;
     align-items: center;
   }
   .blk {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
-    min-height: 32px;
-    padding: 3px 12px;
+    gap: 8px;
+    min-height: 38px;
+    padding: 3px 13px;
     border-radius: 8px;
     background: #6B7280;   /* grey = this part is not running */
     color: #fff;
-    font-size: 17px;
+    font-size: 20px;
     font-weight: 800;
     white-space: nowrap;
     transition: background 0.15s, box-shadow 0.15s;
@@ -107,8 +91,8 @@
   /* The 5 x 5 pattern inside a "show leds" block. */
   .ledgrid {
     display: grid;
-    grid-template-columns: repeat(5, 8px);
-    grid-auto-rows: 8px;
+    grid-template-columns: repeat(5, 9px);
+    grid-auto-rows: 9px;
     gap: 2px;
     padding: 3px;
     flex-shrink: 0;
@@ -118,114 +102,139 @@
   .ledgrid i { display: block; border-radius: 1.5px; background: rgba(0, 0, 0, 0.45); }
   .ledgrid i.on { background: #fff; }
   /* Three "show leds" blocks (cloud version): smaller patterns so it all fits. */
-  .cblk.three .ledgrid { grid-template-columns: repeat(5, 5px); grid-auto-rows: 5px; gap: 1px; padding: 2px; }
-  .cblk.three .blk { padding-top: 1px; padding-bottom: 1px; }
+  .cblk.three .ledgrid { grid-template-columns: repeat(5, 6px); grid-auto-rows: 6px; gap: 1px; padding: 2px; }
+  .cblk.three .blk { min-height: 34px; padding-top: 1px; padding-bottom: 1px; }
   .cblk.three .cbody { padding-top: 3px; padding-bottom: 3px; }
-  .runs {
-    display: none;
-    margin-left: 16px;
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--text);
-  }
-  .blk.run + .runs { display: inline; }
 
-  /* ----- micro:bit ----- */
-  .mb { width: 200px; height: auto; display: block; }
+  /* ----- micro:bit and the light outside ----- */
+  .mb { width: 240px; height: auto; display: block; }
   .led { fill: #4A1F1F; }
   .led.on { fill: #FF4D3D; filter: drop-shadow(0 0 3px #FF4D3D); }
   .mb text { font-family: var(--font); font-weight: 800; font-size: 11px; fill: #E5E7EB; }
-  .ss-shows { font-size: 18px; font-weight: 800; min-height: 26px; }
+  .scene { width: 250px; height: auto; display: block; border-radius: 12px; border: 2px solid var(--line-strong); }
 
-  /* ----- Light scene ----- */
-  .scene { width: 220px; height: auto; display: block; border-radius: 12px; border: 2px solid var(--line-strong); }
+  /* ----- The slider, under the light it changes ----- */
+  .ss-control {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 10px 22px;
+    border-radius: 999px;
+  }
+  .ss-label { font-size: 20px; font-weight: 800; white-space: nowrap; }
+  #light.ex-slider { width: min(560px, 50vw); }
+  .ss-value {
+    min-width: 3ch;
+    font-size: 30px;
+    font-weight: 800;
+    color: var(--accent);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
 
-  .ex-next .ex-btn { flex-shrink: 0; margin-left: auto; }
+  /* ----- Start screen demo: a pointer slides the light up, moon becomes sun ----- */
+  .ss-demo .d-track { position: absolute; left: 30px; right: 30px; top: 128px; height: 10px; border-radius: 999px; background: var(--line); }
+  .ss-demo .d-thumb {
+    position: absolute; left: 30px; top: 121px; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); border: 3px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    animation: ss-d-move 3.4s ease-in-out infinite;
+  }
+  .ss-demo .d-thumb .ex-ghost { left: 8px; top: 8px; }
+  .ss-demo .d-grid {
+    position: absolute; left: 116px; top: 14px; width: 88px; height: 88px; padding: 6px;
+    background: #1F2937; border-radius: 10px;
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px;
+  }
+  .ss-demo .d-grid i { border-radius: 2px; background: #4A1F1F; }
+  .ss-demo .d-grid i.on { background: #FF4D3D; }
+  .ss-demo .d-sun { animation: ss-d-sun 3.4s steps(1, end) infinite; }
+  .ss-demo .d-moon { animation: ss-d-moon 3.4s steps(1, end) infinite; }
+  .ss-demo .d-arrow { display: none; }
+  @keyframes ss-d-move { 0%, 12% { transform: none; } 60%, 88% { transform: translateX(210px); } 100% { transform: none; } }
+  @keyframes ss-d-sun { 0% { opacity: 0; } 38% { opacity: 1; } 96% { opacity: 0; } }
+  @keyframes ss-d-moon { 0% { opacity: 1; } 38% { opacity: 0; } 96% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    /* A still frame: the thumb, an arrow along the track, the moon. */
+    .ss-demo .d-thumb, .ss-demo .d-sun, .ss-demo .d-moon { animation: none !important; }
+    .ss-demo .d-sun { opacity: 0; }
+    .ss-demo .d-arrow { display: block; position: absolute; left: 66px; top: 152px; width: 170px; height: 4px; background: var(--accent); }
+    .ss-demo .d-arrow::after { content: ""; position: absolute; right: -10px; top: -7px; border: 9px solid transparent; border-right: 0; border-left: 12px solid var(--accent); }
+    .ss-demo .d-track { top: 122px; }
+    .ss-demo .d-thumb { top: 115px; }
+  }
 
   @media (max-width: 1100px), (max-height: 620px) {
-    .ss-stage { padding: 8px 8px; }
-    .ss-cols { gap: 10px; }
-    .cblk { min-width: 420px; padding-bottom: 8px; }
-    .row { font-size: 15px; min-height: 30px; padding: 2px 8px 2px 10px; gap: 5px; }
-    .blk { font-size: 15px; min-height: 28px; }
-    .pill { line-height: 22px; padding: 0 8px; }
-    .pill.input { line-height: 18px; }
-    .cond { font-size: 14px; min-width: 138px; line-height: 22px; }
-    .cbody { padding: 3px 0 3px 5px; }
-    .mb { width: 170px; }
-    .scene { width: 190px; }
-    .ss-cap { font-size: 13px; }
-    .ss-shows { font-size: 16px; min-height: 23px; }
+    .ss-row { gap: 10px; }
+    .cblk { min-width: 430px; padding-bottom: 9px; }
+    .row { font-size: 17px; min-height: 34px; padding: 2px 8px 2px 10px; gap: 6px; }
+    .blk { font-size: 17px; min-height: 32px; }
+    .pill { line-height: 24px; padding: 0 9px; }
+    .pill.input { line-height: 20px; }
+    .cond { font-size: 15px; min-width: 146px; line-height: 24px; }
+    .cbody { padding: 3px 0 3px 5px; margin-left: 18px; }
+    .ledgrid { grid-template-columns: repeat(5, 7px); grid-auto-rows: 7px; }
+    .mb { width: 190px; }
+    .scene { width: 200px; }
+    .ss-control { padding: 6px 16px; gap: 14px; }
+    .ss-label { font-size: 18px; }
+    .ss-value { font-size: 26px; }
   }
 </style>
 </head>
-<body class="unit-5">
+<body class="unit-5 ex-v2">
 
-<header class="ex-header">
-  <div>
-    <p class="ex-unit">Coding and Programming</p>
-    <h1>If, else</h1>
+<!-- SCREEN 1: Start -->
+<section class="ex-screen ex-start" id="ex-start">
+  <h1>If, else</h1>
+  <p class="ex-why">If and else let your micro:bit make choices.</p>
+  <div class="ex-demo ss-demo" aria-hidden="true">
+    <span class="d-grid d-moon"><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span>
+    <span class="d-grid d-sun"><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i></span>
+    <span class="d-track"></span>
+    <span class="d-arrow"></span>
+    <span class="d-thumb"><svg class="ex-ghost" viewBox="0 0 24 24"><path d="M5 2l14 11h-7.2l4 7.6-3 1.6-4-7.7L5 19z"/></svg></span>
   </div>
-  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
-</header>
+  <p class="ex-how">Move the slider.</p>
+  <button type="button" class="ex-btn primary big" id="ex-go">Start</button>
+</section>
 
-<main class="ex-main">
-  <section class="ex-goal" aria-label="Your goal">
-    <span class="ex-goal-label">Your goal</span>
-    <p>Find the exact light level where the picture changes from moon to sun.</p>
-  </section>
-
-  <section class="ex-stage ss-stage">
-    <div class="ss-cols">
-      <div class="ss-col">
-        <span class="ss-cap">The program</span>
-        <div id="blocks"></div>
-      </div>
-      <div class="ss-col">
-        <span class="ss-cap">The micro:bit</span>
-        <svg class="mb" id="mb" viewBox="0 0 200 168" role="img" aria-label="micro:bit"></svg>
-        <p class="ss-shows" id="shows" aria-live="polite"></p>
-      </div>
-      <div class="ss-col">
-        <span class="ss-cap">The light</span>
-        <svg class="scene" id="scene" viewBox="0 0 220 168" role="img" aria-label="The light outside">
-          <rect id="sky" x="0" y="0" width="220" height="168" fill="#0B1026"/>
-          <g id="stars" fill="#FFFFFF">
-            <circle cx="24" cy="22" r="1.8"/><circle cx="58" cy="48" r="1.4"/><circle cx="92" cy="18" r="1.6"/>
-            <circle cx="130" cy="40" r="1.4"/><circle cx="163" cy="16" r="1.8"/><circle cx="196" cy="52" r="1.5"/>
-            <circle cx="40" cy="78" r="1.3"/><circle cx="178" cy="84" r="1.3"/><circle cx="112" cy="66" r="1.2"/>
-          </g>
-          <circle id="sunglow" cx="150" cy="180" r="34" fill="#FEF08A" opacity="0.35"/>
-          <circle id="sun" cx="150" cy="180" r="22" fill="#FDE047"/>
-          <path id="hillback" d="M0 128 Q60 92 120 122 T220 108 V168 H0 Z" fill="#14351F"/>
-          <path id="hillfront" d="M0 146 Q70 118 140 142 T220 136 V168 H0 Z" fill="#0F2A1D"/>
-          <g id="tree">
-            <rect x="44" y="118" width="6" height="22" fill="#3B2A1A"/>
-            <circle id="leaves" cx="47" cy="108" r="17" fill="#0F2A1D"/>
-          </g>
-        </svg>
-        <p class="ss-shows">&nbsp;</p>
-      </div>
+<!-- SCREEN 2: Explore -->
+<section class="ex-screen" id="ex-explore" hidden>
+  <div class="ex-top">
+    <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
+    <p class="ex-instruction" id="ex-instruction">Find the exact light level where the moon changes to the sun.</p>
+    <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
+  </div>
+  <div class="ex-area">
+    <div class="ss-row">
+      <div id="blocks" role="group" aria-label="The program"></div>
+      <svg class="mb" id="mb" viewBox="0 0 200 168" role="img" aria-label="micro:bit"></svg>
+      <svg class="scene" id="scene" viewBox="0 0 220 168" role="img" aria-label="The light outside">
+        <rect id="sky" x="0" y="0" width="220" height="168" fill="#0B1026"/>
+        <g id="stars" fill="#FFFFFF">
+          <circle cx="24" cy="22" r="1.8"/><circle cx="58" cy="48" r="1.4"/><circle cx="92" cy="18" r="1.6"/>
+          <circle cx="130" cy="40" r="1.4"/><circle cx="163" cy="16" r="1.8"/><circle cx="196" cy="52" r="1.5"/>
+          <circle cx="40" cy="78" r="1.3"/><circle cx="178" cy="84" r="1.3"/><circle cx="112" cy="66" r="1.2"/>
+        </g>
+        <circle id="sunglow" cx="150" cy="180" r="34" fill="#FEF08A" opacity="0.35"/>
+        <circle id="sun" cx="150" cy="180" r="22" fill="#FDE047"/>
+        <path id="hillback" d="M0 128 Q60 92 120 122 T220 108 V168 H0 Z" fill="#14351F"/>
+        <path id="hillfront" d="M0 146 Q70 118 140 142 T220 136 V168 H0 Z" fill="#0F2A1D"/>
+        <g id="tree">
+          <rect x="44" y="118" width="6" height="22" fill="#3B2A1A"/>
+          <circle id="leaves" cx="47" cy="108" r="17" fill="#0F2A1D"/>
+        </g>
+      </svg>
     </div>
-  </section>
-
-  <section class="ex-controls" aria-label="Control">
-    <label class="ex-control-label" for="light">Light level</label>
-    <input class="ex-slider" type="range" id="light" min="0" max="255" step="1" value="128">
-    <span class="ex-readout" id="readout" aria-live="polite">128</span>
-  </section>
-
-  <section class="ex-next" id="ex-next" aria-live="polite">
-    <span class="ex-next-label">Next challenge</span>
-    <p>Now find where the cloud starts and where it stops.</p>
-    <button type="button" class="ex-btn small" id="swap">Add a cloud</button>
-  </section>
-</main>
-
-<footer class="ex-footer">
-  <span class="ex-answer">Answer the question in Nearpod.</span>
-  <span>Coding and Programming</span>
-</footer>
+    <div class="ss-control" id="ss-control">
+      <label class="ss-label" for="light">Light level</label>
+      <input class="ex-slider" type="range" id="light" min="0" max="255" step="1" value="128">
+      <span class="ss-value" id="value" aria-hidden="true">128</span>
+    </div>
+    <p class="ex-status" id="ex-status" role="status"></p>
+  </div>
+</section>
 
 <script src="shared/explorer.js?v=2"></script>
 <script>
@@ -244,14 +253,12 @@
     };
 
     var slider = document.getElementById("light");
-    var readout = document.getElementById("readout");
+    var valueEl = document.getElementById("value");
     var blocksEl = document.getElementById("blocks");
     var mb = document.getElementById("mb");
-    var shows = document.getElementById("shows");
-    var swapBtn = document.getElementById("swap");
     var cloudOn = false;
     var leds = [];
-    var lastIcon = "";
+    var visited = {};      /* light levels the pupil has stopped on in this step */
 
     function cond(limit, id) {
       return '<span class="pill input">light level</span> &lt; <span class="pill">' + limit +
@@ -264,8 +271,7 @@
         grid += '<i' + (ch === "#" ? ' class="on"' : '') + '></i>';
       });
       grid += '</span>';
-      return '<div class="cbody"><span class="blk" data-icon="' + icon + '">show leds' + grid +
-        '</span><span class="runs">this runs</span></div>';
+      return '<div class="cbody"><span class="blk" data-icon="' + icon + '">show leds' + grid + '</span></div>';
     }
 
     function buildBlocks() {
@@ -346,10 +352,13 @@
       el.textContent = v + " < " + limit + " is " + (ok ? "true" : "false");
     }
 
+    function iconFor(v) { return v < DARK ? "moon" : (cloudOn && v < CLOUDY ? "cloud" : "sun"); }
+
     function render() {
       var v = Number(slider.value);
-      var icon = v < DARK ? "moon" : (cloudOn && v < CLOUDY ? "cloud" : "sun");
-      readout.textContent = v;
+      var icon = iconFor(v);
+      valueEl.textContent = v;
+      slider.setAttribute("aria-valuetext", v + ", shows the " + icon);
       setCond("c1", v, DARK, true);
       setCond("c2", v, CLOUDY, v >= DARK);
       var blks = blocksEl.querySelectorAll(".blk");
@@ -357,36 +366,46 @@
         blks[i].classList.toggle("run", blks[i].getAttribute("data-icon") === icon);
       }
       setLeds(ICONS[icon]);
-      mb.setAttribute("aria-label", "micro:bit shows a " + icon);
-      if (icon !== lastIcon) {
-        shows.textContent = "Shows: " + icon;
-        lastIcon = icon;
-      }
+      mb.setAttribute("aria-label", "micro:bit shows the " + icon);
+      Explorer.status("It shows the " + icon + ".");
       drawScene(v);
     }
 
-    slider.addEventListener("input", render);
-    /* Count one change each time the pupil lets go of the slider or presses a key. */
-    slider.addEventListener("change", function () {
-      Explorer.track();
-    });
-
-    swapBtn.addEventListener("click", function () {
-      cloudOn = !cloudOn;
-      swapBtn.textContent = cloudOn ? "Take the cloud away" : "Add a cloud";
-      buildBlocks();
+    slider.addEventListener("input", function () {
+      visited[slider.value] = true;
       render();
+      Explorer.used();
     });
 
-    Explorer.init({
-      unlockAfter: 8,
+    function been(list) {
+      return list.every(function (v) { return visited[v]; });
+    }
+
+    Explorer.setup({
+      pulse: "#ss-control",
+      success: function () { return been([49, 50]); },
+      successText: "At 50 the moon changes to the sun.",
+      hint: "Use the arrow keys to move one step at a time.",
+      hintAfter: 60,
       onReset: function () {
         cloudOn = false;
-        swapBtn.textContent = "Add a cloud";
+        visited = {};
         slider.value = START;
-        lastIcon = "";
         buildBlocks();
         render();
+      },
+      challenge: {
+        text: "Find where the cloud starts and where it stops.",
+        start: function () {
+          cloudOn = true;
+          visited = {};
+          buildBlocks();
+          render();
+        },
+        pulse: "#ss-control",
+        success: function () { return been([49, 50, 149, 150]); },
+        successText: "The cloud shows from 50 to 149.",
+        hint: "Use the arrow keys to move one step at a time."
       }
     });
 

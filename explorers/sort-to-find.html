@@ -9,43 +9,38 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared/explorer.css?v=2">
 <style>
+  body { --hint: #6D28D9; }   /* purple hints, so they are not confused with the green success line */
   :root {
-    --rh: 23px;   /* row height */
-    --hh: 48px;   /* heading height */
+    --rh: 30px;   /* row height, set in JS to fill the space */
+    --hh: 52px;   /* heading height */
     --stripe: #ECEFF3;
   }
 
-  /* This page needs every pixel of height for 12 rows. */
-  .ex-main { gap: 8px; padding-top: 10px; padding-bottom: 4px; }
-  .sf-stage {
-    padding: 5px 10px;
-    align-items: flex-start;
+  .sf-wrap {
+    flex: 1 1 0px;
+    min-height: 0;
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    align-items: center;
   }
   /* Stripes are painted behind the rows, so they stay still while rows move. */
-  .sf-wrap {
+  .sf-table-wrap {
     width: 100%;
     border-radius: 10px;
     overflow: hidden;
+    background-color: var(--panel);
     background-image: repeating-linear-gradient(to bottom,
       #FFFFFF 0, #FFFFFF var(--rh), var(--stripe) var(--rh), var(--stripe) calc(var(--rh) * 2));
-    background-position: 0 calc(var(--hh) + 4px);
+    background-position: 0 calc(var(--hh) + 6px);
     background-repeat: no-repeat;
+    border: 2px solid var(--line);
   }
-  table.sf {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-    font-size: 18px;
-    font-weight: 700;
-  }
+  table.sf { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 20px; font-weight: 700; }
   .sf col.place { width: 32%; }
-  .sf th {
-    padding: 0 3px 4px;
-    height: calc(var(--hh) + 4px);
-    background: var(--panel);
-  }
-  .sf th:first-child { padding-left: 0; }
-  .sf th:last-child { padding-right: 0; }
+  .sf th { padding: 4px 3px 2px; height: calc(var(--hh) + 6px); background: var(--panel); }
+  .sf th:first-child { padding-left: 4px; }
+  .sf th:last-child { padding-right: 4px; }
   .sortbtn {
     width: 100%;
     height: var(--hh);
@@ -64,16 +59,8 @@
   }
   .sortbtn:hover { border-color: var(--accent); background: var(--accent-soft); }
   .sortbtn:focus-visible { outline: 3px solid var(--accent); outline-offset: -5px; }
-  .sortbtn .name { font-size: 18px; font-weight: 800; line-height: 1.15; }
-  .sortbtn .dir {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 14px;
-    font-weight: 800;
-    line-height: 1.15;
-    color: var(--muted);
-  }
+  .sortbtn .name { font-size: 19px; font-weight: 800; line-height: 1.15; }
+  .sortbtn .dir { display: flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 800; line-height: 1.15; color: var(--muted); }
   .sortbtn svg { width: 12px; height: 12px; flex-shrink: 0; }
   .sortbtn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
   .sortbtn.active .dir { color: #fff; }
@@ -91,69 +78,84 @@
   .sf td:first-child { text-align: left; }
   .sf td.sorted { background: rgba(15, 118, 110, 0.14); font-weight: 800; color: #1F2937; }
   .sf tbody tr { will-change: transform; }
+  .sf tbody tr:first-child td.sorted { background: rgba(15, 118, 110, 0.28); }
 
-  .sf-controls { padding: 3px 18px; gap: 4px 28px; }
-  .sf-controls .ex-readout { min-width: 9ch; line-height: 1.3; }
-  .sf-scale { font-size: 17px; font-weight: 800; color: var(--muted); white-space: nowrap; }
-  .ex-next { padding-top: 7px; padding-bottom: 7px; }
+  /* ----- Start screen demo: a pointer clicks a heading, the rows swap ----- */
+  .sf-demo .d-head { position: absolute; left: 30px; right: 30px; top: 16px; height: 30px; display: flex; gap: 6px; }
+  .sf-demo .d-head span { flex: 1; border: 2px solid var(--line-strong); border-radius: 6px; }
+  .sf-demo .d-head span.go { flex: 0 0 80px; animation: sf-d-on 3.6s steps(1, end) infinite; }
+  .sf-demo .d-row { position: absolute; left: 30px; right: 30px; height: 26px; display: flex; gap: 6px; align-items: center; padding: 0 6px; background: #ECEFF3; border-radius: 4px; }
+  .sf-demo .d-row b { height: 9px; border-radius: 3px; background: #6B7280; }
+  .sf-demo .d-row b:first-child { flex: 1; }
+  .sf-demo .d-row b:last-child { flex: 0 0 50px; background: var(--accent); }
+  .sf-demo .r1 { top: 58px; animation: sf-d-r1 3.6s ease-in-out infinite; }
+  .sf-demo .r2 { top: 92px; }
+  .sf-demo .r3 { top: 126px; animation: sf-d-r3 3.6s ease-in-out infinite; }
+  .sf-demo .r1 b:last-child { flex-basis: 64px; }
+  .sf-demo .r3 b:last-child { flex-basis: 20px; }
+  .sf-demo .ex-ghost { left: 246px; top: 30px; animation: sf-d-ptr 3.6s ease-in-out infinite; }
+  .sf-demo .d-arrow { display: none; }
+  @keyframes sf-d-on { 0% { background: #fff; } 25% { background: var(--accent); border-color: var(--accent); } 92% { background: #fff; border-color: var(--line-strong); } }
+  @keyframes sf-d-r1 { 0%, 30% { transform: none; } 50%, 88% { transform: translateY(68px); } 100% { transform: none; } }
+  @keyframes sf-d-r3 { 0%, 30% { transform: none; } 50%, 88% { transform: translateY(-68px); } 100% { transform: none; } }
+  @keyframes sf-d-ptr { 0% { transform: translate(-60px, 90px); } 22%, 90% { transform: none; } 100% { transform: translate(-60px, 90px); } }
+  @media (prefers-reduced-motion: reduce) {
+    /* A still frame: the heading chosen and an arrow showing the swap. */
+    .sf-demo .d-head span.go, .sf-demo .r1, .sf-demo .r3, .sf-demo .ex-ghost { animation: none !important; }
+    .sf-demo .d-head span.go { background: var(--accent); border-color: var(--accent); }
+    .sf-demo .d-row { right: 50px; }
+    .sf-demo .d-arrow { display: block; position: absolute; right: 26px; top: 76px; width: 4px; height: 58px; background: var(--accent); }
+    .sf-demo .d-arrow::before { content: ""; position: absolute; left: -7px; top: -10px; border: 9px solid transparent; border-top: 0; border-bottom: 12px solid var(--accent); }
+    .sf-demo .ex-ghost { left: 246px; top: 30px; }
+  }
 
   @media (max-width: 1100px), (max-height: 620px) {
-    :root { --rh: 20px; --hh: 40px; }
-    .ex-main { gap: 6px; padding-top: 8px; }
-    table.sf { font-size: 16px; }
-    .sortbtn .name { font-size: 16px; }
+    table.sf { font-size: 18px; }
+    .sortbtn .name { font-size: 17px; }
     .sortbtn .dir { font-size: 13px; }
-    .sf-stage { padding: 5px 8px; }
-    .sf-controls { padding: 2px 12px; }
-    .sf-controls .ex-control-label { font-size: 16px; }
     .sf td { padding: 0 10px; }
   }
 </style>
 </head>
-<body class="unit-6">
+<body class="unit-6 ex-v2">
 
-<header class="ex-header">
-  <div>
-    <p class="ex-unit">Handling Data</p>
-    <h1>Sort to find it</h1>
+<!-- SCREEN 1: Start -->
+<section class="ex-screen ex-start" id="ex-start">
+  <h1>Sort to find it</h1>
+  <p class="ex-why">Sorting finds answers in a big table fast.</p>
+  <div class="ex-demo sf-demo" aria-hidden="true">
+    <span class="d-head"><span></span><span></span><span class="go"></span></span>
+    <span class="d-row r1"><b></b><b></b></span>
+    <span class="d-row r2"><b></b><b></b></span>
+    <span class="d-row r3"><b></b><b></b></span>
+    <span class="d-arrow"></span>
+    <svg class="ex-ghost" viewBox="0 0 24 24"><path d="M5 2l14 11h-7.2l4 7.6-3 1.6-4-7.7L5 19z"/></svg>
   </div>
-  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
-</header>
+  <p class="ex-how">Click a column name.</p>
+  <button type="button" class="ex-btn primary big" id="ex-go">Start</button>
+</section>
 
-<main class="ex-main">
-  <section class="ex-goal" aria-label="Your goal">
-    <span class="ex-goal-label">Your goal</span>
-    <p>Find the quietest place on average, in as few clicks as you can.</p>
-  </section>
-
-  <section class="ex-stage sf-stage">
-    <div class="sf-wrap">
-      <table class="sf" id="table">
-        <caption class="ex-visually-hidden">Sound readings in the park, from 0 (silent) to 255 (very loud)</caption>
-        <colgroup><col class="place"><col><col><col><col></colgroup>
-        <thead><tr id="head"></tr></thead>
-        <tbody id="body"></tbody>
-      </table>
+<!-- SCREEN 2: Explore -->
+<section class="ex-screen" id="ex-explore" hidden>
+  <div class="ex-top">
+    <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
+    <p class="ex-instruction" id="ex-instruction">Find the quietest place on average.</p>
+    <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
+  </div>
+  <div class="ex-area" id="sf-area">
+    <div class="sf-wrap" id="sf-wrap">
+      <div class="sf-table-wrap">
+        <table class="sf" id="table">
+          <caption class="ex-visually-hidden">Sound readings in the park, from 0 (silent) to 255 (very loud)</caption>
+          <colgroup><col class="place"><col><col><col><col></colgroup>
+          <thead><tr id="head"></tr></thead>
+          <tbody id="body"></tbody>
+        </table>
+      </div>
     </div>
-    <p class="ex-visually-hidden" id="live" aria-live="polite"></p>
-  </section>
-
-  <section class="ex-controls sf-controls" aria-label="Control">
-    <span class="ex-control-label">Click a column heading to sort the rows.</span>
-    <span class="sf-scale">Sound level, 0 to 255</span>
-    <span class="ex-readout" id="clicks" aria-live="polite">Clicks: 0</span>
-  </section>
-
-  <section class="ex-next" id="ex-next" aria-live="polite">
-    <span class="ex-next-label">Next challenge</span>
-    <p>Which place had the loudest single reading? Which column did you sort?</p>
-  </section>
-</main>
-
-<footer class="ex-footer">
-  <span class="ex-answer">Answer the question in Nearpod.</span>
-  <span>Handling Data</span>
-</footer>
+    <p class="ex-status" id="ex-status" role="status"></p>
+  </div>
+</section>
 
 <script src="shared/explorer.js?v=2"></script>
 <script>
@@ -181,21 +183,22 @@
       ["Dog walking area", 118, 104, 114]
     ];
     var COLS = ["Place", "Reading 1", "Reading 2", "Reading 3", "Average"];
+    var AVG = 4, R2 = 2;
 
     var ICON_UP = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5 11 10.5H1Z" fill="currentColor"/></svg>';
     var ICON_DOWN = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 10.5 11 1.5H1Z" fill="currentColor"/></svg>';
     var ICON_BOTH = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M6 0.5 9.5 5H2.5ZM6 11.5 9.5 7H2.5Z" fill="currentColor"/></svg>';
 
+    var area = document.getElementById("sf-area");
+    var wrap = document.getElementById("sf-wrap");
+    var statusEl = document.getElementById("ex-status");
     var head = document.getElementById("head");
     var body = document.getElementById("body");
-    var clicksEl = document.getElementById("clicks");
-    var live = document.getElementById("live");
     var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-    var rows = [];      /* { values: [...], tr: element } */
+    var rows = [];      /* { values: [...], tr: element, start: n } */
     var sortCol = -1;   /* -1 = not sorted yet */
     var ascending = true;
-    var clicks = 0;
 
     function build() {
       var i, c;
@@ -286,33 +289,60 @@
           : ICON_BOTH + "<span>Sort</span>";
         btns[c].parentNode.setAttribute("aria-sort", active ? (ascending ? "ascending" : "descending") : "none");
       }
-      clicksEl.textContent = "Clicks: " + clicks;
     }
 
     function onSort(e) {
       var col = Number(e.currentTarget.getAttribute("data-col"));
       if (col === sortCol) ascending = !ascending;
       else { sortCol = col; ascending = true; }
-      clicks += 1;
       render(true);
-      live.textContent = "Sorted by " + COLS[col] + ", " + dirWords(col, ascending) + ". Top row: " +
-        body.firstElementChild.firstElementChild.textContent + ".";
-      Explorer.track();
+      Explorer.status("Top row: " + body.firstElementChild.firstElementChild.textContent + ".");
+      Explorer.used();
     }
 
-    Explorer.init({
-      unlockAfter: 4,
-      onReset: function () {
-        sortCol = -1;
-        ascending = true;
-        clicks = 0;
-        live.textContent = "";
-        render(false);
-      }
-    });
+    /* Rows grow to fill the space between the instruction and the status line. */
+    function layout() {
+      if (!area.clientHeight) return;
+      var cs = getComputedStyle(area);
+      var availH = area.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+                   - statusEl.offsetHeight - (parseFloat(cs.rowGap) || 10) - 4;
+      var hh = availH > 470 ? 52 : 44;
+      var rh = Math.floor((availH - hh - 6 - 4) / DATA.length);
+      rh = Math.max(20, Math.min(36, rh));
+      document.documentElement.style.setProperty("--hh", hh + "px");
+      document.documentElement.style.setProperty("--rh", rh + "px");
+    }
+
+    function sortedBy(col, asc) { return sortCol === col && ascending === asc; }
 
     build();
     render(false);
+
+    Explorer.setup({
+      pulse: ".sortbtn",
+      success: function () { return sortedBy(AVG, true); },
+      successText: "Lavender garden is the quietest on average.",
+      hint: "Which column shows the average?",
+      hintAfter: 60,
+      onShow: layout,
+      onReset: function () {
+        sortCol = -1;
+        ascending = true;
+        render(false);
+        Explorer.status("");
+      },
+      challenge: {
+        text: "Find the loudest single reading.",
+        start: function () { Explorer.status(""); },
+        pulse: ".sortbtn",
+        success: function () { return sortedBy(R2, false); },
+        successText: "236, at Cafe by the road, is the loudest reading.",
+        hint: "Sort each Reading column, biggest first."
+      }
+    });
+
+    if (window.ResizeObserver) new ResizeObserver(layout).observe(area);
+    window.addEventListener("resize", layout);
   })();
 </script>
 </body>
