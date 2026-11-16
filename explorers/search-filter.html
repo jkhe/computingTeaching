@@ -9,131 +9,140 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared/explorer.css?v=2">
 <style>
-  .ex-stage { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 10px; padding: 10px 12px; }
+  /* Page-specific styles only. */
+  .sf-box {
+    flex: 0 1 auto;
+    min-height: 0;
+    width: 100%;
+    max-width: 1160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 8px;
+  }
 
-  /* Mock search bar */
+  /* Mock search bar, with the criteria buttons right under it */
   .sf-bar {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    border: 2px solid var(--line-strong); border-radius: 999px; padding: 5px 16px; min-height: 46px;
+    flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; overflow: hidden;
+    border: 2px solid var(--line-strong); border-radius: 999px; padding: 4px 18px; min-height: 48px;
     background: var(--panel);
   }
   .sf-bar svg { flex-shrink: 0; }
-  .sf-term {
-    font-size: 19px; font-weight: 800; color: var(--text);
-    background: #F3F4F6; border-radius: 8px; padding: 1px 10px;
-  }
+  .sf-term { font-size: 20px; font-weight: 800; color: var(--text); background: #F3F4F6; border-radius: 8px; padding: 1px 10px; white-space: nowrap; }
   .sf-term.added { background: var(--accent-soft); color: var(--accent); border: 2px solid var(--accent); padding: 0 9px; animation: ex-fade 0.25s ease; }
   .sf-term.filter { background: var(--accent); color: #fff; border-radius: 999px; padding: 1px 12px; font-size: 16px; animation: ex-fade 0.25s ease; }
   .sf-bar .sf-gap { flex: 1; }
+  .sf-count { margin-left: auto; font-size: 15px; font-weight: 800; color: var(--muted); white-space: nowrap; padding-left: 8px; }
 
-  .sf-row { display: flex; gap: 12px; flex: 1; min-height: 0; }
-
-  /* Count and verdict */
-  .sf-summary {
-    flex: 0 0 250px; display: flex; flex-direction: column; justify-content: center; gap: 6px;
-    border: 2px solid var(--line); border-radius: 14px; padding: 10px 14px; background: var(--bg);
-  }
-  .sf-summary h2 { font-size: 14px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
-  .sf-count { font-size: 38px; font-weight: 800; line-height: 1.05; color: var(--text); }
-  .sf-count small { display: block; font-size: 16px; font-weight: 800; color: var(--muted); }
-  .sf-verdict { font-size: 18px; font-weight: 800; line-height: 1.25; border-radius: 10px; padding: 6px 10px; border: 2px solid currentColor; }
-  .sf-verdict.bad { color: var(--bad); background: var(--bad-soft); }
-  .sf-verdict.ok { color: var(--ok); background: var(--ok-soft); }
-  .sf-verdict.good { color: var(--good); background: var(--good-soft); }
+  .sf-chips { flex-shrink: 0; display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+  .sf-chips .ex-btn { border-radius: 999px; min-width: 70px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .sf-chips .ex-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .sf-chips .ex-btn svg path { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linejoin: round; }
+  .sf-plus { font-size: 20px; line-height: 1; }
+  .sf-chips .ex-btn[aria-pressed="true"] .sf-plus { display: none; }
+  .sf-divider { width: 2px; height: 30px; background: var(--line-strong); margin: 0 6px; }
 
   /* Top results */
-  .sf-results { flex: 1; min-width: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; }
+  .sf-results { flex: 0 1 300px; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; }
   .sf-card {
-    border: 2px solid var(--line-strong); border-left-width: 8px; border-radius: 12px; padding: 5px 10px 6px;
-    display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; background: var(--panel); position: relative;
+    border: 2px solid var(--line-strong); border-left-width: 8px; border-radius: 12px; padding: 6px 12px;
+    display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; min-height: 0; overflow: hidden;
+    background: var(--panel); position: relative;
   }
-  .sf-card.answers { padding-top: 16px; }
   .sf-card.new { animation: ex-fade 0.3s ease; }
   .sf-card.answers { border-color: var(--good); background: var(--good-soft); }
-  .sf-title { font-size: 19px; font-weight: 800; line-height: 1.25; color: #1F2937; }
+  .sf-title { font-size: 21px; font-weight: 800; line-height: 1.25; color: #1F2937; padding-right: 26px; }
   .sf-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 2px 8px; font-size: 14px; color: var(--muted); line-height: 1.3; }
   .sf-meta .sf-source { font-weight: 800; color: var(--accent); }
   .sf-type { font-size: 13px; font-weight: 800; border-radius: 6px; padding: 0 8px; border: 2px solid currentColor; }
   .sf-type.video { color: #6D28D9; background: #F5F3FF; }
   .sf-type.article { color: #374151; background: #F3F4F6; }
   .sf-type.shop { color: var(--ok); background: var(--ok-soft); }
-  .sf-snip { font-size: 16px; line-height: 1.3; color: var(--text); }
-  .sf-yes { position: absolute; top: 0; right: 0; font-size: 13px; font-weight: 800; color: #fff; background: var(--good); border-radius: 0 8px 0 10px; padding: 1px 10px; white-space: nowrap; }
+  .sf-snip { font-size: 17px; line-height: 1.3; color: var(--text); }
+  /* A green tick on each result that answers the question. */
+  .sf-yes { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; }
 
-  /* One row of criteria chips */
-  .ex-controls { gap: 8px 10px; }
-  .sf-group { font-size: 15px; font-weight: 800; color: var(--muted); margin-left: 10px; }
-  .ex-controls .ex-btn { border-radius: 999px; min-width: 64px; }
+  /* ----- Start screen demo: a ghost pointer adds "puppy" to the search ----- */
+  .sf-d-bar { position: absolute; left: 22px; right: 22px; top: 26px; height: 40px; border: 2px solid var(--line-strong); border-radius: 999px; }
+  .sf-d-term { position: absolute; top: 34px; height: 24px; line-height: 24px; font-size: 16px; font-weight: 800; border-radius: 6px; padding: 0 8px; }
+  .sf-d-term.dogs { left: 40px; background: #F3F4F6; }
+  .sf-d-term.pup { left: 100px; background: var(--accent-soft); color: var(--accent); border: 2px solid var(--accent); line-height: 20px; opacity: 0; animation: sf-d-pup 3.4s ease infinite; }
+  .sf-d-chip { position: absolute; left: 112px; top: 100px; width: 96px; height: 38px; line-height: 34px; text-align: center; font-size: 16px; font-weight: 800; border: 2px solid var(--line-strong); border-radius: 999px; background: #fff; animation: sf-d-chip 3.4s ease infinite; }
+  .sf-d-move { position: absolute; left: 230px; top: 140px; animation: sf-d-move 3.4s ease-in-out infinite; }
+  .sf-d-move .ex-ghost { left: 0; top: 0; }
+  .sf-d-arrow { display: none; }
+  @keyframes sf-d-move { 0%, 10% { transform: translate(0, 0); } 40%, 85% { transform: translate(-28px, -22px); } 100% { transform: translate(0, 0); } }
+  @keyframes sf-d-chip { 0%, 42% { background: #fff; color: var(--text); border-color: var(--line-strong); } 46%, 88% { background: var(--accent); color: #fff; border-color: var(--accent); } 94%, 100% { background: #fff; color: var(--text); border-color: var(--line-strong); } }
+  @keyframes sf-d-pup { 0%, 44% { opacity: 0; } 50%, 88% { opacity: 1; } 94%, 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    /* A still frame: the chip, the pointer on it, and an arrow up to the search bar. */
+    .sf-d-move, .sf-d-chip, .sf-d-term.pup { animation: none !important; }
+    .sf-d-move { transform: translate(-28px, -22px); }
+    .sf-d-term.pup { opacity: 0.35; border-style: dashed; }
+    .sf-d-arrow { display: block; position: absolute; left: 116px; top: 66px; width: 4px; height: 30px; background: var(--accent); }
+    .sf-d-arrow::before { content: ""; position: absolute; left: -8px; top: -8px; border: 10px solid transparent; border-top: 0; border-bottom: 12px solid var(--accent); }
+  }
 
   @media (max-width: 1100px), (max-height: 620px) {
-    .sf-summary { flex-basis: 215px; padding: 8px 10px; }
-    .sf-count { font-size: 30px; }
-    .sf-count small { font-size: 14px; }
-    .sf-verdict { font-size: 15px; }
-    .sf-title { font-size: 16px; }
-    .sf-card.answers { padding-top: 14px; }
-    .sf-yes { font-size: 12px; }
+    .sf-box { gap: 6px; }
+    .sf-bar { min-height: 42px; padding: 3px 14px; }
+    .sf-term { font-size: 17px; }
+    .sf-count { font-size: 14px; }
+    .sf-title { font-size: 17px; }
     .sf-snip { font-size: 14px; }
     .sf-meta { font-size: 13px; }
-    .sf-term { font-size: 17px; }
-    .sf-bar { min-height: 40px; padding: 3px 14px; }
-    .ex-stage { gap: 8px; padding: 8px 10px; }
-    .ex-controls .ex-btn { padding: 6px 12px; }
-    .ex-controls .ex-control-label { font-size: 16px; }
-    .sf-group { margin-left: 4px; font-size: 14px; }
+    .sf-yes { width: 22px; height: 22px; }
+    .sf-chips { gap: 8px; }
+    .sf-chips .ex-btn { padding: 4px 12px; min-height: 42px; }
   }
 </style>
 </head>
-<body class="unit-3">
+<body class="unit-3 ex-v2">
 
-<header class="ex-header">
-  <div>
-    <p class="ex-unit">Finding and Selecting Information</p>
-    <h1>Search criteria</h1>
+<!-- SCREEN 1: Start -->
+<section class="ex-screen ex-start" id="ex-start">
+  <h1>Search criteria</h1>
+  <p class="ex-why">Good search words find answers faster.</p>
+  <div class="ex-demo" aria-hidden="true">
+    <span class="sf-d-bar"></span>
+    <span class="sf-d-term dogs">dogs</span>
+    <span class="sf-d-term pup">puppy</span>
+    <span class="sf-d-arrow"></span>
+    <span class="sf-d-chip">+ puppy</span>
+    <span class="sf-d-move">
+      <svg class="ex-ghost" viewBox="0 0 24 24"><path d="M5 2l14 11h-7.2l4 7.6-3 1.6-4-7.7L5 19z"/></svg>
+    </span>
   </div>
-  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
-</header>
+  <p class="ex-how">Add words.</p>
+  <button type="button" class="ex-btn primary big" id="ex-go">Start</button>
+</section>
 
-<main class="ex-main">
-  <section class="ex-goal" aria-label="Your goal">
-    <span class="ex-goal-label">Your goal</span>
-    <p>Choose criteria until the top results all answer: how do I teach a puppy to sit?</p>
-  </section>
-
-  <section class="ex-stage">
-    <div class="sf-bar" id="sf-bar" aria-label="Search" aria-live="polite"></div>
-    <div class="sf-row">
-      <div class="sf-summary" aria-live="polite">
-        <h2>Results</h2>
-        <div class="sf-count" id="sf-count"></div>
-        <div class="sf-verdict" id="sf-verdict"></div>
+<!-- SCREEN 2: Explore -->
+<section class="ex-screen" id="ex-explore" hidden>
+  <div class="ex-top">
+    <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
+    <p class="ex-instruction" id="ex-instruction">Get results that answer: how do I teach a puppy to sit?</p>
+    <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
+  </div>
+  <div class="ex-area">
+    <div class="sf-box">
+      <div class="sf-bar" id="sf-bar" aria-label="Search" aria-live="polite"></div>
+      <div class="sf-chips" id="sf-chips" role="group" aria-label="Search words and filters">
+        <button type="button" class="ex-btn" data-c="puppy" aria-pressed="false"><span class="sf-plus" aria-hidden="true">+</span>puppy</button>
+        <button type="button" class="ex-btn" data-c="teach" aria-pressed="false"><span class="sf-plus" aria-hidden="true">+</span>teach</button>
+        <button type="button" class="ex-btn" data-c="sit" aria-pressed="false"><span class="sf-plus" aria-hidden="true">+</span>sit</button>
+        <button type="button" class="ex-btn" data-c="uk" aria-pressed="false"><span class="sf-plus" aria-hidden="true">+</span>UK</button>
+        <span class="sf-divider" aria-hidden="true"></span>
+        <!-- Filters carry a funnel icon so they look different from words. -->
+        <button type="button" class="ex-btn" data-c="video" aria-pressed="false" aria-label="Filter: Videos only"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg>Videos only</button>
+        <button type="button" class="ex-btn" data-c="recent" aria-pressed="false" aria-label="Filter: Past year"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg>Past year</button>
       </div>
       <div class="sf-results" id="sf-results" aria-label="Top 4 results"></div>
     </div>
-  </section>
-
-  <section class="ex-controls" aria-label="Control" id="sf-controls">
-    <span class="ex-control-label">Add criteria</span>
-    <span class="sf-group" aria-hidden="true">Words</span>
-    <button type="button" class="ex-btn" data-c="puppy" aria-pressed="false">puppy</button>
-    <button type="button" class="ex-btn" data-c="teach" aria-pressed="false">teach</button>
-    <button type="button" class="ex-btn" data-c="sit" aria-pressed="false">sit</button>
-    <button type="button" class="ex-btn" data-c="uk" aria-pressed="false">UK</button>
-    <span class="sf-group" aria-hidden="true">Filters</span>
-    <button type="button" class="ex-btn" data-c="video" aria-pressed="false">Videos only</button>
-    <button type="button" class="ex-btn" data-c="recent" aria-pressed="false">Past year</button>
-  </section>
-
-  <section class="ex-next" id="ex-next" aria-live="polite">
-    <span class="ex-next-label">Next challenge</span>
-    <p>Which ONE filter would help most if you want to watch how it's done?</p>
-  </section>
-</main>
-
-<footer class="ex-footer">
-  <span class="ex-answer">Answer the question in Nearpod.</span>
-  <span>Finding and Selecting Information</span>
-</footer>
+    <p class="ex-status" id="ex-status" role="status"></p>
+  </div>
+</section>
 
 <script src="shared/explorer.js?v=2"></script>
 <script>
@@ -211,13 +220,12 @@
     ];
 
     var on = {};
-    var buttons = document.querySelectorAll("#sf-controls .ex-btn");
+    var buttons = document.querySelectorAll("#sf-chips .ex-btn");
     var barEl = document.getElementById("sf-bar");
-    var countEl = document.getElementById("sf-count");
-    var verdictEl = document.getElementById("sf-verdict");
     var resultsEl = document.getElementById("sf-results");
     var lastShown = [];
     var lastAnswers = 0;      /* how many of the top results answered the question last time */
+    var answers = 0;          /* how many of the top 4 answer the question now */
     var justAdded = false;    /* the last click switched a criterion on */
 
     function matches(r) {
@@ -252,31 +260,38 @@
       return e;
     }
 
+    var SVG_NS = "http://www.w3.org/2000/svg";
+    function svgEl(name, attrs) {
+      var n = document.createElementNS(SVG_NS, name);
+      Object.keys(attrs).forEach(function (k) { n.setAttribute(k, attrs[k]); });
+      return n;
+    }
+    function tick() {
+      var s = svgEl("svg", { "class": "sf-yes", viewBox: "0 0 26 26", "aria-hidden": "true" });
+      s.appendChild(svgEl("circle", { cx: 13, cy: 13, r: 12, fill: "#15803D" }));
+      s.appendChild(svgEl("path", { d: "M7.5 13.5l3.6 3.6 7.4-8", fill: "none", stroke: "#fff", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }));
+      return s;
+    }
+
     function render() {
-      var i;
-      /* Search bar */
+      /* Search bar: the words, then any filters, then the count. */
       barEl.textContent = "";
-      var svgNS = "http://www.w3.org/2000/svg";
-      var svg = document.createElementNS(svgNS, "svg");
-      svg.setAttribute("width", "24"); svg.setAttribute("height", "24"); svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true");
-      var c = document.createElementNS(svgNS, "circle");
-      c.setAttribute("cx", "10"); c.setAttribute("cy", "10"); c.setAttribute("r", "6.5"); c.setAttribute("fill", "none"); c.setAttribute("stroke", "#6B7280"); c.setAttribute("stroke-width", "3");
-      var l = document.createElementNS(svgNS, "path");
-      l.setAttribute("d", "M15 15l6 6"); l.setAttribute("stroke", "#6B7280"); l.setAttribute("stroke-width", "3"); l.setAttribute("stroke-linecap", "round");
-      svg.appendChild(c); svg.appendChild(l);
-      barEl.appendChild(svg);
+      var glass = svgEl("svg", { width: 24, height: 24, viewBox: "0 0 24 24", "aria-hidden": "true" });
+      glass.appendChild(svgEl("circle", { cx: 10, cy: 10, r: 6.5, fill: "none", stroke: "#6B7280", "stroke-width": 3 }));
+      glass.appendChild(svgEl("path", { d: "M15 15l6 6", stroke: "#6B7280", "stroke-width": 3, "stroke-linecap": "round" }));
+      barEl.appendChild(glass);
       barEl.appendChild(el("span", "sf-term", "dogs"));
       ["puppy", "teach", "sit", "uk"].forEach(function (k) {
         if (on[k]) barEl.appendChild(el("span", "sf-term added", BAR_TEXT[k]));
       });
-      barEl.appendChild(el("span", "sf-gap"));
       ["video", "recent"].forEach(function (k) {
-        if (on[k]) barEl.appendChild(el("span", "sf-term filter", "Filter: " + BAR_TEXT[k]));
+        if (on[k]) barEl.appendChild(el("span", "sf-term filter", BAR_TEXT[k]));
       });
+      barEl.appendChild(el("span", "sf-count", "About " + countText() + " results"));
 
       /* Top four results */
       var top = RESULTS.filter(matches).slice(0, 4);
-      var answers = 0;
+      answers = 0;
       resultsEl.textContent = "";
       top.forEach(function (r) {
         if (r.ans) answers += 1;
@@ -287,32 +302,30 @@
         meta.appendChild(el("span", "sf-source", r.source));
         meta.appendChild(el("span", "", ageText(r.m)));
         card.appendChild(meta);
-        if (r.ans) card.appendChild(el("div", "sf-yes", "Answers the question"));
         card.appendChild(el("div", "sf-snip", r.snip));
+        if (r.ans) {
+          card.appendChild(tick());
+          card.appendChild(el("span", "ex-visually-hidden", "Answers the question."));
+        }
         resultsEl.appendChild(card);
       });
       lastShown = top;
 
-      /* Count and verdict */
-      countEl.textContent = "";
-      countEl.appendChild(el("small", "", "About"));
-      countEl.appendChild(document.createTextNode(countText()));
+      /* The one feedback line: the verdict. */
       if (answers === 4) {
-        verdictEl.textContent = "These results answer the question";
-        verdictEl.className = "sf-verdict good";
+        /* In the challenge, green only once a video filter is on too. */
+        Explorer.status("These results answer the question.", (Explorer.step() === 1 || on.video) ? "good" : "");
       } else if (answers >= 2) {
         /* Adding a criterion can push good results out of the top four.
            That is not "closer", so say so. */
-        verdictEl.textContent = (justAdded && answers < lastAnswers) ? "Some useful results went away" : "Getting closer";
-        verdictEl.className = "sf-verdict ok";
+        Explorer.status((justAdded && answers < lastAnswers) ? "Some useful results went away." : "Getting closer.");
       } else {
-        verdictEl.textContent = "Most results don't answer the question";
-        verdictEl.className = "sf-verdict bad";
+        Explorer.status("Most results don’t answer the question.");
       }
       lastAnswers = answers;
       justAdded = false;
 
-      for (i = 0; i < buttons.length; i++) {
+      for (var i = 0; i < buttons.length; i++) {
         buttons[i].setAttribute("aria-pressed", on[buttons[i].getAttribute("data-c")] ? "true" : "false");
       }
     }
@@ -323,18 +336,35 @@
         on[key] = !on[key];
         justAdded = !!on[key];
         render();
-        Explorer.track();
+        Explorer.used();
       });
     }
 
-    Explorer.init({
-      unlockAfter: 6,
+    function good() { return answers === 4; }
+
+    Explorer.setup({
+      /* Step 1: all four top results answer the question. */
+      pulse: "#sf-chips .ex-btn",
+      success: good,
+      hint: "Add the words from the question.",
+      hintAfter: 60,
       onReset: function () {
         on = {};
         lastShown = [];
         lastAnswers = 0;
         justAdded = false;
         render();
+      },
+      /* Step 2: Videos only is on and the results still answer it. */
+      challenge: {
+        text: "You want to watch how it’s done. Add one filter.",
+        /* The words stay. Any filter already on is taken off, so there is
+           one to add. */
+        start: function () { on.video = false; on.recent = false; render(); },
+        success: function () { return !!on.video && good(); },
+        successText: "Every result is a video that answers it.",
+        hint: "Try the filters on the right.",
+        pulse: '#sf-chips [data-c="video"], #sf-chips [data-c="recent"]'
       }
     });
 
