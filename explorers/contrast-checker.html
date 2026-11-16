@@ -10,171 +10,84 @@
 <link rel="stylesheet" href="shared/explorer.css?v=2">
 <style>
   /* Page-specific styles only. */
-  /* The stage takes exactly the space left over, so the page never scrolls.
-     The poster is then sized in JS to fit the stage. */
-  .ex-main { min-height: 0; }
-  .ex-stage { flex: 1 1 0px; padding: 10px 16px; gap: 32px; align-items: flex-start; }
+  body { --hint: #6D28D9; }   /* hints in purple, so they never look like a rating */
 
   .cc-svg { display: block; }
   .cc-svg text { font-family: var(--font); font-weight: 800; }
+  .cc-poster { flex-shrink: 0; border: 2px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
 
-  .cc-poster {
-    flex-shrink: 0;
-    border: 2px solid var(--line-strong);
-    border-radius: 8px;
-    overflow: hidden;
-  }
+  /* The rating, in the class's words, is the one status line. */
+  .ex-v2 .ex-status.hard { color: var(--bad); }
+  .ex-v2 .ex-status.ok { color: var(--ok); }
 
-  .cc-far {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 176px;
-    flex-shrink: 0;
-  }
-  .cc-far-frame {
-    border: 2px solid var(--line-strong);
-    border-radius: 5px;
-    overflow: hidden;
-    width: 116px;
-  }
-  /* The slight blur stands in for distance. */
-  .cc-far-frame .cc-svg { filter: blur(1.2px); }
-  .cc-far-cap {
-    font-size: 15px;
-    font-weight: 800;
-    line-height: 1.25;
-    color: var(--muted);
-    text-align: center;
-  }
-
-  .cc-meter {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    width: 270px;
-    flex-shrink: 0;
-  }
-  .ex-tag.cc-tag {
-    font-size: 30px;
-    line-height: 1.2;
-    padding: 8px 22px;
-    border-width: 3px;
-    white-space: nowrap;
-  }
-  .cc-bar {
-    position: relative;
-    width: 100%;
-    height: 18px;
-    border-radius: 999px;
-    /* Three zones: Hard to read, OK, Easy to read. */
-    background: linear-gradient(to right,
-      #F6B4B4 0, #F6B4B4 36.1%,
-      #F7D58B 36.1%, #F7D58B 49.4%,
-      #A9DDB9 49.4%, #A9DDB9 100%);
-  }
-  .cc-pin {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    width: 14px;
-    height: 34px;
-    margin: -17px 0 0 -7px;
-    border-radius: 7px;
-    background: var(--text);
-    border: 3px solid #fff;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
-    transition: left 0.25s ease;
-  }
-  .cc-ratio { font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums; }
-
-  /* Colour swatches: the one control. */
-  .cc-swatches { display: flex; gap: 14px; }
+  /* Colour swatches: the one control, right under the poster. */
+  .cc-swatches { display: flex; gap: 14px; flex-shrink: 0; padding: 6px; border-radius: 16px; }
   .cc-swatch {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    border: 2px solid #6B7280;
-    cursor: pointer;
-    padding: 0;
-    position: relative;
+    width: 52px; height: 52px; border-radius: 12px;
+    border: 2px solid #6B7280; cursor: pointer; padding: 0;
     transition: transform 0.1s;
   }
   .cc-swatch:active { transform: scale(0.95); }
-  .cc-swatch[aria-pressed="true"] {
-    box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--text);
-  }
-  .cc-swatch:focus-visible {
-    outline: 3px solid var(--accent);
-    outline-offset: 7px;
-  }
-  .ex-readout { min-width: 7.5em; text-align: left; }
+  .cc-swatch[aria-pressed="true"] { box-shadow: 0 0 0 3px #fff, 0 0 0 6px var(--text); }
+  .cc-swatch:focus-visible { outline: 3px solid var(--accent); outline-offset: 7px; }
 
-  .ex-next p { flex: 1; }
-  .ex-next .ex-btn { flex-shrink: 0; }
+  /* ----- Start screen demo: a pointer clicks a swatch and the words change colour ----- */
+  .cc-d-poster { position: absolute; left: 50px; top: 12px; width: 220px; height: 92px; border-radius: 6px; background: linear-gradient(#FFEDB3, #FCCCDB); }
+  .cc-d-words { position: absolute; left: 0; right: 0; top: 18px; text-align: center; font-weight: 800; font-size: 22px; line-height: 1.2; color: #FFF6CC; animation: cc-d-words 3.4s steps(1) infinite; }
+  .cc-d-words small { display: block; font-size: 14px; }
+  .cc-d-sw { position: absolute; top: 118px; width: 34px; height: 34px; border-radius: 8px; border: 2px solid #6B7280; }
+  .cc-d-sw.a { left: 72px; background: #FFF6CC; animation: cc-d-a 3.4s steps(1) infinite; }
+  .cc-d-sw.b { left: 122px; background: #F28C1E; }
+  .cc-d-sw.c { left: 172px; background: #5B21B6; }
+  .cc-d-sw.d { left: 222px; background: #111B3D; animation: cc-d-d 3.4s steps(1) infinite; }
+  .cc-d-ghost { position: absolute; left: 0; top: 0; animation: cc-d-ghost 3.4s ease-in-out infinite; }
+  .cc-d-ghost .ex-ghost { left: 0; top: 0; }
+  @keyframes cc-d-ghost { 0%, 15% { transform: translate(90px, 134px); } 45%, 100% { transform: translate(240px, 134px); } }
+  @keyframes cc-d-words { 0% { color: #FFF6CC; } 48% { color: #111B3D; } }
+  @keyframes cc-d-a { 0% { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #374151; } 48% { box-shadow: none; } }
+  @keyframes cc-d-d { 0% { box-shadow: none; } 48% { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #374151; } }
+  @media (prefers-reduced-motion: reduce) {
+    /* Still frame: the pointer on the dark swatch, the words already dark. */
+    .cc-d-ghost, .cc-d-words, .cc-d-sw { animation: none !important; }
+    .cc-d-ghost { transform: translate(240px, 134px); }
+    .cc-d-words { color: #111B3D; }
+    .cc-d-sw.d { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #374151; }
+  }
 
   @media (max-width: 1100px), (max-height: 620px) {
-    .ex-stage { gap: 22px; }
-    .cc-meter { width: 240px; }
-    .ex-tag.cc-tag { font-size: 27px; padding: 6px 18px; }
-    .cc-far { width: 132px; }
-    .cc-swatch { width: 44px; height: 44px; }
-    .cc-swatches { gap: 13px; }
+    .cc-swatch { width: 46px; height: 46px; }
+    .cc-swatches { gap: 12px; }
   }
 </style>
 </head>
-<body class="unit-2">
+<body class="unit-2 ex-v2">
 
-<header class="ex-header">
-  <div>
-    <p class="ex-unit">Working with Text and Images</p>
-    <h1>Can you read it?</h1>
+<!-- SCREEN 1: Start -->
+<section class="ex-screen ex-start" id="ex-start">
+  <h1>Can you read it?</h1>
+  <p class="ex-why">Easy-to-read colours make people stop and read your poster.</p>
+  <div class="ex-demo" aria-hidden="true">
+    <span class="cc-d-poster"><span class="cc-d-words">BAKE SALE<small>Friday</small></span></span>
+    <span class="cc-d-sw a"></span><span class="cc-d-sw b"></span><span class="cc-d-sw c"></span><span class="cc-d-sw d"></span>
+    <span class="cc-d-ghost"><svg class="ex-ghost" viewBox="0 0 24 24"><path d="M5 2l14 11h-7.2l4 7.6-3 1.6-4-7.7L5 19z"/></svg></span>
   </div>
-  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
-</header>
+  <p class="ex-how">Pick a text colour.</p>
+  <button type="button" class="ex-btn primary big" id="ex-go">Start</button>
+</section>
 
-<main class="ex-main">
-  <section class="ex-goal" aria-label="Your goal">
-    <span class="ex-goal-label">Your goal</span>
-    <p>Find two text colours that are Easy to read on this background.</p>
-  </section>
-
-  <section class="ex-stage" id="cc-stage" aria-live="polite">
+<!-- SCREEN 2: Explore -->
+<section class="ex-screen" id="ex-explore" hidden>
+  <div class="ex-top">
+    <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
+    <p class="ex-instruction" id="ex-instruction">Find two text colours that are Easy to read.</p>
+    <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
+  </div>
+  <div class="ex-area" id="cc-area">
     <div class="cc-poster" id="cc-poster"></div>
-
-    <div class="cc-far">
-      <div class="cc-far-frame" id="cc-far" aria-hidden="true"></div>
-      <p class="cc-far-cap">From across the room</p>
-    </div>
-
-    <div class="cc-meter">
-      <span class="ex-tag bad cc-tag" id="cc-tag">Hard to read</span>
-      <div class="cc-bar" aria-hidden="true"><span class="cc-pin" id="cc-pin"></span></div>
-      <p class="cc-ratio" id="cc-ratio">Contrast</p>
-    </div>
-  </section>
-
-  <section class="ex-controls" aria-label="Control">
-    <span class="ex-control-label" id="cc-label">Text colour</span>
-    <div class="cc-swatches" id="cc-swatches" role="group" aria-labelledby="cc-label"></div>
-    <span class="ex-readout" id="cc-readout"></span>
-  </section>
-
-  <section class="ex-next" id="ex-next" aria-live="polite">
-    <span class="ex-next-label">Next challenge</span>
-    <p>Switch to a dark background. Which colours are Easy to read now?</p>
-    <button type="button" class="ex-btn small" id="cc-toggle">Switch to dark background</button>
-  </section>
-</main>
-
-<footer class="ex-footer">
-  <span class="ex-answer">Answer the question in Nearpod.</span>
-  <span>Working with Text and Images</span>
-</footer>
+    <div class="cc-swatches" id="cc-swatches" role="group" aria-label="Text colour"></div>
+    <p class="ex-status" id="ex-status" role="status"></p>
+  </div>
+</section>
 
 <script src="shared/explorer.js?v=2"></script>
 <script>
@@ -212,36 +125,29 @@
       light: ["#FFEDB3", "#FCCCDB"],
       dark:  ["#1E3A8A", "#5B21B6"]
     };
-    var START_INDEX = 0;
+    var START_INDEX = 0;          /* Pale yellow: Hard to read on the light poster */
+    var NAVY = 7;                 /* the challenge starts with Navy on the dark poster */
 
-    var stage = document.getElementById("cc-stage");
+    var area = document.getElementById("cc-area");
     var poster = document.getElementById("cc-poster");
-    var far = document.getElementById("cc-far");
-    var tag = document.getElementById("cc-tag");
-    var pin = document.getElementById("cc-pin");
-    var ratioEl = document.getElementById("cc-ratio");
     var swatchRow = document.getElementById("cc-swatches");
-    var readout = document.getElementById("cc-readout");
-    var toggle = document.getElementById("cc-toggle");
-    var nextCard = document.getElementById("ex-next");
+    var statusEl = document.getElementById("ex-status");
 
     var selected = START_INDEX;
     var mode = "light";
     var buttons = [];
-    var nextCardHeight = 64;      // measured once in measureNextCard()
+    var easyFound = {};           /* Easy colours chosen on the light poster */
 
-    function posterMarkup(id) {
-      return '<svg class="cc-svg" viewBox="0 0 400 300" width="100%" ' +
-        (id === "a" ? 'role="img" aria-label="Poster. Christmas Fair. Friday 18 December. Lunchtime."' : 'aria-hidden="true"') + '>' +
-        '<defs><linearGradient id="cc-grad-' + id + '" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop class="cc-stop0" offset="0"/><stop class="cc-stop1" offset="1"/></linearGradient></defs>' +
-        '<rect width="400" height="300" fill="url(#cc-grad-' + id + ')"/>' +
-        '<g class="cc-words" text-anchor="middle">' +
-        '<text class="cc-title" x="200" y="130" font-size="42">CHRISTMAS FAIR</text>' +
-        '<text x="200" y="192" font-size="26">Friday 18 December</text>' +
-        '<text x="200" y="232" font-size="26">Lunchtime</text>' +
-        '</g></svg>';
-    }
+    poster.innerHTML = '<svg class="cc-svg" viewBox="0 0 400 300" width="100%" role="img">' +
+      '<defs><linearGradient id="cc-grad" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop class="cc-stop0" offset="0"/><stop class="cc-stop1" offset="1"/></linearGradient></defs>' +
+      '<rect width="400" height="300" fill="url(#cc-grad)"/>' +
+      '<g class="cc-words" text-anchor="middle">' +
+      '<text class="cc-title" x="200" y="130" font-size="42">CHRISTMAS FAIR</text>' +
+      '<text x="200" y="192" font-size="26">Friday 18 December</text>' +
+      '<text x="200" y="232" font-size="26">Lunchtime</text>' +
+      '</g></svg>';
+    var svg = poster.querySelector("svg");
 
     function luminance(hex) {
       var c = [1, 3, 5].map(function (i) {
@@ -254,47 +160,37 @@
       var la = luminance(a), lb = luminance(b);
       return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
     }
-    function worstContrast(hex) {
-      var bg = BACKGROUNDS[mode];
-      return Math.min(contrast(hex, bg[0]), contrast(hex, bg[1]));
+    function band(i, m) {
+      var bg = BACKGROUNDS[m || mode];
+      var r = Math.min(contrast(COLOURS[i].hex, bg[0]), contrast(COLOURS[i].hex, bg[1]));
+      return r < 3 ? "hard" : (r < 4.5 ? "ok" : "good");
     }
+    var WORDS = { hard: "Hard to read", ok: "OK", good: "Easy to read" };
+
+    function foundCount() { return Object.keys(easyFound).length; }
 
     function render() {
-      var colour = COLOURS[selected];
       var bg = BACKGROUNDS[mode];
+      svg.querySelector(".cc-stop0").setAttribute("stop-color", bg[0]);
+      svg.querySelector(".cc-stop1").setAttribute("stop-color", bg[1]);
+      svg.querySelector(".cc-words").setAttribute("fill", COLOURS[selected].hex);
 
-      [poster, far].forEach(function (holder) {
-        holder.querySelector(".cc-stop0").setAttribute("stop-color", bg[0]);
-        holder.querySelector(".cc-stop1").setAttribute("stop-color", bg[1]);
-        holder.querySelector(".cc-words").setAttribute("fill", colour.hex);
-      });
+      var b = band(selected);
+      var text = WORDS[b];
+      /* On the light poster, say how many Easy colours have been found. */
+      if (mode === "light" && b === "good") text += ". " + foundCount() + " of 2 found.";
+      Explorer.status(text, b);
 
-      var ratio = worstContrast(colour.hex);
-      var band = ratio < 3 ? "bad" : (ratio < 4.5 ? "ok" : "good");
-      var words = { bad: "Hard to read", ok: "OK", good: "Easy to read" }[band];
-      tag.className = "ex-tag cc-tag " + band;
-      if (tag.textContent !== words) tag.textContent = words;
-
-      // Pin position: log scale from 1 : 1 (left) to 21 : 1 (right).
-      var pos = Math.log(ratio) / Math.log(21);
-      pin.style.left = (Math.max(0, Math.min(1, pos)) * 100) + "%";
-
-      // Round down so the small number never reads higher than its band.
-      var shown = (Math.floor(ratio * 10) / 10).toFixed(1);
-      ratioEl.textContent = "Contrast " + shown + " : 1";
-
-      readout.textContent = colour.name;
-      buttons.forEach(function (b, i) {
-        b.setAttribute("aria-pressed", i === selected ? "true" : "false");
-      });
-      toggle.textContent = mode === "light" ? "Switch to dark background" : "Switch to light background";
+      svg.setAttribute("aria-label", "Poster. Christmas Fair. Friday 18 December. Lunchtime. " +
+        COLOURS[selected].name + " text: " + WORDS[b] + ".");
+      buttons.forEach(function (btn, i) { btn.setAttribute("aria-pressed", i === selected ? "true" : "false"); });
     }
 
     function choose(i) {
-      if (i === selected) return;
       selected = i;
+      if (mode === "light" && band(i) === "good") easyFound[i] = true;
       render();
-      Explorer.track();
+      Explorer.used();
     }
 
     COLOURS.forEach(function (c, i) {
@@ -315,73 +211,62 @@
       buttons.push(b);
     });
 
-    toggle.addEventListener("click", function () {
-      mode = mode === "light" ? "dark" : "light";
-      render();
-    });
-
     /* The title is squeezed only if the font on this device makes it too wide. */
     function fitTitle() {
-      [poster, far].forEach(function (holder) {
-        var t = holder.querySelector(".cc-title");
-        t.removeAttribute("textLength");
-        t.removeAttribute("lengthAdjust");
-        if (t.getComputedTextLength() > 352) {
-          t.setAttribute("textLength", "352");
-          t.setAttribute("lengthAdjust", "spacingAndGlyphs");
-        }
-      });
-    }
-
-    /* Find out how tall the Next challenge card will be, so the poster can
-       leave room for it and stay the same size when the card appears. */
-    function measureNextCard() {
-      if (nextCard.classList.contains("show")) { nextCardHeight = nextCard.offsetHeight; return; }
-      var s = nextCard.style;
-      s.display = "flex"; s.visibility = "hidden"; s.position = "absolute"; s.left = "0"; s.right = "0";
-      nextCardHeight = nextCard.offsetHeight;
-      s.display = ""; s.visibility = ""; s.position = ""; s.left = ""; s.right = "";
-    }
-
-    function layout() {
-      var cs = getComputedStyle(stage);
-      var innerH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-      var innerW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      if (!nextCard.classList.contains("show")) {
-        innerH -= nextCardHeight + (parseFloat(getComputedStyle(stage.parentNode).rowGap) || 12);
+      var t = svg.querySelector(".cc-title");
+      t.removeAttribute("textLength");
+      t.removeAttribute("lengthAdjust");
+      if (t.getComputedTextLength() > 352) {
+        t.setAttribute("textLength", "352");
+        t.setAttribute("lengthAdjust", "spacingAndGlyphs");
       }
-      var gap = parseFloat(cs.columnGap) || 32;
-      var others = document.querySelector(".cc-far").offsetWidth + document.querySelector(".cc-meter").offsetWidth + gap * 2;
-      var h = Math.max(150, Math.min(330, Math.floor(innerH - 4)));
-      var w = Math.round(h * 4 / 3);
-      if (w > innerW - others - 4) { w = Math.floor(innerW - others - 4); h = Math.round(w * 3 / 4); }
-      poster.style.width = (w + 4) + "px";       // plus the border
-      // Centre the side columns against the poster, not the whole stage.
-      document.querySelector(".cc-far").style.height = (h + 4) + "px";
-      document.querySelector(".cc-meter").style.height = (h + 4) + "px";
     }
 
-    Explorer.init({
-      unlockAfter: 5,
+    /* The poster takes the space left above the swatches and the status line. */
+    function layout() {
+      if (!area.clientHeight) return;
+      var cs = getComputedStyle(area);
+      var gap = parseFloat(cs.rowGap) || 10;
+      var availW = area.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 4;
+      var availH = area.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+                   - swatchRow.offsetHeight - statusEl.offsetHeight - gap * 2 - 4;
+      var h = Math.max(150, Math.min(420, Math.floor(availH - 4)));
+      var w = Math.round(h * 4 / 3);
+      if (w > availW) { w = Math.floor(availW); h = Math.round(w * 3 / 4); }
+      poster.style.width = (w + 4) + "px";
+    }
+
+    Explorer.setup({
+      pulse: "#cc-swatches",
+      success: function () { return mode === "light" && foundCount() >= 2; },
+      successText: "Easy to read. 2 of 2 found.",
+      hint: "Try a dark colour.",
+      hintAfter: 60,
+      onShow: function () { layout(); render(); },
       onReset: function () {
         selected = START_INDEX;
         mode = "light";
+        easyFound = {};
         render();
+      },
+      challenge: {
+        text: "The background is now dark. Find a colour that is Easy to read.",
+        /* Switch to the dark background straight away, with Navy text,
+           so the change is easy to see. */
+        start: function () { mode = "dark"; selected = NAVY; render(); },
+        success: function () { return mode === "dark" && band(selected) === "good"; },
+        successText: "Easy to read on the dark background.",
+        hint: "Try a light colour.",
+        pulse: "#cc-swatches"
       }
     });
 
-    poster.innerHTML = posterMarkup("a");
-    far.innerHTML = posterMarkup("b");
-    measureNextCard();
     layout();
     render();
     fitTitle();
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTitle);
-
-    if (window.ResizeObserver) {
-      new ResizeObserver(layout).observe(stage);
-    }
-    window.addEventListener("resize", function () { measureNextCard(); layout(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitTitle(); layout(); });
+    if (window.ResizeObserver) new ResizeObserver(layout).observe(area);
+    window.addEventListener("resize", layout);
   })();
 </script>
 </body>

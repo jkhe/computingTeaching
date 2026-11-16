@@ -314,6 +314,9 @@
 
     function sortedBy(col, asc) { return sortCol === col && ascending === asc; }
 
+    build();
+    render(false);
+
     Explorer.setup({
       pulse: ".sortbtn",
       success: function () { return sortedBy(AVG, true); },
@@ -337,8 +340,6 @@
       }
     });
 
-    build();
-    render(false);
     if (window.ResizeObserver) new ResizeObserver(layout).observe(area);
     window.addEventListener("resize", layout);
   })();
