@@ -53,7 +53,7 @@
 
   /* ----- Screens: only one is ever visible ----- */
   function show(name) {
-    ["start", "explore", "finished"].forEach(function (n) {
+    ["start", "explore", "bridge", "finished"].forEach(function (n) {
       if (el[n]) el[n].hidden = n !== name;
     });
     if (name === "explore") {
@@ -175,6 +175,121 @@
     return b;
   }
 
+
+  /* ----- Key word card on the Start screen (SEEC: explain the word first,
+     with the same picture used on the key word slide and the tile) -----
+     cfg.keyword = { word: "Align", meaning: "Line things up ...", tile: "shared/tiles/align.png" } */
+  function buildKeyword() {
+    var k = cfg.keyword;
+    if (!k || !el.start) return;
+    var card = document.createElement("div");
+    card.className = "ex-key";
+    if (k.tile) {
+      var img = document.createElement("img");
+      img.src = k.tile; img.alt = ""; img.width = 72; img.height = 72;
+      card.appendChild(img);
+    }
+    var txt = document.createElement("p");
+    var w = document.createElement("strong");
+    w.textContent = k.word;
+    txt.appendChild(w);
+    txt.appendChild(document.createTextNode(" " + k.meaning));
+    card.appendChild(txt);
+    var why = el.start.querySelector(".ex-why");
+    el.start.insertBefore(card, why || el.start.querySelector(".ex-demo"));
+  }
+
+  /* ----- Read aloud: uses the device's built-in voice, so reading is
+     never the barrier. Reads the Start screen, or the current instruction. */
+  var canSpeak = "speechSynthesis" in window && typeof SpeechSynthesisUtterance === "function";
+  function say(text) {
+    if (!canSpeak || !text) return;
+    window.speechSynthesis.cancel();
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-GB";
+    u.rate = 0.9;
+    var voices = window.speechSynthesis.getVoices() || [];
+    for (var i = 0; i < voices.length; i++) {
+      if (/^en-GB/i.test(voices[i].lang)) { u.voice = voices[i]; break; }
+    }
+    window.speechSynthesis.speak(u);
+  }
+  function speakButton(getText) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "ex-speak";
+    b.setAttribute("aria-label", "Read aloud");
+    b.title = "Read aloud";
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/>' +
+      '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+    b.addEventListener("click", function () { say(getText()); });
+    return b;
+  }
+  function textOf(node) { return node && !node.hidden ? node.textContent.trim() : ""; }
+  function buildSpeak() {
+    if (!canSpeak) return;
+    var h = el.start && el.start.querySelector("h1");
+    if (h) {
+      var row = document.createElement("div");
+      row.className = "ex-title-row";
+      h.parentNode.insertBefore(row, h);
+      row.appendChild(h);
+      row.appendChild(speakButton(function () {
+        var k = cfg.keyword ? cfg.keyword.word + ". " + cfg.keyword.meaning + " " : "";
+        return k + textOf(el.start.querySelector(".ex-why")) + " " + textOf(el.start.querySelector(".ex-how"));
+      }));
+    }
+    var top = el.instruction.parentNode;
+    top.insertBefore(speakButton(function () {
+      return el.instruction.hidden ? "Try the challenge, or I'm finished." : el.instruction.textContent;
+    }), el.instruction);
+  }
+
+  /* ----- "Now in the real tool": links the idea to the button pupils use.
+     cfg.bridge = { title: "Now in Canva", img: "shared/canva/text-toolbar.png",
+                    imgW: 1720, imgH: 88, crop: [x, w], focus: [x, w],
+                    text: "Click the text. Click Position." } */
+  function buildBridge() {
+    var b = cfg.bridge;
+    if (!b) return;
+    var s = document.createElement("section");
+    s.className = "ex-screen ex-bridge";
+    s.id = "ex-bridge";
+    s.hidden = true;
+    var h = document.createElement("h1");
+    h.textContent = b.title || "Now in Canva";
+    s.appendChild(h);
+    var crop = b.crop || [0, b.imgW];
+    var frame = document.createElement("div");
+    frame.className = "ex-shot";
+    frame.style.aspectRatio = crop[1] + " / " + b.imgH;
+    var img = document.createElement("img");
+    img.src = b.img; img.alt = b.alt || "";
+    img.style.width = (b.imgW / crop[1] * 100) + "%";
+    img.style.left = (-crop[0] / crop[1] * 100) + "%";
+    frame.appendChild(img);
+    if (b.focus) {
+      var ring = document.createElement("span");
+      ring.className = "ex-ring";
+      ring.style.left = ((b.focus[0] - crop[0]) / crop[1] * 100) + "%";
+      ring.style.width = (b.focus[1] / crop[1] * 100) + "%";
+      frame.appendChild(ring);
+    }
+    s.appendChild(frame);
+    var p = document.createElement("p");
+    p.textContent = b.text;
+    s.appendChild(p);
+    if (canSpeak) {
+      var sp = speakButton(function () { return b.text; });
+      p.appendChild(sp);
+    }
+    s.appendChild(button("ex-btn primary big", "Done", function () { show("finished"); }));
+    document.body.appendChild(s);
+    el.bridge = s;
+  }
+
+  function finish() { show(cfg.bridge ? "bridge" : "finished"); }
+
   /* The parts that are the same on every page are built here. */
   function build() {
     el.start = $("ex-start");
@@ -189,7 +304,7 @@
     el.choice.hidden = true;
     el.tryBtn = button("ex-btn primary", "Try the challenge", startChallenge);
     el.choice.appendChild(el.tryBtn);
-    el.choice.appendChild(button("ex-btn", "I’m finished", function () { show("finished"); }));
+    el.choice.appendChild(button("ex-btn", "I’m finished", finish));
     el.instruction.parentNode.insertBefore(el.choice, el.instruction.nextSibling);
 
     /* Inside Nearpod the page is in a frame, so there is no tab to close. */
@@ -212,6 +327,10 @@
     document.body.appendChild(f);
     el.finished = f;
     el.finishedTitle = f.querySelector("h1");
+
+    buildKeyword();
+    buildSpeak();
+    buildBridge();
 
     $("ex-go").addEventListener("click", function () { show("explore"); });
     $("ex-reset").addEventListener("click", restart);

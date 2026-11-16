@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/explorer.css?v=2">
+<link rel="stylesheet" href="shared/explorer.css?v=3">
 <style>
   body { --hint: #6D28D9; }   /* purple hints, so they are not confused with the green success line */
   /* The three chart buttons sit right on top of the chart they change. */
@@ -115,7 +115,7 @@
   </div>
 </section>
 
-<script src="shared/explorer.js?v=2"></script>
+<script src="shared/explorer.js?v=3"></script>
 <script>
   (function () {
     "use strict";
@@ -290,6 +290,7 @@
     function bestPicked() { return type === SETS[setIndex].best; }
 
     Explorer.setup({
+      keyword: { word: "Chart", meaning: "A picture that shows data." },
       pulse: ".cc-btns .ex-btn",
       success: bestPicked,
       successText: SETS[0].verdict.bar,

@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/explorer.css?v=2">
+<link rel="stylesheet" href="shared/explorer.css?v=3">
 <style>
   /* Page-specific styles only. */
   body { --hint: #6D28D9; }   /* hints in purple, so they never look like a rating */
@@ -89,7 +89,7 @@
   </div>
 </section>
 
-<script src="shared/explorer.js?v=2"></script>
+<script src="shared/explorer.js?v=3"></script>
 <script>
   (function () {
     "use strict";
@@ -237,6 +237,8 @@
     }
 
     Explorer.setup({
+      keyword: { word: "Contrast", meaning: "How different the text colour is from the background." },
+      bridge: { title: "Now in Canva", img: "shared/canva/text-toolbar.png", imgW: 1720, imgH: 88, crop: [0, 620], focus: [452, 70], alt: "Canva toolbar with the text colour button ringed", text: "Click the text. Click the A. Pick a colour." },
       pulse: "#cc-swatches",
       success: function () { return mode === "light" && foundCount() >= 2; },
       successText: "Easy to read. 2 of 2 found.",
