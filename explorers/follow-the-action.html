@@ -11,15 +11,15 @@
 <style>
   /* Page-specific styles only. */
   .fa-box {
-    flex: 1 1 0px;
+    flex: 0 1 auto;
     min-height: 0;
     width: 100%;
     max-width: 1240px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 16px;
   }
-  #diagram { flex: 1 1 0px; height: 0; min-height: 0; width: 100%; display: block; }
+  #diagram { flex: 0 1 auto; height: auto; min-height: 0; width: 100%; display: block; }
   #diagram text { font-family: var(--font); font-weight: 800; fill: var(--text); }
   .zone rect { fill: #F9FAFB; stroke: var(--line-strong); stroke-width: 2; }
   .zone text { font-size: 15px; letter-spacing: 1.5px; fill: var(--accent) !important; }
@@ -51,7 +51,7 @@
   .fa-d-btn { position: absolute; left: 92px; top: 108px; width: 136px; height: 38px; line-height: 34px; text-align: center; font-size: 15px; font-weight: 800; border: 2px solid var(--line-strong); border-radius: 10px; background: #fff; animation: fa-d-btn 3.6s ease infinite; }
   .fa-d-move { position: absolute; left: 230px; top: 140px; animation: fa-d-move 3.6s ease-in-out infinite; }
   .fa-d-move .ex-ghost { left: 0; top: 0; }
-  @keyframes fa-d-move { 0%, 6% { transform: translate(0, 0); } 22%, 90% { transform: translate(-60px, -16px); } 100% { transform: translate(0, 0); } }
+  @keyframes fa-d-move { 0%, 6% { transform: translate(0, 0); } 22%, 90% { transform: translate(-28px, -12px); } 100% { transform: translate(0, 0); } }
   @keyframes fa-d-btn { 0%, 22% { background: #fff; color: var(--text); border-color: var(--line-strong); } 25%, 90% { background: var(--accent); color: #fff; border-color: var(--accent); } 95%, 100% { background: #fff; color: var(--text); border-color: var(--line-strong); } }
   @keyframes fa-d-dot { 0%, 25% { opacity: 0; transform: none; } 27% { opacity: 1; transform: none; } 50% { transform: translateX(104px); } 56% { transform: translateX(104px); } 80% { opacity: 1; transform: translateX(208px); } 90%, 100% { opacity: 0; transform: translateX(208px); } }
   @keyframes fa-d-a { 0%, 25% { background: #fff; } 27%, 90% { background: #FDE68A; } 95%, 100% { background: #fff; } }
@@ -63,7 +63,7 @@
     .fa-d-box { background: #FDE68A; }
     .fa-d-wire { background: var(--accent); }
     .fa-d-btn { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .fa-d-move { transform: translate(-60px, -16px); }
+    .fa-d-move { transform: translate(-28px, -12px); }
   }
 
   @media (max-width: 1100px), (max-height: 620px) {
