@@ -9,109 +9,113 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared/explorer.css?v=2">
 <style>
-  .ex-stage { flex-direction: column; align-items: stretch; gap: 6px; padding: 10px 14px 8px; }
-  #diagram { flex: 1 1 0; height: 0; min-height: 0; width: 100%; display: block; }
+  /* Page-specific styles only. */
+  .fa-box {
+    flex: 1 1 0px;
+    min-height: 0;
+    width: 100%;
+    max-width: 1240px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #diagram { flex: 1 1 0px; height: 0; min-height: 0; width: 100%; display: block; }
   #diagram text { font-family: var(--font); font-weight: 800; fill: var(--text); }
   .zone rect { fill: #F9FAFB; stroke: var(--line-strong); stroke-width: 2; }
-  .zone text { font-size: 15px; letter-spacing: 1.5px; fill: var(--accent); }
+  .zone text { font-size: 15px; letter-spacing: 1.5px; fill: var(--accent) !important; }
   .wire { fill: none; stroke: var(--line-strong); stroke-width: 3; stroke-linejoin: round; }
   .trail { fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
-  .comp .box { fill: #fff; stroke: #9CA3AF; stroke-width: 2; }
+  .comp .box { fill: #fff; stroke: #9CA3AF; stroke-width: 2; transition: stroke 0.15s; }
   .comp .icon * { fill: none; stroke: var(--text); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .comp text { font-size: 17px; }
   .comp.big text { font-size: 20px; }
   .comp.lit .box { fill: #FDE68A; stroke: var(--accent); stroke-width: 4; }
+  /* After an action has played, every part can be clicked. */
+  .comp.can { cursor: pointer; outline: none; }
+  .comp.can .box { stroke-dasharray: none; }
+  .comp.can:hover .box, .comp.can:focus-visible .box { stroke: var(--accent); stroke-width: 4; }
+  .comp.can:focus-visible .box { stroke-dasharray: 6 4; }
+  .comp.picked .box { fill: var(--good-soft); stroke: var(--good); stroke-width: 5; }
   #dot-halo { fill: var(--accent); opacity: 0.25; }
   #dot-core { fill: var(--accent); stroke: #fff; stroke-width: 3; }
 
-  .steps {
-    list-style: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-wrap: nowrap;
-    gap: 10px;
-    min-height: 36px;
-    flex-shrink: 0;
+  .fa-actions { flex-shrink: 0; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+  /* ----- Start screen demo: a ghost pointer picks an action, a dot travels ----- */
+  .fa-d-box { position: absolute; top: 24px; width: 74px; height: 50px; border: 2px solid #9CA3AF; border-radius: 8px; background: #fff; font-size: 14px; font-weight: 800; text-align: center; line-height: 46px; }
+  .fa-d-box.a { left: 18px; animation: fa-d-a 3.6s linear infinite; }
+  .fa-d-box.b { left: 122px; animation: fa-d-b 3.6s linear infinite; }
+  .fa-d-box.c { left: 226px; animation: fa-d-c 3.6s linear infinite; }
+  .fa-d-wire { position: absolute; top: 48px; left: 92px; width: 134px; height: 3px; background: var(--line-strong); }
+  .fa-d-dot { position: absolute; top: 42px; left: 49px; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); border: 3px solid #fff; box-shadow: 0 0 0 5px rgba(180, 83, 9, 0.25); opacity: 0; animation: fa-d-dot 3.6s linear infinite; }
+  .fa-d-btn { position: absolute; left: 92px; top: 108px; width: 136px; height: 38px; line-height: 34px; text-align: center; font-size: 15px; font-weight: 800; border: 2px solid var(--line-strong); border-radius: 10px; background: #fff; animation: fa-d-btn 3.6s ease infinite; }
+  .fa-d-move { position: absolute; left: 230px; top: 140px; animation: fa-d-move 3.6s ease-in-out infinite; }
+  .fa-d-move .ex-ghost { left: 0; top: 0; }
+  @keyframes fa-d-move { 0%, 6% { transform: translate(0, 0); } 22%, 90% { transform: translate(-60px, -16px); } 100% { transform: translate(0, 0); } }
+  @keyframes fa-d-btn { 0%, 22% { background: #fff; color: var(--text); border-color: var(--line-strong); } 25%, 90% { background: var(--accent); color: #fff; border-color: var(--accent); } 95%, 100% { background: #fff; color: var(--text); border-color: var(--line-strong); } }
+  @keyframes fa-d-dot { 0%, 25% { opacity: 0; transform: none; } 27% { opacity: 1; transform: none; } 50% { transform: translateX(104px); } 56% { transform: translateX(104px); } 80% { opacity: 1; transform: translateX(208px); } 90%, 100% { opacity: 0; transform: translateX(208px); } }
+  @keyframes fa-d-a { 0%, 25% { background: #fff; } 27%, 90% { background: #FDE68A; } 95%, 100% { background: #fff; } }
+  @keyframes fa-d-b { 0%, 49% { background: #fff; } 51%, 90% { background: #FDE68A; } 95%, 100% { background: #fff; } }
+  @keyframes fa-d-c { 0%, 78% { background: #fff; } 80%, 90% { background: #FDE68A; } 95%, 100% { background: #fff; } }
+  @media (prefers-reduced-motion: reduce) {
+    /* A still frame: the action picked and every part on its path lit. */
+    .fa-d-box, .fa-d-dot, .fa-d-btn, .fa-d-move { animation: none !important; }
+    .fa-d-box { background: #FDE68A; }
+    .fa-d-wire { background: var(--accent); }
+    .fa-d-btn { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .fa-d-move { transform: translate(-60px, -16px); }
   }
-  .steps li {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 16px;
-    font-weight: 800;
-    line-height: 1.2;
-    white-space: nowrap;
-    background: var(--accent-soft);
-    border: 2px solid var(--accent);
-    border-radius: 999px;
-    padding: 3px 14px 3px 4px;
-    animation: ex-fade 0.3s ease;
-  }
-  .steps li .num {
-    flex-shrink: 0;
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 15px;
-  }
-  .steps li.hint { background: none; border-color: transparent; color: var(--muted); padding-left: 14px; animation: none; }
-  .btn-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
 
   @media (max-width: 1100px), (max-height: 620px) {
-    .steps { gap: 6px; min-height: 32px; }
-    .steps li { font-size: 14px; padding: 2px 10px 2px 3px; gap: 6px; }
-    .steps li .num { width: 23px; height: 23px; font-size: 13px; }
-    .btn-row { gap: 8px; }
-    .btn-row .ex-btn { padding: 6px 12px; }
+    .fa-box { gap: 8px; }
+    .fa-actions { gap: 8px; }
+    .fa-actions .ex-btn { padding: 4px 12px; min-height: 42px; }
   }
 </style>
 </head>
-<body class="unit-4">
+<body class="unit-4 ex-v2">
 
-<header class="ex-header">
-  <div>
-    <p class="ex-unit">Computer Systems</p>
-    <h1>Follow the action</h1>
+<!-- SCREEN 1: Start -->
+<section class="ex-screen ex-start" id="ex-start">
+  <h1>Follow the action</h1>
+  <p class="ex-why">Every action uses input, process, output and storage.</p>
+  <div class="ex-demo" aria-hidden="true">
+    <span class="fa-d-wire"></span>
+    <span class="fa-d-box a">Input</span>
+    <span class="fa-d-box b">CPU</span>
+    <span class="fa-d-box c">Output</span>
+    <span class="fa-d-dot"></span>
+    <span class="fa-d-btn">Type a letter</span>
+    <span class="fa-d-move">
+      <svg class="ex-ghost" viewBox="0 0 24 24"><path d="M5 2l14 11h-7.2l4 7.6-3 1.6-4-7.7L5 19z"/></svg>
+    </span>
   </div>
-  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
-</header>
+  <p class="ex-how">Pick an action.</p>
+  <button type="button" class="ex-btn primary big" id="ex-go">Start</button>
+</section>
 
-<main class="ex-main">
-  <section class="ex-goal" aria-label="Your goal">
-    <span class="ex-goal-label">Your goal</span>
-    <p>Pick "Take a photo". Which part does the processing?</p>
-  </section>
-
-  <section class="ex-stage">
-    <svg id="diagram" viewBox="0 0 1100 238" preserveAspectRatio="xMidYMid meet" role="img"
-         aria-label="Diagram of a computer system. Input: keyboard, mouse, camera, microphone. Process: CPU and memory (RAM). Output: speakers, screen, printer. Storage: SSD."></svg>
-    <ol class="steps" id="steps" aria-live="polite" aria-label="Steps"></ol>
-  </section>
-
-  <section class="ex-controls" aria-label="Control">
-    <span class="ex-control-label" id="action-label">Action</span>
-    <div class="btn-row" role="group" aria-labelledby="action-label">
-      <button type="button" class="ex-btn" data-action="type" aria-pressed="false">Type a letter</button>
-      <button type="button" class="ex-btn" data-action="photo" aria-pressed="false">Take a photo</button>
-      <button type="button" class="ex-btn" data-action="print" aria-pressed="false">Print a saved file</button>
-      <button type="button" class="ex-btn" data-action="song" aria-pressed="false">Play a saved song</button>
-      <button type="button" class="ex-btn" data-action="voice" aria-pressed="false">Record your voice</button>
+<!-- SCREEN 2: Explore -->
+<section class="ex-screen" id="ex-explore" hidden>
+  <div class="ex-top">
+    <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
+    <p class="ex-instruction" id="ex-instruction">Take a photo. Then click the part that does the processing.</p>
+    <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
+  </div>
+  <div class="ex-area">
+    <div class="fa-box">
+      <svg id="diagram" viewBox="0 0 1100 238" preserveAspectRatio="xMidYMid meet" role="group"
+           aria-label="Diagram of a computer system. Input: keyboard, mouse, camera, microphone. Process: CPU and memory (RAM). Output: speakers, screen, printer. Storage: SSD."></svg>
+      <div class="fa-actions" id="fa-actions" role="group" aria-label="Actions">
+        <button type="button" class="ex-btn" data-action="type" aria-pressed="false">Type a letter</button>
+        <button type="button" class="ex-btn" data-action="photo" aria-pressed="false">Take a photo</button>
+        <button type="button" class="ex-btn" data-action="print" aria-pressed="false">Print a saved file</button>
+        <button type="button" class="ex-btn" data-action="song" aria-pressed="false">Play a saved song</button>
+        <button type="button" class="ex-btn" data-action="voice" aria-pressed="false">Record your voice</button>
+      </div>
     </div>
-  </section>
-
-  <section class="ex-next" id="ex-next" aria-live="polite">
-    <span class="ex-next-label">Next challenge</span>
-    <p>Find an action that starts with storage instead of an input.</p>
-  </section>
-</main>
-
-<footer class="ex-footer">
-  <span class="ex-answer">Answer the question in Nearpod.</span>
-  <span>Computer Systems</span>
-</footer>
+    <p class="ex-status" id="ex-status" role="status"></p>
+  </div>
+</section>
 
 <script src="shared/explorer.js?v=2"></script>
 <script>
@@ -124,8 +128,7 @@
 
     var NS = "http://www.w3.org/2000/svg";
     var svg = document.getElementById("diagram");
-    var stepsEl = document.getElementById("steps");
-    var buttons = Array.prototype.slice.call(document.querySelectorAll(".btn-row .ex-btn"));
+    var buttons = Array.prototype.slice.call(document.querySelectorAll("#fa-actions .ex-btn"));
     var reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     var ICONS = {
@@ -176,30 +179,21 @@
       "cpu>ssd":        "M596,122 V221 H985 V151"
     };
 
+    /* steps: the one status line shows each step as the dot reaches it. */
     var ACTIONS = {
-      type: {
-        path: ["keyboard", "cpu", "screen"],
-        steps: ["Keyboard (input)", "CPU processes it", "Screen shows it (output)"]
-      },
-      photo: {
-        path: ["camera", "cpu", "screen", "ssd"],
-        /* The CPU sends the photo to the screen and to the SSD,
-           so the last leg starts at the CPU, not the screen. */
-        from: [null, "camera", "cpu", "cpu"],
-        steps: ["Camera (input)", "CPU processes it", "Screen shows it (output)", "SSD saves it (storage)"]
-      },
-      print: {
-        path: ["ssd", "ram", "cpu", "printer"],
-        steps: ["SSD has the file (storage)", "RAM holds it ready", "CPU processes it", "Printer prints it (output)"]
-      },
-      song: {
-        path: ["ssd", "ram", "cpu", "speakers"],
-        steps: ["SSD has the song (storage)", "RAM holds it ready", "CPU processes it", "Speakers play it (output)"]
-      },
-      voice: {
-        path: ["microphone", "cpu", "ssd"],
-        steps: ["Microphone (input)", "CPU processes it", "SSD saves it (storage)"]
-      }
+      type:  { path: ["keyboard", "cpu", "screen"],
+               steps: ["Keyboard (input)", "CPU (process)", "Screen (output)"] },
+      photo: { path: ["camera", "cpu", "screen", "ssd"],
+               /* The CPU sends the photo to the screen and to the SSD,
+                  so the last leg starts at the CPU, not the screen. */
+               from: [null, "camera", "cpu", "cpu"],
+               steps: ["Camera (input)", "CPU (process)", "Screen (output)", "SSD (storage)"] },
+      print: { path: ["ssd", "ram", "cpu", "printer"], storageFirst: true,
+               steps: ["SSD (storage)", "RAM holds the file", "CPU (process)", "Printer (output)"] },
+      song:  { path: ["ssd", "ram", "cpu", "speakers"], storageFirst: true,
+               steps: ["SSD (storage)", "RAM holds the song", "CPU (process)", "Speakers (output)"] },
+      voice: { path: ["microphone", "cpu", "ssd"],
+               steps: ["Microphone (input)", "CPU (process)", "SSD (storage)"] }
     };
 
     function el(name, attrs, html) {
@@ -215,7 +209,7 @@
 
     function build() {
       ZONES.forEach(function (z) {
-        var g = el("g", { "class": "zone" });
+        var g = el("g", { "class": "zone", "aria-hidden": "true" });
         g.appendChild(el("rect", { x: z.x, y: 6, width: z.w, height: 206, rx: 12 }));
         var t = el("text", { x: z.x + z.w / 2, y: 27, "text-anchor": "middle" });
         t.textContent = z.label;
@@ -223,18 +217,18 @@
         svg.appendChild(g);
       });
 
-      var wires = el("g", {});
+      var wires = el("g", { "aria-hidden": "true" });
       Object.keys(WIRES).forEach(function (k) {
         wires.appendChild(el("path", { "class": "wire", d: WIRES[k] }));
       });
       svg.appendChild(wires);
 
-      trailLayer = el("g", {});
+      trailLayer = el("g", { "aria-hidden": "true" });
       svg.appendChild(trailLayer);
 
       Object.keys(COMPS).forEach(function (id) {
         var c = COMPS[id];
-        var g = el("g", { "class": "comp" + (c.big ? " big" : "") });
+        var g = el("g", { "class": "comp" + (c.big ? " big" : ""), "data-comp": id, "aria-label": c.label });
         g.appendChild(el("rect", { "class": "box", x: c.x, y: c.y, width: c.w, height: c.h, rx: 10 }));
         var text;
         if (c.layout === "row") {
@@ -247,47 +241,47 @@
         }
         text.textContent = c.label;
         g.appendChild(text);
+        g.addEventListener("click", function () { pickPart(id); });
+        g.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pickPart(id); }
+        });
         svg.appendChild(g);
         compEls[id] = g;
       });
 
-      dot = el("g", { visibility: "hidden" });
+      dot = el("g", { visibility: "hidden", "aria-hidden": "true" });
       dot.appendChild(el("circle", { id: "dot-halo", r: 15 }));
       dot.appendChild(el("circle", { id: "dot-core", r: 8 }));
       svg.appendChild(dot);
     }
 
-    /* ---------- Run an action ---------- */
+    /* ---------- State ---------- */
     var runId = 0;
+    var current = "";        /* the action picked last */
+    var played = false;      /* an action has finished playing (parts can be clicked) */
+    var photoPlayed = false; /* "Take a photo" has played at least once */
+    var picked = "";         /* the part clicked */
+    var storageDone = false; /* challenge: an action that starts with storage has played */
+
+    function setClickable(on) {
+      Object.keys(compEls).forEach(function (id) {
+        var g = compEls[id];
+        g.classList.toggle("can", on);
+        if (on) { g.setAttribute("role", "button"); g.setAttribute("tabindex", "0"); }
+        else { g.removeAttribute("role"); g.removeAttribute("tabindex"); }
+      });
+    }
 
     function clearAll() {
       runId += 1;
       Object.keys(compEls).forEach(function (id) { compEls[id].classList.remove("lit"); });
       while (trailLayer.firstChild) trailLayer.removeChild(trailLayer.firstChild);
       dot.setAttribute("visibility", "hidden");
-      stepsEl.innerHTML = "";
-    }
-
-    function showHint() {
-      var li = document.createElement("li");
-      li.className = "hint";
-      li.textContent = "Pick an action to see the parts it uses.";
-      stepsEl.appendChild(li);
-    }
-
-    function addStep(n, text) {
-      var li = document.createElement("li");
-      var num = document.createElement("span");
-      num.className = "num";
-      num.textContent = n;
-      li.appendChild(num);
-      li.appendChild(document.createTextNode(text));
-      stepsEl.appendChild(li);
     }
 
     function arrive(action, i) {
       compEls[action.path[i]].classList.add("lit");
-      addStep(i + 1, action.steps[i]);
+      Explorer.status("Step " + (i + 1) + ": " + action.steps[i]);
     }
 
     function makeTrail(from, to) {
@@ -301,25 +295,38 @@
       return action.from ? action.from[i] : action.path[i - 1];
     }
 
-    function run(action) {
+    /* The action has finished playing. */
+    function done(key) {
+      if (key === "photo") photoPlayed = true;
+      if (ACTIONS[key].storageFirst) storageDone = true;
+      if (!played) { played = true; }
+      setClickable(Explorer.step() === 1);
+      Explorer.used();
+    }
+
+    function run(key) {
+      var action = ACTIONS[key];
       clearAll();
       var myRun = runId;
 
       if (reduced.matches) {
         action.path.forEach(function (id, i) {
-          arrive(action, i);
+          compEls[id].classList.add("lit");
           if (i > 0) makeTrail(legStart(action, i), id);
         });
+        Explorer.status(action.steps.map(function (s, i) { return (i + 1) + " " + s; }).join(", "));
+        done(key);
         return;
       }
 
       var SPEED = 520;  /* diagram units per second */
-      var PAUSE = 380;  /* ms the dot waits at each part */
+      var PAUSE = 420;  /* ms the dot waits at each part */
 
       function leg(i) {
         if (myRun !== runId) return;
         if (i >= action.path.length) {
           dot.setAttribute("visibility", "hidden");
+          done(key);
           return;
         }
         var path = makeTrail(legStart(action, i), action.path[i]);
@@ -353,22 +360,73 @@
       setTimeout(function () { leg(1); }, PAUSE);
     }
 
+    function pickAction(key) {
+      current = key;
+      picked = "";   /* the part is clicked after the action, not before */
+      Object.keys(compEls).forEach(function (k) { compEls[k].classList.remove("picked"); });
+      buttons.forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-action") === key ? "true" : "false"); });
+      run(key);
+      Explorer.used();   /* stops the pulse straight away */
+    }
+
     buttons.forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        buttons.forEach(function (b) { b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
-        run(ACTIONS[btn.getAttribute("data-action")]);
-        Explorer.track();
-      });
+      btn.addEventListener("click", function () { pickAction(btn.getAttribute("data-action")); });
     });
+
+    /* Step 1: click a part once an action has played. */
+    function pickPart(id) {
+      if (!played || Explorer.step() !== 1) return;
+      Object.keys(compEls).forEach(function (k) { compEls[k].classList.remove("picked"); });
+      if (id === "cpu") {
+        picked = "cpu";
+        compEls.cpu.classList.add("picked");
+        if (!photoPlayed) Explorer.hint("Now pick Take a photo.");
+        Explorer.used();
+        return;
+      }
+      picked = "";
+      Explorer.hint("That part is not the processor. Watch the dot again.");
+      run(current);
+    }
 
     function reset() {
       buttons.forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
+      Object.keys(compEls).forEach(function (k) { compEls[k].classList.remove("picked"); });
       clearAll();
-      showHint();
+      current = "";
+      played = false;
+      photoPlayed = false;
+      picked = "";
+      storageDone = false;
+      setClickable(false);
+      Explorer.status("");
     }
 
     build();
-    Explorer.init({ unlockAfter: 5, onReset: reset });
+
+    Explorer.setup({
+      /* Step 1: Take a photo has played and the CPU has been clicked. */
+      pulse: "#fa-actions .ex-btn",
+      success: function () { return photoPlayed && picked === "cpu"; },
+      successText: "The CPU does the processing.",
+      hint: "Look for the part in the middle.",
+      hintAfter: 60,
+      onReset: reset,
+      /* Step 2: an action that starts with storage has played. */
+      challenge: {
+        text: "Find an action that starts with storage.",
+        start: function () {
+          storageDone = false;
+          setClickable(false);
+          Object.keys(compEls).forEach(function (k) { compEls[k].classList.remove("picked"); });
+        },
+        success: function () { return storageDone; },
+        successText: "It starts at the SSD, where files are kept.",
+        hint: "Look for the word saved.",
+        pulse: "#fa-actions .ex-btn"
+      }
+    });
+
     reset();
   })();
 </script>

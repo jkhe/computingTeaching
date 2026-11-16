@@ -9,157 +9,193 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared/explorer.css?v=2">
 <style>
-  .ex-stage { flex-direction: column; align-items: stretch; justify-content: center; gap: 6px; padding: 10px 14px 6px; }
-  .lanes { flex: 1; display: flex; flex-direction: column; gap: 6px; min-height: 0; }
-  .lane {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 330px 1fr 220px;
-    align-items: center;
-    gap: 20px;
-    border: 2px solid var(--line);
-    border-radius: 12px;
-    padding: 4px 16px;
+  /* Page-specific styles only. */
+  .st-box {
+    flex: 1 1 0px;
     min-height: 0;
+    width: 100%;
+    max-width: 1160px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
   }
+
+  /* The files: the control, right above the lanes they travel down. */
+  .st-files { flex-shrink: 0; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+  .st-files .ex-btn { display: inline-flex; align-items: center; gap: 8px; }
+  .st-files .ex-btn svg { width: 24px; height: 24px; flex-shrink: 0; }
+  .st-files .ex-btn svg * { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .st-size { font-weight: 700; opacity: 0.85; }
+
+  /* Three lanes, one for each way to send */
+  .lanes { flex: 1 1 0px; min-height: 0; display: flex; flex-direction: column; gap: 8px; }
+  .lane {
+    flex: 1 1 0px;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: 220px 1fr 180px 160px;
+    align-items: center;
+    gap: 18px;
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 4px 16px;
+    background: var(--panel);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .lane.chosen { border-color: var(--accent); background: var(--accent-soft); }
+  .lane.right { border-color: var(--good); background: var(--good-soft); }
   .lane-name { display: flex; align-items: center; gap: 12px; }
-  .lane-name svg { width: 42px; height: 42px; flex-shrink: 0; }
+  .lane-name svg { width: 44px; height: 44px; flex-shrink: 0; }
   .lane-name svg * { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-  .lane-title { font-size: 19px; font-weight: 800; line-height: 1.2; }
-  .lane-sub { font-size: 14px; color: var(--muted); line-height: 1.25; }
-  .lane-mid { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-  .track {
-    position: relative;
-    height: 18px;
-    border-radius: 999px;
-    background: var(--line);
-    overflow: hidden;
-  }
-  .fill {
-    position: absolute; left: 0; top: 0; bottom: 0;
-    width: 0;
-    border-radius: 999px;
-    background: var(--accent);
-  }
+  .lane-title { font-size: 21px; font-weight: 800; line-height: 1.2; }
+  .lane-mid { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .track { position: relative; height: 20px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 999px; background: var(--accent); }
   .lane.blocked .fill { background: var(--bad); }
-  .lane .ex-tag { font-size: 14px; padding: 1px 12px; align-self: flex-start; line-height: 1.4; }
+  .lane .ex-tag { font-size: 15px; padding: 1px 12px; align-self: flex-start; line-height: 1.4; }
   .lane .ex-tag[hidden] { display: none; }
-  .lane-time { text-align: right; line-height: 1.2; }
-  .time-big { font-size: 22px; font-weight: 800; color: var(--text); }
-  .lane.blocked .time-big { color: var(--bad); }
-  .lane.idle .time-big { color: var(--muted); font-size: 18px; }
-  .time-small { font-size: 14px; color: var(--muted); min-height: 17px; }
-  .note { text-align: center; font-size: 14px; color: var(--muted); line-height: 1.3; }
-  .btn-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .time { text-align: right; font-size: 21px; font-weight: 800; line-height: 1.2; }
+  .lane.blocked .time { color: var(--bad); }
+  .send { justify-self: end; }
+  .send[hidden] { display: none; }
+  .send:not([hidden]) { animation: ex-fade 0.3s ease; }
+
+  /* The challenge answers sit in the instruction row. */
+  .st-answers { display: flex; gap: 10px; flex-shrink: 0; animation: ex-fade 0.3s ease; }
+  .st-answers[hidden], .st-answers [hidden] { display: none; }
+  .st-answers .ex-btn.right { background: var(--good); border-color: var(--good); color: #fff; }
+
+  /* ----- Start screen demo: a ghost pointer picks a file, the bars fill ----- */
+  .st-d-file { position: absolute; left: 22px; top: 22px; width: 104px; height: 36px; line-height: 32px; text-align: center; font-size: 15px; font-weight: 800; border: 2px solid var(--line-strong); border-radius: 10px; background: #fff; animation: st-d-file 3.4s ease infinite; }
+  .st-d-track { position: absolute; left: 22px; right: 22px; height: 14px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .st-d-track.a { top: 80px; } .st-d-track.b { top: 106px; } .st-d-track.c { top: 132px; }
+  .st-d-track span { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 999px; background: var(--accent); }
+  .st-d-track.a span { background: var(--bad); animation: st-d-a 3.4s ease-out infinite; }
+  .st-d-track.b span { animation: st-d-b 3.4s linear infinite; }
+  .st-d-track.c span { animation: st-d-c 3.4s linear infinite; }
+  .st-d-move { position: absolute; left: 150px; top: 60px; animation: st-d-move 3.4s ease-in-out infinite; }
+  .st-d-move .ex-ghost { left: 0; top: 0; }
+  @keyframes st-d-move { 0%, 8% { transform: translate(0, 0); } 30%, 85% { transform: translate(-70px, -26px); } 100% { transform: translate(0, 0); } }
+  @keyframes st-d-file { 0%, 30% { background: #fff; color: var(--text); border-color: var(--line-strong); } 34%, 88% { background: var(--accent); color: #fff; border-color: var(--accent); } 94%, 100% { background: #fff; color: var(--text); border-color: var(--line-strong); } }
+  @keyframes st-d-a { 0%, 34% { width: 0; } 44%, 90% { width: 14%; } 96%, 100% { width: 0; } }
+  @keyframes st-d-b { 0%, 34% { width: 0; } 80%, 90% { width: 100%; } 96%, 100% { width: 0; } }
+  @keyframes st-d-c { 0%, 34% { width: 0; } 52%, 90% { width: 100%; } 96%, 100% { width: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    /* A still frame: the file picked and the bars filled. */
+    .st-d-move, .st-d-file, .st-d-track span { animation: none !important; }
+    .st-d-move { transform: translate(-70px, -26px); }
+    .st-d-file { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .st-d-track.a span { width: 14%; } .st-d-track.b span { width: 70%; } .st-d-track.c span { width: 100%; }
+  }
 
   @media (max-width: 1100px), (max-height: 620px) {
-    .lane { grid-template-columns: 250px 1fr 190px; gap: 14px; padding: 3px 12px; }
-    .lane-name svg { width: 34px; height: 34px; }
-    .lane-title { font-size: 17px; }
-    .lane-sub { font-size: 13px; }
-    .time-big { font-size: 19px; }
-    .lane.idle .time-big { font-size: 16px; }
-    .time-small, .note, .lane .ex-tag { font-size: 13px; }
-    .track { height: 14px; }
-    .lane-mid { gap: 3px; }
+    .st-box { gap: 8px; }
+    .lanes { gap: 6px; }
+    .lane { grid-template-columns: 190px 1fr 150px 140px; gap: 12px; padding: 3px 12px; }
+    .lane-name svg { width: 36px; height: 36px; }
+    .lane-title { font-size: 18px; }
+    .time { font-size: 18px; }
+    .lane .ex-tag { font-size: 13px; }
+    .track { height: 16px; }
+    .lane-mid { gap: 4px; }
+    .st-files .ex-btn { padding: 4px 12px; min-height: 42px; }
+    .st-answers { gap: 6px; }
+    .st-answers .ex-btn { padding: 4px 10px; }
   }
 </style>
 </head>
-<body class="unit-3">
+<body class="unit-3 ex-v2">
 
-<header class="ex-header">
-  <div>
-    <p class="ex-unit">Finding and Selecting Information</p>
-    <h1>Send a file</h1>
+<!-- SCREEN 1: Start -->
+<section class="ex-screen ex-start" id="ex-start">
+  <h1>Send a file</h1>
+  <p class="ex-why">Big files need the right way to send them.</p>
+  <div class="ex-demo" aria-hidden="true">
+    <span class="st-d-file">Song</span>
+    <span class="st-d-track a"><span></span></span>
+    <span class="st-d-track b"><span></span></span>
+    <span class="st-d-track c"><span></span></span>
+    <span class="st-d-move">
+      <svg class="ex-ghost" viewBox="0 0 24 24"><path d="M5 2l14 11h-7.2l4 7.6-3 1.6-4-7.7L5 19z"/></svg>
+    </span>
   </div>
-  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
-</header>
+  <p class="ex-how">Pick a file.</p>
+  <button type="button" class="ex-btn primary big" id="ex-go">Start</button>
+</section>
 
-<main class="ex-main">
-  <section class="ex-goal" aria-label="Your goal">
-    <span class="ex-goal-label">Your goal</span>
-    <p>Which is the best way to send a 1.5 GB film to someone in another town?</p>
-  </section>
-
-  <section class="ex-stage" aria-live="polite">
-    <div class="lanes">
-
-      <div class="lane idle" id="lane-email">
-        <div class="lane-name">
-          <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="9" width="30" height="22" rx="3"/><path d="M6 11l14 11 14-11"/></svg>
-          <div>
-            <p class="lane-title">Email attachment</p>
-            <p class="lane-sub">Most email services stop at about 25&nbsp;MB</p>
-          </div>
-        </div>
-        <div class="lane-mid">
-          <div class="track"><div class="fill"></div></div>
-          <span class="ex-tag" hidden></span>
-        </div>
-        <div class="lane-time"><p class="time-big">Pick a file</p><p class="time-small"></p></div>
+<!-- SCREEN 2: Explore -->
+<section class="ex-screen" id="ex-explore" hidden>
+  <div class="ex-top">
+    <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
+    <p class="ex-instruction" id="ex-instruction">Pick the film. Which way should you send it?</p>
+    <div class="st-answers" id="st-answers" role="group" aria-label="Answers" hidden>
+      <button type="button" class="ex-btn small" data-a="offline">No internet</button>
+      <button type="button" class="ex-btn small" data-a="town">Sending to another town</button>
+      <button type="button" class="ex-btn small" data-a="teacher">Emailing your teacher</button>
+    </div>
+    <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
+  </div>
+  <div class="ex-area">
+    <div class="st-box">
+      <div class="st-files" id="st-files" role="group" aria-label="File to send">
+        <button type="button" class="ex-btn" data-mb="4" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4 17l5-5 4 4 3-3 4 4"/></svg>Photo <span class="st-size">4 MB</span></button>
+        <button type="button" class="ex-btn" data-mb="8" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17V5l11-2v12"/><circle cx="6.5" cy="17" r="2.5"/><circle cx="17.5" cy="15" r="2.5"/></svg>Song <span class="st-size">8 MB</span></button>
+        <button type="button" class="ex-btn" data-mb="300" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>Class project <span class="st-size">300 MB</span></button>
+        <button type="button" class="ex-btn" data-mb="1500" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5v14M17 5v14M3 9.5h4M3 14.5h4M17 9.5h4M17 14.5h4"/></svg>Film <span class="st-size">1.5 GB</span></button>
       </div>
 
-      <div class="lane idle" id="lane-cloud">
-        <div class="lane-name">
-          <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 30a7 7 0 0 1-1-13.9A10 10 0 0 1 30 14a8 8 0 0 1-1 16z"/><path d="M20 27v-9M16 21l4-4 4 4"/></svg>
-          <div>
+      <div class="lanes" aria-live="polite">
+        <div class="lane" id="lane-email">
+          <div class="lane-name">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="5" y="9" width="30" height="22" rx="3"/><path d="M6 11l14 11 14-11"/></svg>
+            <p class="lane-title">Email</p>
+          </div>
+          <div class="lane-mid">
+            <div class="track"><div class="fill"></div></div>
+            <span class="ex-tag bad" hidden>Too big</span>
+          </div>
+          <p class="time"></p>
+          <button type="button" class="ex-btn small send" data-way="email" hidden>Send this way</button>
+        </div>
+
+        <div class="lane" id="lane-cloud">
+          <div class="lane-name">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 30a7 7 0 0 1-1-13.9A10 10 0 0 1 30 14a8 8 0 0 1-1 16z"/><path d="M20 27v-9M16 21l4-4 4 4"/></svg>
             <p class="lane-title">Cloud link</p>
-            <p class="lane-sub">Upload, then share the link</p>
           </div>
+          <div class="lane-mid">
+            <div class="track"><div class="fill"></div></div>
+            <span class="ex-tag good" hidden>They download it from the link</span>
+          </div>
+          <p class="time"></p>
+          <button type="button" class="ex-btn small send" data-way="cloud" hidden>Send this way</button>
         </div>
-        <div class="lane-mid">
-          <div class="track"><div class="fill"></div></div>
-          <span class="ex-tag good">Share the link and they can download it</span>
-        </div>
-        <div class="lane-time"><p class="time-big">Pick a file</p><p class="time-small"></p></div>
-      </div>
 
-      <div class="lane idle" id="lane-usb">
-        <div class="lane-name">
-          <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="12" y="15" width="16" height="21" rx="3"/><path d="M15 15V5h10v10M18.5 9.5v1M21.5 9.5v1"/></svg>
-          <div>
+        <div class="lane" id="lane-usb">
+          <div class="lane-name">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="12" y="15" width="16" height="21" rx="3"/><path d="M15 15V5h10v10M18.5 9.5v1M21.5 9.5v1"/></svg>
             <p class="lane-title">USB stick</p>
-            <p class="lane-sub">Copy the file, then carry it</p>
           </div>
+          <div class="lane-mid">
+            <div class="track"><div class="fill"></div></div>
+            <span class="ex-tag ok" hidden>Hand it over in person</span>
+          </div>
+          <p class="time"></p>
+          <button type="button" class="ex-btn small send" data-way="usb" hidden>Send this way</button>
         </div>
-        <div class="lane-mid">
-          <div class="track"><div class="fill"></div></div>
-          <span class="ex-tag ok">You have to hand it over in person</span>
-        </div>
-        <div class="lane-time"><p class="time-big">Pick a file</p><p class="time-small"></p></div>
       </div>
-
     </div>
-    <p class="note">Times are estimates for a typical school connection.</p>
-  </section>
-
-  <section class="ex-controls" aria-label="Control">
-    <span class="ex-control-label" id="file-label">File to send</span>
-    <div class="btn-row" role="group" aria-labelledby="file-label">
-      <button type="button" class="ex-btn" data-mb="4" aria-pressed="false">Photo (4 MB)</button>
-      <button type="button" class="ex-btn" data-mb="8" aria-pressed="false">Song (8 MB)</button>
-      <button type="button" class="ex-btn" data-mb="300" aria-pressed="false">Class project (300 MB)</button>
-      <button type="button" class="ex-btn" data-mb="1500" aria-pressed="false">Film (1.5 GB)</button>
-    </div>
-  </section>
-
-  <section class="ex-next" id="ex-next" aria-live="polite">
-    <span class="ex-next-label">Next challenge</span>
-    <p>When might a USB stick be the better choice?</p>
-  </section>
-</main>
-
-<footer class="ex-footer">
-  <span class="ex-answer">Answer the question in Nearpod.</span>
-  <span>Finding and Selecting Information</span>
-</footer>
+    <p class="ex-status" id="ex-status" role="status"></p>
+  </div>
+</section>
 
 <script src="shared/explorer.js?v=2"></script>
 <script>
   (function () {
     "use strict";
 
-    /* ESTIMATES AND ASSUMPTIONS (all in one place)
+    /* ESTIMATES AND ASSUMPTIONS (all in one place; every time on the page
+       says "about")
        - Email and cloud upload: about 2.5 MB per second
          (a typical school connection, about 20 Mbps upload).
        - USB stick copy: about 30 MB per second (an ordinary USB stick).
@@ -173,16 +209,24 @@
     var NET_MB_PER_S = 2.5;
     var USB_MB_PER_S = 30;
     var EMAIL_LIMIT_MB = 25;
+    var FILM_MB = 1500;
 
-    var buttons = Array.prototype.slice.call(document.querySelectorAll(".btn-row .ex-btn"));
+    var files = Array.prototype.slice.call(document.querySelectorAll("#st-files .ex-btn"));
+    var sends = Array.prototype.slice.call(document.querySelectorAll(".send"));
+    var answersEl = document.getElementById("st-answers");
+    var answers = Array.prototype.slice.call(answersEl.querySelectorAll(".ex-btn"));
     var lanes = {
       email: document.getElementById("lane-email"),
       cloud: document.getElementById("lane-cloud"),
       usb: document.getElementById("lane-usb")
     };
 
+    var picked = 0;        /* size of the picked file in MB, 0 = none */
+    var way = "";          /* the lane chosen for the film */
+    var answer = "";       /* the challenge answer chosen */
+
     function words(seconds) {
-      if (seconds < 1) return "less than 1 second";
+      if (seconds < 1) return "under 1 second";
       if (seconds < 60) {
         var s = Math.round(seconds);
         return "about " + s + (s === 1 ? " second" : " seconds");
@@ -202,68 +246,118 @@
       fill.style.transition = "none";
       fill.style.width = "0";
       void fill.offsetWidth; /* restart the animation */
-      fill.style.transition = "width " + seconds.toFixed(2) + "s linear";
+      fill.style.transition = seconds ? "width " + seconds.toFixed(2) + "s linear" : "none";
       fill.style.width = percent + "%";
     }
 
-    function setTime(lane, big, small) {
-      lane.querySelector(".time-big").textContent = big;
-      lane.querySelector(".time-small").textContent = small;
-    }
-
-    function clearLane(lane) {
-      var fill = lane.querySelector(".fill");
-      fill.style.transition = "none";
-      fill.style.width = "0";
-      lane.classList.remove("blocked");
-      lane.classList.add("idle");
-      setTime(lane, "Pick a file", "");
-    }
-
-    function send(mb) {
+    function paint(animate) {
+      var mb = picked;
       var netTime = mb / NET_MB_PER_S;
       var usbTime = mb / USB_MB_PER_S;
-      var emailTag = lanes.email.querySelector(".ex-tag");
+      var tooBig = mb > EMAIL_LIMIT_MB;
 
-      Object.keys(lanes).forEach(function (k) { lanes[k].classList.remove("idle", "blocked"); });
+      Object.keys(lanes).forEach(function (k) {
+        var lane = lanes[k];
+        lane.classList.toggle("blocked", k === "email" && tooBig);
+        lane.classList.toggle("chosen", way === k && !(k === "cloud" && mb === FILM_MB));
+        lane.classList.toggle("right", way === k && k === "cloud" && mb === FILM_MB);
+        lane.querySelector(".ex-tag").hidden = !mb || (k === "email" && !tooBig);
+      });
 
-      if (mb > EMAIL_LIMIT_MB) {
-        lanes.email.classList.add("blocked");
-        setBar(lanes.email, 12, 0.5);
-        setTime(lanes.email, "Cannot send", "");
-        emailTag.className = "ex-tag bad";
-        emailTag.textContent = "Too big";
+      if (!mb) {
+        Object.keys(lanes).forEach(function (k) {
+          setBar(lanes[k], 0, 0);
+          lanes[k].querySelector(".time").textContent = "";
+        });
       } else {
-        setBar(lanes.email, 100, barSeconds(netTime));
-        setTime(lanes.email, words(netTime), "to send");
-        emailTag.className = "ex-tag good";
-        emailTag.textContent = "Small enough to send";
+        if (animate) {
+          setBar(lanes.email, tooBig ? 12 : 100, tooBig ? 0.5 : barSeconds(netTime));
+          setBar(lanes.cloud, 100, barSeconds(netTime));
+          setBar(lanes.usb, 100, barSeconds(usbTime));
+        }
+        lanes.email.querySelector(".time").textContent = tooBig ? "Cannot send" : words(netTime);
+        lanes.cloud.querySelector(".time").textContent = words(netTime);
+        lanes.usb.querySelector(".time").textContent = words(usbTime);
       }
-      emailTag.hidden = false;
 
-      setBar(lanes.cloud, 100, barSeconds(netTime));
-      setTime(lanes.cloud, words(netTime), "to upload");
+      /* The lanes can be chosen once the film is picked. */
+      sends.forEach(function (s) { s.hidden = mb !== FILM_MB; });
 
-      setBar(lanes.usb, 100, barSeconds(usbTime));
-      setTime(lanes.usb, words(usbTime), "to copy");
+      files.forEach(function (b) { b.setAttribute("aria-pressed", Number(b.getAttribute("data-mb")) === mb ? "true" : "false"); });
     }
 
-    buttons.forEach(function (btn) {
+    files.forEach(function (btn) {
       btn.addEventListener("click", function () {
-        buttons.forEach(function (b) { b.setAttribute("aria-pressed", b === btn ? "true" : "false"); });
-        send(Number(btn.getAttribute("data-mb")));
-        Explorer.track();
+        var mb = Number(btn.getAttribute("data-mb"));
+        if (mb !== picked) way = "";
+        picked = mb;
+        paint(true);
+        Explorer.used();
       });
     });
 
-    function reset() {
-      buttons.forEach(function (b) { b.setAttribute("aria-pressed", "false"); });
-      Object.keys(lanes).forEach(function (k) { clearLane(lanes[k]); });
-      lanes.email.querySelector(".ex-tag").hidden = true;
+    var GUIDE = { email: "Too big for email.", usb: "They live in another town." };
+    sends.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        way = btn.getAttribute("data-way");
+        paint(false);
+        if (GUIDE[way]) Explorer.hint(GUIDE[way]);
+        Explorer.used();
+      });
+    });
+
+    /* Challenge: one answer in the instruction row. */
+    answers.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        answer = btn.getAttribute("data-a");
+        paintAnswers();
+        if (answer !== "offline") Explorer.hint("Think about what email and cloud links need.");
+        Explorer.used();
+      });
+    });
+
+    function paintAnswers() {
+      var done = answer === "offline";
+      answers.forEach(function (b) {
+        var a = b.getAttribute("data-a");
+        b.classList.toggle("right", done && a === "offline");
+        b.classList.toggle("selected", !done && a === answer);
+        /* Once it is answered, only the right answer stays, to make room. */
+        b.hidden = done && a !== "offline";
+      });
     }
 
-    Explorer.init({ unlockAfter: 5, onReset: reset });
-    reset();
+    Explorer.setup({
+      /* Step 1: the film, sent by cloud link. */
+      pulse: "#st-files .ex-btn",
+      success: function () { return picked === FILM_MB && way === "cloud"; },
+      successText: "A cloud link can send a big file a long way.",
+      hint: "Try the biggest file.",
+      hintAfter: 60,
+      onReset: function () {
+        picked = 0;
+        way = "";
+        answer = "";
+        answersEl.hidden = true;
+        paintAnswers();
+        paint(false);
+      },
+      /* Step 2: when a USB stick is better. */
+      challenge: {
+        text: "When is a USB stick the better choice?",
+        start: function () { answer = ""; paintAnswers(); answersEl.hidden = false; },
+        success: function () { return answer === "offline"; },
+        successText: "A USB stick works with no internet.",
+        hint: "Think about what email and cloud links need.",
+        pulse: "#st-answers .ex-btn"
+      }
+    });
+
+    /* The answers go straight after the sentence, before "I'm finished". */
+    var instruction = document.getElementById("ex-instruction");
+    instruction.parentNode.insertBefore(answersEl, instruction.nextSibling);
+
+    paint(false);
   })();
 </script>
 </body>

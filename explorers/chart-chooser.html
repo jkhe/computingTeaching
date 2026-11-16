@@ -9,15 +9,28 @@
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared/explorer.css?v=2">
 <style>
-  .ex-stage { flex-direction: column; align-items: stretch; gap: 4px; padding: 10px 14px 8px; }
+  /* The three chart buttons sit right on top of the chart they change. */
+  .cc-panel {
+    flex: 1 1 0px;
+    min-height: 0;
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: var(--panel);
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 16px 6px;
+  }
+  .cc-btns { flex-shrink: 0; display: flex; gap: 12px; justify-content: center; }
+  .cc-btns .ex-btn { min-width: 150px; }
   #chart { flex: 1 1 0; height: 0; min-height: 0; width: 100%; display: block; }
   #chart text { font-family: var(--font); fill: var(--text); }
-  .c-title { font-size: 17px; font-weight: 800; }
-  .c-title .q { fill: var(--accent); }
-  .c-axis-title { font-size: 14px; font-weight: 800; fill: var(--muted) !important; letter-spacing: 0.5px; }
-  .c-tick { font-size: 13px; font-weight: 700; fill: var(--muted) !important; }
-  .c-cat { font-size: 14px; font-weight: 800; }
-  .c-val { font-size: 16px; font-weight: 800; }
+  .c-axis-title { font-size: 15px; font-weight: 800; fill: var(--muted) !important; letter-spacing: 0.5px; }
+  .c-tick { font-size: 14px; font-weight: 700; fill: var(--muted) !important; }
+  .c-cat { font-size: 16px; font-weight: 800; }
+  .c-val { font-size: 18px; font-weight: 800; }
   .c-grid { stroke: var(--line); stroke-width: 1.5; }
   .c-axis { stroke: #6B7280; stroke-width: 2; }
   .c-bar { fill: var(--accent); transform-box: fill-box; transform-origin: 50% 100%; animation: grow 0.5s ease-out both; }
@@ -29,71 +42,77 @@
   .c-slice { stroke: #fff; stroke-width: 2.5; stroke-linejoin: round; }
   .c-leader { stroke: #6B7280; stroke-width: 1.5; }
   .c-cell { fill: #F9FAFB; stroke: var(--line-strong); stroke-width: 2; }
-  .c-cell-val { font-size: 30px; font-weight: 800; }
+  .c-cell-val { font-size: 34px; font-weight: 800; }
   #chart.no-anim * { animation: none !important; }
   @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
   @keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
   @keyframes spin { from { transform: scale(0.8) rotate(-25deg); opacity: 0; } to { transform: none; opacity: 1; } }
 
-  .verdict {
-    flex-shrink: 0;
-    text-align: center;
-    font-size: 18px;
-    font-weight: 800;
-    line-height: 1.3;
-    min-height: 26px;
+  /* ----- Start screen demo: a pointer picks "Bar", the bars grow ----- */
+  .cc-demo .d-btn {
+    position: absolute; top: 120px; width: 84px; height: 34px; border-radius: 8px;
+    border: 2px solid var(--line-strong); background: #fff;
+    font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center;
   }
-  .verdict.hint { color: var(--muted); }
-  .btn-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-  .ex-next p { flex: 1; }
-  .ex-next .ex-btn { flex-shrink: 0; }
+  .cc-demo .d-btn.b1 { left: 14px; animation: cc-d-on 3.4s steps(1, end) infinite; }
+  .cc-demo .d-btn.b2 { left: 116px; }
+  .cc-demo .d-btn.b3 { left: 218px; }
+  .cc-demo .d-bars { position: absolute; left: 60px; right: 60px; top: 16px; height: 90px; display: flex; align-items: flex-end; gap: 16px; border-bottom: 2px solid #6B7280; }
+  .cc-demo .d-bars i { flex: 1; background: var(--accent); border-radius: 3px 3px 0 0; transform-origin: 50% 100%; animation: cc-d-grow 3.4s ease-out infinite; }
+  .cc-demo .d-bars i:nth-child(1) { height: 60%; }
+  .cc-demo .d-bars i:nth-child(2) { height: 25%; }
+  .cc-demo .d-bars i:nth-child(3) { height: 95%; }
+  .cc-demo .d-bars i:nth-child(4) { height: 45%; }
+  .cc-demo .ex-ghost { left: 60px; top: 136px; animation: cc-d-ptr 3.4s ease-in-out infinite; }
+  @keyframes cc-d-on { 0% { background: #fff; color: var(--text); } 30% { background: var(--accent); color: #fff; border-color: var(--accent); } 92% { background: #fff; color: var(--text); border-color: var(--line-strong); } }
+  @keyframes cc-d-grow { 0%, 30% { transform: scaleY(0); } 50%, 90% { transform: scaleY(1); } 100% { transform: scaleY(0); } }
+  @keyframes cc-d-ptr { 0% { transform: translate(150px, 10px); } 26%, 90% { transform: none; } 100% { transform: translate(150px, 10px); } }
+  @media (prefers-reduced-motion: reduce) {
+    /* A still frame: "Bar" chosen, the bars drawn, the pointer on the button. */
+    .cc-demo .d-btn.b1, .cc-demo .d-bars i, .cc-demo .ex-ghost { animation: none !important; }
+    .cc-demo .d-btn.b1 { background: var(--accent); color: #fff; border-color: var(--accent); }
+  }
 
   @media (max-width: 1100px), (max-height: 620px) {
-    .verdict { font-size: 16px; min-height: 22px; }
+    .cc-panel { padding: 8px 12px 4px; gap: 6px; }
+    .cc-btns .ex-btn { min-width: 130px; }
   }
 </style>
 </head>
-<body class="unit-6">
+<body class="unit-6 ex-v2">
 
-<header class="ex-header">
-  <div>
-    <p class="ex-unit">Handling Data</p>
-    <h1>Choose the chart</h1>
+<!-- SCREEN 1: Start -->
+<section class="ex-screen ex-start" id="ex-start">
+  <h1>Choose the chart</h1>
+  <p class="ex-why">The right chart answers a question at a glance.</p>
+  <div class="ex-demo cc-demo" aria-hidden="true">
+    <span class="d-bars"><i></i><i></i><i></i><i></i></span>
+    <span class="d-btn b1">Bar</span><span class="d-btn b2">Line</span><span class="d-btn b3">Pie</span>
+    <svg class="ex-ghost" viewBox="0 0 24 24"><path d="M5 2l14 11h-7.2l4 7.6-3 1.6-4-7.7L5 19z"/></svg>
   </div>
-  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
-</header>
+  <p class="ex-how">Pick a chart.</p>
+  <button type="button" class="ex-btn primary big" id="ex-go">Start</button>
+</section>
 
-<main class="ex-main">
-  <section class="ex-goal" aria-label="Your goal">
-    <span class="ex-goal-label">Your goal</span>
-    <p>Pick the chart that answers "Which place was loudest?" the fastest.</p>
-  </section>
-
-  <section class="ex-stage" aria-live="polite">
-    <svg id="chart" viewBox="0 0 1100 225" preserveAspectRatio="xMidYMid meet" role="img" aria-label=""></svg>
-    <p class="verdict" id="verdict"></p>
-  </section>
-
-  <section class="ex-controls" aria-label="Control">
-    <span class="ex-control-label" id="chart-label">Chart</span>
-    <div class="btn-row" role="group" aria-labelledby="chart-label">
-      <button type="button" class="ex-btn" data-type="bar" aria-pressed="false">Bar chart</button>
-      <button type="button" class="ex-btn" data-type="line" aria-pressed="false">Line chart</button>
-      <button type="button" class="ex-btn" data-type="pie" aria-pressed="false">Pie chart</button>
+<!-- SCREEN 2: Explore -->
+<section class="ex-screen" id="ex-explore" hidden>
+  <div class="ex-top">
+    <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
+    <p class="ex-instruction" id="ex-instruction">Which chart shows the loudest place fastest?</p>
+    <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
+  </div>
+  <div class="ex-area">
+    <div class="cc-panel">
+      <div class="cc-btns" role="group" aria-label="Chart">
+        <button type="button" class="ex-btn" data-type="bar" aria-pressed="false">Bar chart</button>
+        <button type="button" class="ex-btn" data-type="line" aria-pressed="false">Line chart</button>
+        <button type="button" class="ex-btn" data-type="pie" aria-pressed="false">Pie chart</button>
+      </div>
+      <svg id="chart" viewBox="0 0 1100 260" preserveAspectRatio="xMidYMid meet" role="img" aria-label=""></svg>
     </div>
-  </section>
-
-  <section class="ex-next" id="ex-next" aria-live="polite">
-    <span class="ex-next-label">Next challenge</span>
-    <p>New question, new data. Which chart is best now?</p>
-    <button type="button" class="ex-btn small" id="swap">New question</button>
-  </section>
-</main>
-
-<footer class="ex-footer">
-  <span class="ex-answer">Answer the question in Nearpod.</span>
-  <span>Handling Data</span>
-</footer>
+    <p class="ex-status" id="ex-status" role="status"></p>
+  </div>
+</section>
 
 <script src="shared/explorer.js?v=2"></script>
 <script>
@@ -104,11 +123,11 @@
        levels, which run from 0 to 255. */
     var SETS = [
       {
-        question: "Which place was loudest?",
         xTitle: "Place",
         tableHead: "Sound level in each place",
         labels: ["By the tennis courts", "Lavender garden", "Basketball cage", "Middle of the park", "Cafe by the road", "Playground"],
         values: [142, 38, 176, 64, 158, 201],
+        best: "bar",
         verdict: {
           bar: "You can see the tallest bar straight away.",
           line: "The line suggests the sound changed over time, but these are different places.",
@@ -116,11 +135,11 @@
         }
       },
       {
-        question: "When was the playground loudest, and did it get louder or quieter after that?",
         xTitle: "Time",
         tableHead: "Sound level in the playground at lunchtime",
         labels: ["12:00", "12:10", "12:20", "12:30", "12:40", "12:50", "13:00"],
         values: [60, 95, 180, 210, 190, 120, 70],
+        best: "line",
         verdict: {
           bar: "The bars show the loudest time. A line shows the rise and fall more clearly.",
           line: "The line shows the sound rising, then falling, over time.",
@@ -132,26 +151,24 @@
     /* Pie colours are different from each other, and every slice also has
        a written label, so colour is never the only clue. */
     var PIE = ["#0F766E", "#C2410C", "#4338CA", "#CA8A04", "#BE185D", "#0369A1", "#4D7C0F"];
+    var NAMES = { bar: "Bar chart", line: "Line chart", pie: "Pie chart" };
 
     var svg = document.getElementById("chart");
-    var verdictEl = document.getElementById("verdict");
-    var swapBtn = document.getElementById("swap");
-    var goalEl = document.querySelector(".ex-goal p");
-    var buttons = Array.prototype.slice.call(document.querySelectorAll(".btn-row .ex-btn"));
+    var buttons = Array.prototype.slice.call(document.querySelectorAll(".cc-btns .ex-btn"));
 
     var setIndex = 0;
     var type = null;
 
     /* The drawing is 1100 units wide. Its height (H) follows the space
-       on screen, so the chart always fills the stage. */
-    var H = 225;
-    var X0 = 84, X1 = 1084, Y0 = 170, YTOP = 36, YMAX = 250;
+       on screen, so the chart always fills the panel. */
+    var H = 260;
+    var X0 = 84, X1 = 1084, Y0 = 200, YTOP = 24, YMAX = 250;
 
     function measure() {
       var box = svg.getBoundingClientRect();
-      var h = box.width > 0 ? 1100 * box.height / box.width : 225;
-      H = Math.round(Math.max(190, Math.min(430, h)));
-      Y0 = H - 55;
+      var h = box.width > 0 ? 1100 * box.height / box.width : 260;
+      H = Math.round(Math.max(200, Math.min(520, h)));
+      Y0 = H - 58;
       svg.setAttribute("viewBox", "0 0 1100 " + H);
     }
 
@@ -159,37 +176,33 @@
     function yOf(v) { return Y0 - (v / YMAX) * (Y0 - YTOP); }
     function r1(n) { return Math.round(n * 10) / 10; }
 
-    function title(set) {
-      return '<text class="c-title" x="6" y="17">Question: <tspan class="q">' + esc(set.question) + '</tspan></text>';
-    }
-
     function axes(set) {
       var out = "";
       for (var v = 0; v <= YMAX; v += 50) {
         var y = r1(yOf(v));
         if (v > 0) out += '<line class="c-grid" x1="' + X0 + '" x2="' + X1 + '" y1="' + y + '" y2="' + y + '"/>';
-        out += '<text class="c-tick" x="' + (X0 - 8) + '" y="' + (y + 4.5) + '" text-anchor="end">' + v + '</text>';
+        out += '<text class="c-tick" x="' + (X0 - 8) + '" y="' + (y + 5) + '" text-anchor="end">' + v + '</text>';
       }
       out += '<line class="c-axis" x1="' + X0 + '" x2="' + X0 + '" y1="' + YTOP + '" y2="' + Y0 + '"/>';
       out += '<line class="c-axis" x1="' + X0 + '" x2="' + X1 + '" y1="' + Y0 + '" y2="' + Y0 + '"/>';
       out += '<text class="c-axis-title" transform="translate(20,' + ((Y0 + YTOP) / 2) + ') rotate(-90)" text-anchor="middle">Sound level</text>';
-      out += '<text class="c-axis-title" x="' + ((X0 + X1) / 2) + '" y="' + (H - 8) + '" text-anchor="middle">' + set.xTitle + '</text>';
+      out += '<text class="c-axis-title" x="' + ((X0 + X1) / 2) + '" y="' + (H - 6) + '" text-anchor="middle">' + set.xTitle + '</text>';
       var band = (X1 - X0) / set.values.length;
       set.labels.forEach(function (label, i) {
-        out += '<text class="c-cat" x="' + r1(X0 + band * (i + 0.5)) + '" y="' + (Y0 + 19) + '" text-anchor="middle">' + esc(label) + '</text>';
+        out += '<text class="c-cat" x="' + r1(X0 + band * (i + 0.5)) + '" y="' + (Y0 + 22) + '" text-anchor="middle">' + esc(label) + '</text>';
       });
       return out;
     }
 
     function barChart(set) {
       var band = (X1 - X0) / set.values.length;
-      var w = Math.min(90, band * 0.55);
+      var w = Math.min(96, band * 0.55);
       var out = axes(set);
       set.values.forEach(function (v, i) {
         var cx = X0 + band * (i + 0.5);
         var y = yOf(v);
         out += '<rect class="c-bar" x="' + r1(cx - w / 2) + '" y="' + r1(y) + '" width="' + r1(w) + '" height="' + r1(Y0 - y) + '" rx="4" style="animation-delay:' + (i * 40) + 'ms"/>';
-        out += '<text class="c-val c-fade" x="' + r1(cx) + '" y="' + r1(y - 6) + '" text-anchor="middle">' + v + '</text>';
+        out += '<text class="c-val c-fade" x="' + r1(cx) + '" y="' + r1(y - 7) + '" text-anchor="middle">' + v + '</text>';
       });
       return out;
     }
@@ -201,14 +214,14 @@
       out += '<path class="c-line" pathLength="1" d="M' + pts.map(function (p) { return p[0] + "," + p[1]; }).join(" L") + '"/>';
       pts.forEach(function (p, i) {
         out += '<circle class="c-point c-fade" cx="' + p[0] + '" cy="' + p[1] + '" r="6"/>';
-        out += '<text class="c-val c-fade" x="' + p[0] + '" y="' + (p[1] - 13) + '" text-anchor="middle">' + set.values[i] + '</text>';
+        out += '<text class="c-val c-fade" x="' + p[0] + '" y="' + (p[1] - 14) + '" text-anchor="middle">' + set.values[i] + '</text>';
       });
       return out;
     }
 
     function pieChart(set) {
-      var cy = Math.round((H + 28) / 2);
-      var cx = 550, r = Math.round(Math.min(150, (H - 28) / 2 - 24));
+      var cy = Math.round(H / 2);
+      var cx = 550, r = Math.round(Math.min(170, H / 2 - 26));
       var total = set.values.reduce(function (a, b) { return a + b; }, 0);
       var slices = "", labels = "";
       var angle = -Math.PI / 2;
@@ -230,86 +243,76 @@
       return '<g class="c-pie">' + slices + '</g><g class="c-fade">' + labels + '</g>';
     }
 
-    /* Start state: the plain data, before any chart is chosen. */
+    /* Before a chart is picked: the plain numbers. */
     function dataTable(set) {
       var n = set.values.length;
       var band = 1088 / n;
-      var top = Math.round((H + 24) / 2) - 68;
+      var top = Math.round(H / 2) - 72;
       var out = '<text class="c-axis-title" x="550" y="' + top + '" text-anchor="middle">' + esc(set.tableHead) + '</text>';
       set.values.forEach(function (v, i) {
         var x = 6 + band * i;
-        out += '<rect class="c-cell" x="' + r1(x + 5) + '" y="' + (top + 16) + '" width="' + r1(band - 10) + '" height="104" rx="10"/>';
-        out += '<text class="c-cat" x="' + r1(x + band / 2) + '" y="' + (top + 48) + '" text-anchor="middle">' + esc(set.labels[i]) + '</text>';
-        out += '<text class="c-cell-val" x="' + r1(x + band / 2) + '" y="' + (top + 96) + '" text-anchor="middle">' + v + '</text>';
+        out += '<rect class="c-cell" x="' + r1(x + 5) + '" y="' + (top + 16) + '" width="' + r1(band - 10) + '" height="112" rx="10"/>';
+        out += '<text class="c-cat" x="' + r1(x + band / 2) + '" y="' + (top + 50) + '" text-anchor="middle">' + esc(set.labels[i]) + '</text>';
+        out += '<text class="c-cell-val" x="' + r1(x + band / 2) + '" y="' + (top + 104) + '" text-anchor="middle">' + v + '</text>';
       });
       return out;
     }
 
-    var NAMES = { bar: "Bar chart", line: "Line chart", pie: "Pie chart" };
-
-    var GOALS = [
-      'Pick the chart that answers "Which place was loudest?" the fastest.',
-      'Pick the chart that answers the new question the fastest.'
-    ];
-
-    function render(quiet) {
+    function draw(quiet) {
       var set = SETS[setIndex];
-      var body;
       measure();
       svg.classList.toggle("no-anim", quiet === true);
-      goalEl.textContent = GOALS[setIndex];
-      if (type === "bar") body = barChart(set);
-      else if (type === "line") body = lineChart(set);
-      else if (type === "pie") body = pieChart(set);
-      else body = dataTable(set);
-
-      svg.innerHTML = title(set) + body;
+      var body = type === "bar" ? barChart(set) : type === "line" ? lineChart(set) : type === "pie" ? pieChart(set) : dataTable(set);
+      svg.innerHTML = body;
       svg.setAttribute("aria-label",
         (type ? NAMES[type] : "Data") + ". " + set.labels.map(function (l, i) { return l + " " + set.values[i]; }).join(", ") + ".");
-
-      if (type) {
-        verdictEl.textContent = set.verdict[type];
-        verdictEl.className = "verdict";
-      } else {
-        verdictEl.textContent = "Pick a chart to draw this data.";
-        verdictEl.className = "verdict hint";
-      }
       buttons.forEach(function (b) {
         b.setAttribute("aria-pressed", b.getAttribute("data-type") === type ? "true" : "false");
       });
-      swapBtn.textContent = setIndex === 0 ? "New question" : "First question";
+    }
+
+    function render() {
+      draw();
+      var set = SETS[setIndex];
+      if (!type) Explorer.status("");
+      else Explorer.status(set.verdict[type], type === set.best ? "good" : "");
     }
 
     buttons.forEach(function (btn) {
       btn.addEventListener("click", function () {
         type = btn.getAttribute("data-type");
         render();
-        Explorer.track();
+        Explorer.used();
       });
     });
 
-    swapBtn.addEventListener("click", function () {
-      setIndex = setIndex === 0 ? 1 : 0;
-      render();
-    });
+    function bestPicked() { return type === SETS[setIndex].best; }
 
-    Explorer.init({
-      unlockAfter: 4,
-      onReset: function () {
-        setIndex = 0;
-        type = null;
-        render();
+    Explorer.setup({
+      pulse: ".cc-btns .ex-btn",
+      success: bestPicked,
+      successText: SETS[0].verdict.bar,
+      hint: "Try each chart.",
+      hintAfter: 60,
+      onShow: function () { draw(true); },
+      onReset: function () { setIndex = 0; type = null; render(); },
+      challenge: {
+        text: "New data: the playground over lunchtime. Which chart shows the change best?",
+        start: function () { setIndex = 1; type = null; render(); },
+        pulse: ".cc-btns .ex-btn",
+        success: bestPicked,
+        successText: SETS[1].verdict.line,
+        hint: "Try each chart."
       }
     });
 
     render();
 
-    /* Redraw (without the animation) when the space changes, for example
-       when the Next challenge card appears. */
+    /* Redraw (without the animation) when the space changes. */
     if (window.ResizeObserver) {
       new ResizeObserver(function () {
         var box = svg.getBoundingClientRect();
-        if (box.width > 0 && Math.abs(1100 * box.height / box.width - H) > 3) render(true);
+        if (box.width > 0 && Math.abs(1100 * box.height / box.width - H) > 3) draw(true);
       }).observe(svg);
     }
   })();

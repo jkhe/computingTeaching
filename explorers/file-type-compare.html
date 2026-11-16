@@ -10,18 +10,10 @@
 <link rel="stylesheet" href="shared/explorer.css?v=2">
 <style>
   /* Page-specific styles only. */
-  /* The stage takes exactly the space left over, so the page never scrolls.
-     The canvases are then sized in JS to fit the stage. */
-  .ex-main { min-height: 0; }
-  .ex-stage {
-    flex: 1 1 0px;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 6px;
-    padding: 10px;
-  }
+  body { --hint: #6D28D9; }   /* the pink accent reads like an error, so hints are purple */
 
-  .ft-row { display: flex; justify-content: center; gap: 28px; }
+  .ft-row { display: flex; justify-content: center; gap: 28px; flex-shrink: 0; }
+  .ft-col { display: flex; flex-direction: column; gap: 8px; }
   .ft-panel { display: flex; align-items: stretch; gap: 12px; }
   .ft-view { display: block; border-radius: 6px; border: 2px solid var(--line-strong); }
 
@@ -30,27 +22,29 @@
     flex-direction: column;
     align-items: flex-start;
     justify-content: space-between;
-    width: 158px;
+    width: 160px;
   }
   .ft-name {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: 800;
     line-height: 1;
     color: #fff;
     background: var(--text);
     border-radius: 8px;
-    padding: 5px 12px;
+    padding: 6px 14px;
   }
   .ft-zoomwrap { display: flex; flex-direction: column; gap: 2px; }
-  .ft-zoomcap { font-size: 14px; font-weight: 800; line-height: 18px; color: var(--muted); }
+  .ft-zoomcap { font-size: 15px; font-weight: 800; line-height: 18px; color: var(--muted); }
   .ft-zoom {
     display: block;
     border: 3px solid var(--text);
     border-radius: 6px;
     image-rendering: pixelated;
+    transition: box-shadow 0.2s;
   }
+  .ft-zoom.nudge { box-shadow: 0 0 0 4px #6D28D9; }
   .ft-size {
-    font-size: 28px;
+    font-size: 26px;
     font-weight: 800;
     line-height: 1.1;
     color: var(--text);
@@ -58,89 +52,114 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .ft-compare {
-    font-size: 19px;
-    font-weight: 800;
-    line-height: 26px;
-    height: 26px;
-    color: var(--accent);
-    text-align: center;
-    white-space: nowrap;
-  }
+  /* The slider sits under the JPG poster, because that is what it changes. */
+  .ft-under { display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 4px; }
+  .ft-under span { font-size: 15px; font-weight: 800; color: var(--muted); flex-shrink: 0; }
+  .ft-under input[type="range"].ex-slider { flex: 1; width: auto; min-width: 0; }
 
-  .ex-controls input[type="range"].ex-slider { width: min(480px, 42vw); }
-  .ex-readout { min-width: 7.5em; text-align: left; font-variant-numeric: tabular-nums; }
+  /* The two answer buttons for the challenge live in the instruction row. */
+  .ft-answers { display: flex; gap: 12px; flex-shrink: 0; }
+  .ft-answers[hidden] { display: none; }
+  .ft-answers .ex-btn { min-width: 84px; }
+
+  /* ----- Start screen demo: the slider goes down, the edge gets rough ----- */
+  .ft-d-edge { position: absolute; left: 110px; top: 22px; width: 100px; height: 64px; background: #F89A5C; border-radius: 6px; overflow: hidden; }
+  .ft-d-edge::before { content: ""; position: absolute; left: 0; top: 0; width: 52px; height: 64px; background: #1B1440; }
+  .ft-d-rough { position: absolute; left: 44px; top: 0; width: 8px; height: 8px; background: #8A5750; opacity: 0; animation: ft-d-rough 3.4s ease-in-out infinite;
+    box-shadow: 8px 8px 0 #5A3848, 0 16px 0 #B87858, 8px 24px 0 #6A4048, -8px 32px 0 #4A2C48, 8px 40px 0 #A06850, 0 48px 0 #7A4C4C, 16px 16px 0 #D88858, -8px 8px 0 #3A2448, 16px 48px 0 #C88058, 8px 56px 0 #5A3848; }
+  .ft-d-track { position: absolute; left: 60px; right: 60px; top: 117px; height: 12px; border-radius: 999px; background: var(--line); }
+  .ft-d-thumb { position: absolute; left: 60px; top: 108px; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.3); transform: translateX(170px); animation: ft-d-thumb 3.4s ease-in-out infinite; }
+  .ft-d-thumb .ex-ghost { left: 8px; top: 12px; }
+  .ft-d-arrow { display: none; }
+  @keyframes ft-d-thumb { 0%, 15% { transform: translateX(170px); } 55%, 85% { transform: translateX(10px); } 100% { transform: translateX(170px); } }
+  @keyframes ft-d-rough { 0%, 20% { opacity: 0; } 55%, 85% { opacity: 1; } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    /* A still frame: the slider turned down, the rough edge, and an arrow. */
+    .ft-d-thumb, .ft-d-rough { animation: none !important; }
+    .ft-d-thumb { transform: translateX(10px); }
+    .ft-d-rough { opacity: 1; }
+    .ft-d-arrow { display: block; position: absolute; left: 102px; top: 145px; width: 110px; height: 4px; background: var(--accent); }
+    .ft-d-arrow::before { content: ""; position: absolute; left: -6px; top: -8px; border: 10px solid transparent; border-left: 0; border-right: 14px solid var(--accent); }
+  }
 
   @media (max-width: 1100px), (max-height: 620px) {
     .ft-row { gap: 16px; }
+    .ft-col { gap: 6px; }
     .ft-panel { gap: 10px; }
     .ft-side { width: 140px; }
-    .ft-size { font-size: 25px; }
-    .ft-name { font-size: 18px; }
-    .ft-compare { font-size: 17px; }
+    .ft-size { font-size: 23px; }
+    .ft-name { font-size: 19px; padding: 5px 12px; }
+    .ft-under { height: 36px; }
   }
 </style>
 </head>
-<body class="unit-2">
+<body class="unit-2 ex-v2">
 
-<header class="ex-header">
-  <div>
-    <p class="ex-unit">Working with Text and Images</p>
-    <h1>PNG or JPG?</h1>
+<!-- SCREEN 1: Start -->
+<section class="ex-screen ex-start" id="ex-start">
+  <h1>PNG or JPG?</h1>
+  <p class="ex-why">The file type you export changes how your poster looks.</p>
+  <div class="ex-demo" aria-hidden="true">
+    <span class="ft-d-edge"><span class="ft-d-rough"></span></span>
+    <span class="ft-d-track"></span>
+    <span class="ft-d-arrow"></span>
+    <span class="ft-d-thumb">
+      <svg class="ex-ghost" viewBox="0 0 24 24"><path d="M5 2l14 11h-7.2l4 7.6-3 1.6-4-7.7L5 19z"/></svg>
+    </span>
   </div>
-  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
-</header>
+  <p class="ex-how">Move the slider.</p>
+  <button type="button" class="ex-btn primary big" id="ex-go">Start</button>
+</section>
 
-<main class="ex-main">
-  <section class="ex-goal" aria-label="Your goal">
-    <span class="ex-goal-label">Your goal</span>
-    <p>Find the lowest JPG quality where the zoomed-in edge still looks clean.</p>
-  </section>
-
-  <section class="ex-stage" id="ft-stage">
+<!-- SCREEN 2: Explore -->
+<section class="ex-screen" id="ex-explore" hidden>
+  <div class="ex-top">
+    <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
+    <p class="ex-instruction" id="ex-instruction">Find the lowest quality where the zoomed-in edge still looks clean.</p>
+    <div class="ft-answers" id="ft-answers" hidden>
+      <button type="button" class="ex-btn" data-answer="png">PNG</button>
+      <button type="button" class="ex-btn" data-answer="jpg">JPG</button>
+    </div>
+    <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
+  </div>
+  <div class="ex-area" id="ft-area">
     <div class="ft-row">
-      <div class="ft-panel">
-        <canvas class="ft-view" id="ft-png-view" role="img" aria-label="The poster saved as a PNG. The area around the logo is see-through."></canvas>
-        <div class="ft-side">
-          <span class="ft-name">PNG</span>
-          <div class="ft-zoomwrap">
-            <span class="ft-zoomcap">Zoomed in</span>
-            <canvas class="ft-zoom" id="ft-png-zoom" aria-hidden="true"></canvas>
+      <div class="ft-col">
+        <div class="ft-panel">
+          <canvas class="ft-view" id="ft-png-view" role="img" aria-label="The poster saved as a PNG. The area around the logo is see-through."></canvas>
+          <div class="ft-side">
+            <span class="ft-name">PNG</span>
+            <div class="ft-zoomwrap">
+              <span class="ft-zoomcap">Zoomed in</span>
+              <canvas class="ft-zoom" id="ft-png-zoom" aria-hidden="true"></canvas>
+            </div>
+            <span class="ft-size" id="ft-png-size">&nbsp;</span>
           </div>
-          <span class="ft-size" id="ft-png-size">&nbsp;</span>
         </div>
+        <div class="ft-under" aria-hidden="true"></div>
       </div>
-      <div class="ft-panel">
-        <canvas class="ft-view" id="ft-jpg-view" role="img" aria-label="The poster saved as a JPG. The area around the logo is a white box."></canvas>
-        <div class="ft-side">
-          <span class="ft-name">JPG</span>
-          <div class="ft-zoomwrap">
-            <span class="ft-zoomcap">Zoomed in</span>
-            <canvas class="ft-zoom" id="ft-jpg-zoom" aria-hidden="true"></canvas>
+      <div class="ft-col">
+        <div class="ft-panel">
+          <canvas class="ft-view" id="ft-jpg-view" role="img" aria-label="The poster saved as a JPG. The area around the logo is a white box."></canvas>
+          <div class="ft-side">
+            <span class="ft-name">JPG</span>
+            <div class="ft-zoomwrap">
+              <span class="ft-zoomcap">Zoomed in</span>
+              <canvas class="ft-zoom" id="ft-jpg-zoom" aria-hidden="true"></canvas>
+            </div>
+            <span class="ft-size" id="ft-jpg-size">&nbsp;</span>
           </div>
-          <span class="ft-size" id="ft-jpg-size">&nbsp;</span>
+        </div>
+        <div class="ft-under">
+          <span aria-hidden="true">Low</span>
+          <input class="ex-slider" type="range" id="ft-slider" min="5" max="100" step="5" value="100" aria-label="JPG quality">
+          <span aria-hidden="true">High</span>
         </div>
       </div>
     </div>
-    <p class="ft-compare" id="ft-compare" aria-live="polite">&nbsp;</p>
-  </section>
-
-  <section class="ex-controls" aria-label="Control">
-    <label class="ex-control-label" for="ft-slider">JPG quality</label>
-    <input class="ex-slider" type="range" id="ft-slider" min="5" max="100" step="5" value="100">
-    <span class="ex-readout" id="ft-readout" aria-live="polite"></span>
-  </section>
-
-  <section class="ex-next" id="ex-next" aria-live="polite">
-    <span class="ex-next-label">Next challenge</span>
-    <p>Your logo needs a see-through background. Which file type should you export?</p>
-  </section>
-</main>
-
-<footer class="ex-footer">
-  <span class="ex-answer">Answer the question in Nearpod.</span>
-  <span>Working with Text and Images</span>
-</footer>
+    <p class="ex-status" id="ex-status" role="status"></p>
+  </div>
+</section>
 
 <script src="shared/explorer.js?v=2"></script>
 <script>
@@ -161,20 +180,21 @@
          same browser and font. */
     var SRC_W = 640, SRC_H = 480;
     var START_QUALITY = 100;
-    var NEXT_CARD_HEIGHT = 51;   // height of the one-line Next challenge card in px
+    var LOW = 30, HIGH = 80;      // success: the pupil has been at or below LOW and at or above HIGH
     var FONT_STACK = '"Arial Rounded MT Bold", "Arial Rounded MT", "Nunito", Arial, sans-serif';
     var HOLE = { x: 506, y: 14, s: 120 };   // the see-through square round the logo
 
-    var stage = document.getElementById("ft-stage");
+    var area = document.getElementById("ft-area");
+    var statusEl = document.getElementById("ex-status");
     var pngView = document.getElementById("ft-png-view");
     var jpgView = document.getElementById("ft-jpg-view");
     var pngZoom = document.getElementById("ft-png-zoom");
     var jpgZoom = document.getElementById("ft-jpg-zoom");
     var pngSizeEl = document.getElementById("ft-png-size");
     var jpgSizeEl = document.getElementById("ft-jpg-size");
-    var compareEl = document.getElementById("ft-compare");
     var slider = document.getElementById("ft-slider");
-    var readout = document.getElementById("ft-readout");
+    var answers = document.getElementById("ft-answers");
+    var answerBtns = answers.querySelectorAll("[data-answer]");
 
     var source = document.createElement("canvas");
     source.width = SRC_W; source.height = SRC_H;
@@ -186,6 +206,10 @@
     var jpgImage = null;          // the decoded JPG that is on screen
     var jpgToken = 0;
     var lastValue = START_QUALITY;
+    var beenLow = false, beenHigh = true;   // the page starts at 100%
+    var focus = "text";           // what the zoom shows: "text" or "logo"
+    var answer = "";              // the challenge answer chosen
+    var nudgeTimer = null;
     var textBox = { left: 100, top: 220 };   // set when the title is drawn
     var view = { w: 320, h: 240, zoom: 144 };
 
@@ -310,10 +334,20 @@
       }
     }
 
+    /* The part of the poster shown in the zoom box: the edge of the title,
+       or (in the challenge) the bottom-left corner of the logo. */
     function zoomRegion() {
       var s = Math.round(view.zoom / 4);        // 4 times bigger on screen
-      var x = Math.max(0, Math.min(SRC_W - s, textBox.left - Math.round(s * 0.3)));
-      var y = Math.max(0, Math.min(SRC_H - s, textBox.top - Math.round(s * 0.3)));
+      var x, y;
+      if (focus === "logo") {
+        x = HOLE.x - Math.round(s * 0.25);
+        y = HOLE.y + HOLE.s - Math.round(s * 0.75);
+      } else {
+        x = textBox.left - Math.round(s * 0.3);
+        y = textBox.top - Math.round(s * 0.3);
+      }
+      x = Math.max(0, Math.min(SRC_W - s, x));
+      y = Math.max(0, Math.min(SRC_H - s, y));
       return { x: x, y: y, s: s };
     }
 
@@ -337,36 +371,24 @@
       ctx.strokeRect(r.x * k, r.y * k, r.s * k, r.s * k);
 
       // Zoom: every image pixel drawn 4 times bigger, smoothing off.
-      if (zoomCanvas.width !== r.s || zoomCanvas.height !== r.s) { zoomCanvas.width = r.s; zoomCanvas.height = r.s; }
+      // The see-through part shows the same checkerboard as the poster.
+      if (zoomCanvas.width !== r.s * 4) { zoomCanvas.width = r.s * 4; zoomCanvas.height = r.s * 4; }
       var zctx = zoomCanvas.getContext("2d");
+      checker(zctx, r.s * 4, r.s * 4, 18);
       zctx.imageSmoothingEnabled = false;
-      zctx.clearRect(0, 0, r.s, r.s);
-      zctx.drawImage(image, r.x, r.y, r.s, r.s, 0, 0, r.s, r.s);
+      zctx.drawImage(image, r.x, r.y, r.s, r.s, 0, 0, r.s * 4, r.s * 4);
     }
 
-    function compareText() {
-      if (!pngBytes || !jpgBytes) return " ";
-      var ratio = pngBytes / jpgBytes;
-      if (ratio >= 1.5) return "The JPG is " + Math.round(ratio) + " times smaller";
-      if (ratio > 1.05) return "The JPG is a bit smaller";
-      if (ratio >= 0.95) return "The two files are about the same size";
-      return "The JPG is bigger";
-    }
-
-    function showNumbers(q) {
-      readout.textContent = "Quality " + q + "%";
-      slider.setAttribute("aria-valuetext", "Quality " + q + " percent, JPG " + kb(jpgBytes));
-      pngSizeEl.textContent = kb(pngBytes);
-      jpgSizeEl.textContent = kb(jpgBytes);
-      compareEl.textContent = compareText();
-    }
+    function qualityText() { return "JPG quality: " + slider.value + "%"; }
 
     /* Make the real JPG at this quality, measure it, then show it. */
     function encode() {
       var q = Number(slider.value);
       var url = flat.toDataURL("image/jpeg", q / 100);
       jpgBytes = dataUrlBytes(url);
-      showNumbers(q);
+      pngSizeEl.textContent = kb(pngBytes);
+      jpgSizeEl.textContent = kb(jpgBytes);
+      slider.setAttribute("aria-valuetext", q + " percent. JPG file " + kb(jpgBytes) + ". PNG file " + kb(pngBytes) + ".");
       var token = ++jpgToken;
       var img = new Image();
       img.onload = function () {
@@ -377,27 +399,30 @@
       img.src = url;
     }
 
+    /* Size the posters to fill the space above the status line. */
     function layout() {
-      var cs = getComputedStyle(stage);
-      var innerH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-      var innerW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      // Keep room for the Next challenge card so nothing changes size when it arrives.
-      if (!document.getElementById("ex-next").classList.contains("show")) {
-        innerH -= NEXT_CARD_HEIGHT + (parseFloat(getComputedStyle(stage.parentNode).rowGap) || 12);
-      }
-      var row = stage.querySelector(".ft-row");
-      var side = stage.querySelector(".ft-side");
+      if (!area.clientHeight) return;   /* the Explore screen is not showing */
+      var cs = getComputedStyle(area);
+      var innerH = area.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+      var innerW = area.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      var row = area.querySelector(".ft-row");
+      var col = area.querySelector(".ft-col");
+      var side = area.querySelector(".ft-side");
+      var under = area.querySelector(".ft-under");
       var rowGap = parseFloat(getComputedStyle(row).columnGap) || 28;
+      var colGap = parseFloat(getComputedStyle(col).rowGap) || 8;
       var panelGap = parseFloat(getComputedStyle(side.parentNode).columnGap) || 12;
+      var areaGap = parseFloat(cs.rowGap) || 10;
       var sideW = side.offsetWidth;
 
-      var h = Math.floor(innerH - 26 - 6 - 4);            // compare line, gap, borders
-      h = Math.max(150, Math.min(300, h));
+      var h = Math.floor(innerH - statusEl.offsetHeight - areaGap - under.offsetHeight - colGap - 6);
+      h = Math.max(150, Math.min(380, h));
       var w = Math.round(h * 4 / 3);
-      var maxW = Math.floor((innerW - rowGap) / 2 - sideW - panelGap - 4);
+      var maxW = Math.floor((innerW - rowGap) / 2 - sideW - panelGap - 6);
       if (w > maxW) { w = maxW; h = Math.round(w * 3 / 4); }
 
-      // Zoom box: as big as fits beside the name and the size, in steps of 4.
+      // Zoom box: as wide as the side column, and short enough to leave room
+      // for the name above and the size below. A multiple of 4.
       var zoom = Math.min(sideW - 6, h + 4 - 34 - 20 - 36 - 16);
       zoom = Math.max(88, Math.floor(zoom / 4) * 4);
       view = { w: w, h: h, zoom: zoom };
@@ -417,33 +442,92 @@
       encode();
     }
 
+    function refresh() { layout(); repaint(); }
+
     slider.addEventListener("input", function () {
       var v = Number(slider.value);
       if (v === lastValue) return;
       lastValue = v;
+      if (v <= LOW) beenLow = true;
+      if (v >= HIGH) beenHigh = true;
       encode();
-      Explorer.track();
+      Explorer.status(qualityText());
+      Explorer.used();          // stops the pulse and checks for success
     });
 
-    Explorer.init({
-      unlockAfter: 8,
+    function nudgeJpgZoom() {
+      clearTimeout(nudgeTimer);
+      jpgZoom.classList.add("nudge");
+      nudgeTimer = setTimeout(function () { jpgZoom.classList.remove("nudge"); }, 6000);
+    }
+
+    for (var i = 0; i < answerBtns.length; i++) {
+      answerBtns[i].addEventListener("click", function () {
+        var a = this.getAttribute("data-answer");
+        if (a === "png") {
+          answer = "png";
+          answers.hidden = true;     // makes room for "I'm finished" in the same row
+          Explorer.used();
+        } else {
+          Explorer.used();
+          nudgeJpgZoom();
+          Explorer.hint("Look at the logo corner in the JPG.");
+        }
+      });
+    }
+
+    function setFocus(f) {
+      focus = f;
+      repaint();
+    }
+
+    Explorer.setup({
+      /* Step 1: the pupil has seen a low quality AND a high quality. */
+      pulse: "#ft-slider",
+      success: function () { return beenLow && beenHigh; },
+      successText: "Stop where the edge still looks clean.",
+      hint: "Watch the zoomed-in edge as you slide.",
+      hintAfter: 60,
+      onShow: refresh,
       onReset: function () {
         slider.value = START_QUALITY;
         lastValue = START_QUALITY;
+        beenLow = false;
+        beenHigh = true;
+        answer = "";
+        answers.hidden = true;
+        clearTimeout(nudgeTimer);
+        jpgZoom.classList.remove("nudge");
+        focus = "text";
         encode();
+        repaint();
+        Explorer.status(qualityText());
+      },
+      /* Step 2: choose PNG for a see-through logo. */
+      challenge: {
+        text: "Your logo needs a see-through background. Which file type?",
+        start: function () {
+          answer = "";
+          answers.hidden = false;
+          setFocus("logo");
+        },
+        success: function () { return answer === "png"; },
+        successText: "PNG keeps the see-through background.",
+        hint: "Look at the logo corner in the JPG.",
+        pulse: "#ft-answers .ex-btn"
       }
     });
 
     if (window.ResizeObserver) {
-      new ResizeObserver(function () { layout(); repaint(); }).observe(stage);
+      new ResizeObserver(refresh).observe(area);
     } else {
-      window.addEventListener("resize", function () { layout(); repaint(); });
+      window.addEventListener("resize", refresh);
     }
 
     // Draw straight away, then again once the rounded font has loaded so the
     // poster text matches the page.
-    layout();
     build();
+    Explorer.status(qualityText());
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(build);
       if (document.fonts.load) {
