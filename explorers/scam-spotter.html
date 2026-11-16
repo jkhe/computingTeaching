@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/explorer.css?v=2">
+<link rel="stylesheet" href="shared/explorer.css?v=3">
 <style>
   /* Page-specific styles only. */
   body { --pulse: #4338CA; }
@@ -132,7 +132,7 @@
   </div>
 </section>
 
-<script src="shared/explorer.js?v=2"></script>
+<script src="shared/explorer.js?v=3"></script>
 <script>
   (function () {
     "use strict";
@@ -317,6 +317,7 @@
     }
 
     Explorer.setup({
+      keyword: { word: "Phishing", meaning: "A fake message that tries to trick you into giving information." },
       /* Step 1: all 6 signs found in the first message. */
       pulse: "#sc-mail",
       success: allFound,

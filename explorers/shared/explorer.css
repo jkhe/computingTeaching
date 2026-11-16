@@ -451,3 +451,42 @@ body.ex-v2 { display: block; height: 100%; min-height: 0; overflow: hidden; }
   .ex-v2 .ex-status { font-size: 22px; }
   .ex-v2 .ex-area { padding: 2px 16px 10px; gap: 8px; }
 }
+
+/* ---------- v2 additions: key word card, read aloud, real-tool bridge ---------- */
+.ex-v2 .ex-title-row { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.ex-v2 .ex-key {
+  display: flex; align-items: center; gap: 14px; text-align: left;
+  background: var(--panel); border: 2px solid var(--line); border-radius: var(--radius);
+  padding: 8px 18px 8px 8px; max-width: 34em;
+}
+.ex-v2 .ex-key img { width: 72px; height: 72px; border-radius: 10px; flex-shrink: 0; }
+.ex-v2 .ex-key p { font-size: 20px; line-height: 1.3; }
+.ex-v2 .ex-key strong { color: var(--accent); font-weight: 800; }
+.ex-v2 .ex-speak {
+  flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%;
+  border: 2px solid var(--line-strong); background: var(--panel); color: var(--text);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  vertical-align: middle;
+}
+.ex-v2 .ex-speak:hover { border-color: var(--accent); background: var(--accent-soft); }
+.ex-v2 .ex-speak svg { width: 24px; height: 24px; fill: currentColor; }
+.ex-v2 .ex-bridge { justify-content: center; gap: 18px; padding: 16px 24px; text-align: center; }
+.ex-v2 .ex-bridge h1 { font-size: 40px; line-height: 1.1; }
+.ex-v2 .ex-bridge p { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 12px; justify-content: center; }
+.ex-v2 .ex-shot {
+  position: relative; width: min(1000px, 92vw); overflow: hidden;
+  border: 2px solid var(--line-strong); border-radius: 14px; background: #fff;
+}
+.ex-v2 .ex-shot img { position: absolute; top: 0; height: 100%; max-width: none; }
+.ex-v2 .ex-ring {
+  position: absolute; top: 6%; height: 88%; border: 4px solid #7C3AED; border-radius: 12px;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.25); animation: ex-ring 1.6s ease-in-out infinite;
+}
+@keyframes ex-ring { 50% { box-shadow: 0 0 0 10px rgba(124, 58, 237, 0.12); } }
+@media (max-width: 900px), (max-height: 620px) {
+  .ex-v2 .ex-key img { width: 56px; height: 56px; }
+  .ex-v2 .ex-key p { font-size: 17px; }
+  .ex-v2 .ex-bridge h1 { font-size: 32px; }
+  .ex-v2 .ex-bridge p { font-size: 20px; }
+  .ex-v2 .ex-speak { width: 40px; height: 40px; }
+}

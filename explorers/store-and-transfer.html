@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/explorer.css?v=2">
+<link rel="stylesheet" href="shared/explorer.css?v=3">
 <style>
   /* Page-specific styles only. */
   .st-box {
@@ -190,7 +190,7 @@
   </div>
 </section>
 
-<script src="shared/explorer.js?v=2"></script>
+<script src="shared/explorer.js?v=3"></script>
 <script>
   (function () {
     "use strict";
@@ -329,6 +329,7 @@
     }
 
     Explorer.setup({
+      keyword: { word: "Transfer", meaning: "Moving a file from one place to another." },
       /* Step 1: the film, sent by cloud link. */
       pulse: "#st-files .ex-btn",
       success: function () { return picked === FILM_MB && way === "cloud"; },
