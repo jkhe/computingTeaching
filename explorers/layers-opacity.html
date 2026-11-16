@@ -10,173 +10,118 @@
 <link rel="stylesheet" href="shared/explorer.css?v=2">
 <style>
   /* Page-specific styles only. */
-  /* The stage takes exactly the space left over, so the page never scrolls.
-     The poster is then sized in JS to fit the stage. */
-  .ex-main { min-height: 0; }
-  .ex-stage { flex: 1 1 0px; padding: 10px 16px; gap: 30px; align-items: flex-start; }
+  body { --hint: #6D28D9; }   /* hints in purple, so they never look like an error */
 
+  .lo-row { display: flex; align-items: flex-start; justify-content: center; gap: 26px; flex-shrink: 0; }
   .lo-svg { display: block; }
   .lo-svg text { font-family: var(--font); font-weight: 800; }
-
-  .lo-poster {
-    flex-shrink: 0;
-    border: 2px solid var(--line-strong);
-    border-radius: 8px;
-    overflow: hidden;
-  }
+  .lo-poster { flex-shrink: 0; border: 2px solid var(--line-strong); border-radius: 8px; overflow: hidden; }
 
   /* The stack of layers: top card is at the front. */
-  .lo-stack-col {
-    width: 250px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-  }
+  .lo-stack-col { width: 220px; flex-shrink: 0; display: flex; flex-direction: column; }
   .lo-end {
-    height: 22px;
-    font-size: 13px;
-    font-weight: 800;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    text-align: center;
-    line-height: 22px;
+    height: 22px; line-height: 22px; font-size: 13px; font-weight: 800; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--muted); text-align: center;
   }
   .lo-stack { position: relative; flex: 1; }
   .lo-card {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    display: flex;
-    align-items: center;
-    gap: 12px;
+    position: absolute; left: 0; right: 0; top: 0;
+    display: flex; align-items: center; gap: 10px;
     padding: 3px 10px 3px 4px;
-    background: var(--panel);
-    border: 2px solid var(--line-strong);
-    border-radius: 10px;
-    font-size: 18px;
-    font-weight: 800;
+    background: var(--panel); border: 2px solid var(--line-strong); border-radius: 10px;
+    font-size: 18px; font-weight: 800;
     transition: transform 0.3s ease;
   }
-  .lo-card.photo {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
-    z-index: 2;
-  }
-  .lo-thumb {
-    height: 100%;
-    aspect-ratio: 4 / 3;
-    flex-shrink: 0;
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid var(--line-strong);
-    background: #E5E7EB;
-  }
+  .lo-card.photo { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16); z-index: 2; }
+  .lo-thumb { height: 100%; aspect-ratio: 4 / 3; flex-shrink: 0; border-radius: 6px; overflow: hidden; border: 1px solid var(--line-strong); background: #E5E7EB; }
   .lo-thumb svg { width: 100%; height: 100%; }
-  .lo-card .lo-pc { margin-left: auto; font-size: 15px; color: var(--accent); }
+  .lo-card .lo-pc { margin-left: auto; font-size: 16px; color: var(--accent); }
 
-  /* What the pupil can see right now. */
-  .lo-info {
-    width: 240px;
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    text-align: center;
+  /* The one control: a slider standing next to the stack, so its handle
+     sits right beside the photo card. The challenge swaps in the opacity
+     slider in the same place. */
+  .lo-ctl { position: relative; width: 48px; flex-shrink: 0; }
+  .lo-ctl input[type="range"].ex-slider {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    margin: 0;
   }
-  .ex-tag.lo-tag { font-size: 26px; line-height: 1.2; padding: 7px 20px; border-width: 3px; white-space: nowrap; }
-  .lo-msg { font-size: 19px; font-weight: 800; line-height: 1.3; min-height: 3.9em; }
+  .lo-ctl input[hidden] { display: none; }
 
-  /* The one control: a slider with three named stops. */
-  .lo-slide { display: flex; flex-direction: column; gap: 4px; width: 320px; }
-  .lo-slide input[type="range"].ex-slider { width: 100%; }
-  .lo-ticks { position: relative; height: 20px; margin: 0 17px; font-size: 15px; font-weight: 800; color: var(--muted); }
-  .lo-ticks span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
-  .lo-ticks span.on { color: var(--accent); }
-  .ex-readout { min-width: 4.5em; text-align: left; }
-
-  .ex-next p { flex: 1; }
-  .lo-op { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-  .lo-op label { font-size: 16px; font-weight: 800; }
-  .lo-op input[type="range"].ex-slider { width: 210px; }
-  .lo-op .ex-readout { min-width: 3.2em; font-size: 20px; }
+  /* ----- Start screen demo: drag the handle down, the photo card moves back ----- */
+  .lo-demo { width: 330px; }
+  .lo-d-poster { position: absolute; left: 16px; top: 44px; width: 112px; height: 84px; border-radius: 6px; background: #1E2A4A; overflow: hidden; }
+  .lo-d-title { position: absolute; left: 0; right: 0; top: 30px; text-align: center; color: #fff; font-weight: 800; font-size: 17px; }
+  .lo-d-photo { position: absolute; left: 8px; top: 8px; right: 8px; bottom: 8px; background: linear-gradient(#5DB3EA, #CFEBFA 60%, #7CC47F 60%); animation: lo-d-photo 3.4s ease-in-out infinite; }
+  .lo-d-card { position: absolute; left: 146px; width: 110px; height: 36px; border: 2px solid var(--line-strong); border-radius: 8px; background: #fff; font-size: 15px; font-weight: 800; line-height: 32px; padding-left: 10px; }
+  .lo-d-card.photo { top: 22px; border-color: var(--accent); background: var(--accent-soft); animation: lo-d-down 3.4s ease-in-out infinite; z-index: 1; }
+  .lo-d-card.title { top: 66px; animation: lo-d-up 3.4s ease-in-out infinite; }
+  .lo-d-card.bg { top: 110px; }
+  .lo-d-track { position: absolute; left: 282px; top: 30px; width: 12px; height: 64px; border-radius: 999px; background: var(--line); }
+  .lo-d-thumb { position: absolute; left: 274px; top: 26px; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); border: 4px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3); animation: lo-d-thumb 3.4s ease-in-out infinite; }
+  .lo-d-thumb .ex-ghost { left: 8px; top: 10px; }
+  .lo-d-arrow { display: none; }
+  @keyframes lo-d-down  { 0%, 20% { transform: none; } 55%, 85% { transform: translateY(44px); } 100% { transform: none; } }
+  @keyframes lo-d-up    { 0%, 20% { transform: none; } 55%, 85% { transform: translateY(-44px); } 100% { transform: none; } }
+  @keyframes lo-d-thumb { 0%, 20% { transform: none; } 55%, 85% { transform: translateY(44px); } 100% { transform: none; } }
+  @keyframes lo-d-photo { 0%, 50% { opacity: 1; } 56%, 85% { opacity: 0; } 92%, 100% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .lo-d-card, .lo-d-thumb, .lo-d-photo { animation: none !important; }
+    .lo-d-arrow { display: block; position: absolute; left: 309px; top: 34px; width: 4px; height: 52px; background: var(--accent); }
+    .lo-d-arrow::after { content: ""; position: absolute; left: -8px; bottom: -12px; border: 10px solid transparent; border-bottom: 0; border-top: 14px solid var(--accent); }
+  }
 
   @media (max-width: 1100px), (max-height: 620px) {
-    .ex-stage { gap: 18px; }
-    .lo-stack-col { width: 210px; }
+    .lo-row { gap: 18px; }
+    .lo-stack-col { width: 190px; }
     .lo-card { font-size: 16px; gap: 8px; }
-    .lo-info { width: 200px; gap: 10px; }
-    .ex-tag.lo-tag { font-size: 22px; padding: 5px 16px; }
-    .lo-msg { font-size: 16px; }
-    .lo-slide { width: 280px; }
-    .lo-ticks { font-size: 14px; height: 18px; }
-    .lo-op input[type="range"].ex-slider { width: 170px; }
-    .lo-op label { font-size: 15px; }
   }
 </style>
 </head>
-<body class="unit-2">
+<body class="unit-2 ex-v2">
 
-<header class="ex-header">
-  <div>
-    <p class="ex-unit">Working with Text and Images</p>
-    <h1>Layers</h1>
+<!-- SCREEN 1: Start -->
+<section class="ex-screen ex-start" id="ex-start">
+  <h1>Layers</h1>
+  <p class="ex-why">Layers decide what is in front on your poster.</p>
+  <div class="ex-demo lo-demo" aria-hidden="true">
+    <span class="lo-d-poster"><span class="lo-d-title">SKATE</span><span class="lo-d-photo"></span></span>
+    <span class="lo-d-card photo">Photo</span>
+    <span class="lo-d-card title">Title</span>
+    <span class="lo-d-card bg">Background</span>
+    <span class="lo-d-track"></span>
+    <span class="lo-d-arrow"></span>
+    <span class="lo-d-thumb">
+      <svg class="ex-ghost" viewBox="0 0 24 24"><path d="M5 2l14 11h-7.2l4 7.6-3 1.6-4-7.7L5 19z"/></svg>
+    </span>
   </div>
-  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
-</header>
+  <p class="ex-how">Move the slider.</p>
+  <button type="button" class="ex-btn primary big" id="ex-go">Start</button>
+</section>
 
-<main class="ex-main">
-  <section class="ex-goal" aria-label="Your goal">
-    <span class="ex-goal-label">Your goal</span>
-    <p>The title has gone missing. Find the photo position that brings it back.</p>
-  </section>
-
-  <section class="ex-stage" id="lo-stage" aria-live="polite">
-    <div class="lo-poster" id="lo-poster"></div>
-
-    <div class="lo-stack-col" id="lo-stack-col" aria-hidden="true">
-      <p class="lo-end">Front</p>
-      <div class="lo-stack" id="lo-stack"></div>
-      <p class="lo-end">Back</p>
-    </div>
-
-    <div class="lo-info" id="lo-info">
-      <span class="ex-tag bad lo-tag" id="lo-tag">Title hidden</span>
-      <p class="lo-msg" id="lo-msg"></p>
-    </div>
-  </section>
-
-  <section class="ex-controls" aria-label="Control">
-    <label class="ex-control-label" for="lo-pos">Photo layer position</label>
-    <div class="lo-slide">
-      <input class="ex-slider" type="range" id="lo-pos" min="0" max="2" step="1" value="2">
-      <div class="lo-ticks" id="lo-ticks" aria-hidden="true">
-        <span style="left:0%">Back</span><span style="left:50%">Middle</span><span style="left:100%">Front</span>
+<!-- SCREEN 2: Explore -->
+<section class="ex-screen" id="ex-explore" hidden>
+  <div class="ex-top">
+    <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
+    <p class="ex-instruction" id="ex-instruction">Bring the missing title back.</p>
+    <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
+  </div>
+  <div class="ex-area" id="lo-area">
+    <div class="lo-row" id="lo-row">
+      <div class="lo-poster" id="lo-poster"></div>
+      <div class="lo-stack-col" id="lo-stack-col" aria-hidden="true">
+        <p class="lo-end">Front</p>
+        <div class="lo-stack" id="lo-stack"></div>
+        <p class="lo-end">Back</p>
+      </div>
+      <div class="lo-ctl" id="lo-ctl">
+        <input class="ex-slider" type="range" id="lo-pos" min="0" max="2" step="1" value="2" aria-label="Photo layer position">
+        <input class="ex-slider" type="range" id="lo-opacity" min="0" max="100" step="10" value="100" aria-label="Photo opacity" hidden>
       </div>
     </div>
-    <span class="ex-readout" id="lo-readout">Front</span>
-  </section>
-
-  <section class="ex-next" id="ex-next" aria-live="polite">
-    <span class="ex-next-label">Next challenge</span>
-    <p>Put the photo at the Front. What opacity lets you see the title through it?</p>
-    <div class="lo-op">
-      <label for="lo-opacity">Photo opacity</label>
-      <input class="ex-slider" type="range" id="lo-opacity" min="0" max="100" step="10" value="100">
-      <span class="ex-readout" id="lo-op-readout">100%</span>
-    </div>
-  </section>
-</main>
-
-<footer class="ex-footer">
-  <span class="ex-answer">Answer the question in Nearpod.</span>
-  <span>Working with Text and Images</span>
-</footer>
+    <p class="ex-status" id="ex-status" role="status"></p>
+  </div>
+</section>
 
 <script src="shared/explorer.js?v=2"></script>
 <script>
@@ -192,35 +137,31 @@
        A layer is drawn after the layers below it, so it covers them.
        Opacity is how solid the photo is: 100% solid, 0% invisible. */
     var POS_NAMES = ["Back", "Middle", "Front"];
-    var START_POS = 2;
+    var FRONT = 2, START_POS = 2;
     var LAYER_NAMES = { bg: "Background", photo: "Photo", title: "Title", sticker: "Sticker" };
     var NAVY = "#1E2A4A";
+    var SWAP_DELAY = 500;   /* ms after the photo reaches the front in the challenge */
 
-    var stage = document.getElementById("lo-stage");
+    var area = document.getElementById("lo-area");
+    var row = document.getElementById("lo-row");
     var poster = document.getElementById("lo-poster");
     var stackCol = document.getElementById("lo-stack-col");
     var stack = document.getElementById("lo-stack");
-    var info = document.getElementById("lo-info");
-    var tag = document.getElementById("lo-tag");
-    var msg = document.getElementById("lo-msg");
+    var ctl = document.getElementById("lo-ctl");
     var posInput = document.getElementById("lo-pos");
-    var readout = document.getElementById("lo-readout");
-    var ticks = document.getElementById("lo-ticks").children;
     var opInput = document.getElementById("lo-opacity");
-    var opReadout = document.getElementById("lo-op-readout");
-    var nextCard = document.getElementById("ex-next");
+    var statusEl = document.getElementById("ex-status");
 
     var pos = START_POS;
     var opacity = 100;
-    var nextCardHeight = 64;
+    var opMode = false;          /* the opacity slider has replaced the position slider */
+    var swapTimer = null;
     var cards = {};
-    var cardStep = 50;            // distance between cards, set in layout()
+    var cardStep = 50;
 
     /* Each layer is drawn as SVG on a 400 x 300 poster. */
     function layerMarkup(name, id) {
-      if (name === "bg") {
-        return '<rect width="400" height="300" fill="' + NAVY + '"/>';
-      }
+      if (name === "bg") return '<rect width="400" height="300" fill="' + NAVY + '"/>';
       if (name === "photo") {
         return '<defs><linearGradient id="lo-sky-' + id + '" x1="0" y1="0" x2="0" y2="1">' +
           '<stop offset="0" stop-color="#5DB3EA"/><stop offset="1" stop-color="#CFEBFA"/></linearGradient></defs>' +
@@ -242,10 +183,9 @@
     function order() {
       var o = ["bg", "title", "sticker"];
       o.splice(pos + 1, 0, "photo");
-      return o;                    // back to front
+      return o;                    /* back to front */
     }
 
-    /* Poster: one group per layer, re-ordered when the photo moves. */
     poster.innerHTML = '<svg class="lo-svg" id="lo-svg" viewBox="0 0 400 300" width="100%" role="img"></svg>';
     var svg = document.getElementById("lo-svg");
     var groups = {};
@@ -256,7 +196,6 @@
       groups[name] = g;
     });
 
-    /* Stack cards with a tiny preview of each layer. */
     var THUMB_VIEW = { bg: "0 0 400 300", photo: "0 0 400 300", title: "30 96 340 78", sticker: "236 148 128 128" };
     ["bg", "title", "sticker", "photo"].forEach(function (name) {
       var c = document.createElement("div");
@@ -273,42 +212,39 @@
       var o = order();
       o.forEach(function (name) { svg.appendChild(groups[name]); });
       groups.photo.setAttribute("opacity", opacity / 100);
-
-      // Cards: front of the stack is at the top.
       o.forEach(function (name, i) {
         cards[name].style.transform = "translateY(" + ((o.length - 1 - i) * cardStep) + "px)";
       });
       pcEl.textContent = opacity < 100 ? opacity + "%" : "";
 
-      var titleCovered = pos >= 1;
-      var stickerCovered = pos >= 2;
-      var band, tagWords, words;
-      if (!titleCovered) {
-        band = "good"; tagWords = "Title showing";
-        words = opacity === 0 ? "The photo is invisible." :
-                (opacity < 100 ? "The title is in front of the photo. The photo looks faded." :
-                                 "The title is in front of the photo. Nothing is covered.");
-      } else if (opacity === 100) {
-        band = "bad"; tagWords = "Title hidden";
-        words = stickerCovered ? "The photo is in front. It covers the title and the sticker." :
-                                 "The photo is in front of the title. It covers it.";
-      } else if (opacity === 0) {
-        band = "ok"; tagWords = "Photo gone";
-        words = "At 0% the photo is invisible. Now the photo is missing.";
-      } else {
-        band = "ok"; tagWords = "Title faded";
-        words = "You can see through the photo. The title shows, but it looks faded.";
-      }
-      tag.className = "ex-tag lo-tag " + band;
-      if (tag.textContent !== tagWords) tag.textContent = tagWords;
-      if (msg.textContent !== words) msg.textContent = words;
+      /* One status line: what the pupil can see now. */
+      var words;
+      if (pos === 0) words = "Nothing is covered.";
+      else if (opacity === 100) words = pos === FRONT ? "The photo covers the title and the sticker." : "The photo covers the title.";
+      else if (opacity > 50) words = "The title is starting to show.";
+      else words = "The title shows through the photo.";
+      var good = Explorer.step() === 1 ? pos === 0 : (pos === FRONT && opacity <= 50);
+      Explorer.status(words, good ? "good" : "");
 
       svg.setAttribute("aria-label", "Poster. " + words);
-      readout.textContent = POS_NAMES[pos];
       posInput.setAttribute("aria-valuetext", POS_NAMES[pos]);
-      for (var i = 0; i < ticks.length; i++) ticks[i].className = i === pos ? "on" : "";
-      opReadout.textContent = opacity + "%";
       opInput.setAttribute("aria-valuetext", opacity + " percent");
+    }
+
+    /* Challenge: once the photo is at the front, the opacity slider takes
+       the position slider's place. */
+    function setOpMode(on) {
+      clearTimeout(swapTimer);
+      opMode = on;
+      var hadFocus = document.activeElement === posInput;
+      posInput.hidden = on;
+      opInput.hidden = !on;
+      if (on) {
+        opInput.classList.add("ex-pulse");
+        if (hadFocus) opInput.focus({ preventScroll: true });
+      } else {
+        opInput.classList.remove("ex-pulse");
+      }
     }
 
     posInput.addEventListener("input", function () {
@@ -316,15 +252,20 @@
       if (v === pos) return;
       pos = v;
       render();
-      Explorer.track();
+      Explorer.used();
+      clearTimeout(swapTimer);
+      if (Explorer.step() === 2 && pos === FRONT && !opMode) {
+        swapTimer = setTimeout(function () { setOpMode(true); }, SWAP_DELAY);
+      }
     });
 
     opInput.addEventListener("input", function () {
       opacity = Number(opInput.value);
+      opInput.classList.remove("ex-pulse");
       render();
+      Explorer.used();
     });
 
-    /* The title is squeezed only if the font on this device makes it too wide. */
     function fitTitle() {
       var t = svg.querySelector(".lo-title");
       t.removeAttribute("textLength");
@@ -335,59 +276,79 @@
       }
     }
 
-    function measureNextCard() {
-      if (nextCard.classList.contains("show")) { nextCardHeight = nextCard.offsetHeight; return; }
-      var s = nextCard.style;
-      s.display = "flex"; s.visibility = "hidden"; s.position = "absolute"; s.width = stage.offsetWidth + "px";
-      nextCardHeight = nextCard.offsetHeight;
-      s.display = ""; s.visibility = ""; s.position = ""; s.width = "";
-    }
-
+    /* Size the poster to the space above the status line, then lay out the
+       stack cards and stand the slider beside the photo card's three places. */
     function layout() {
-      var cs = getComputedStyle(stage);
-      var innerH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-      var innerW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      /* Leave room for the Next challenge card so the poster stays the same
-         size when the card appears. */
-      if (!nextCard.classList.contains("show")) {
-        innerH -= nextCardHeight + (parseFloat(getComputedStyle(stage.parentNode).rowGap) || 12);
-      }
-      var gap = parseFloat(cs.columnGap) || 30;
-      var others = stackCol.offsetWidth + info.offsetWidth + gap * 2;
-      var h = Math.max(170, Math.min(330, Math.floor(innerH - 4)));
+      if (!area.clientHeight) return;
+      var cs = getComputedStyle(area);
+      var availW = area.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      var availH = area.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+                   - statusEl.offsetHeight - (parseFloat(cs.rowGap) || 10) - 4;
+      var gap = parseFloat(getComputedStyle(row).columnGap) || 26;
+      var others = stackCol.offsetWidth + ctl.offsetWidth + gap * 2;
+      var h = Math.max(160, Math.min(400, Math.floor(availH - 4)));
       var w = Math.round(h * 4 / 3);
-      if (w > innerW - others - 4) { w = Math.floor(innerW - others - 4); h = Math.round(w * 3 / 4); }
+      if (w > availW - others - 4) { w = Math.floor(availW - others - 4); h = Math.round(w * 3 / 4); }
       poster.style.width = (w + 4) + "px";
       stackCol.style.height = (h + 4) + "px";
-      info.style.height = (h + 4) + "px";
+      ctl.style.height = (h + 4) + "px";
 
-      var stackH = h + 4 - 44;                 // minus the Front and Back labels
-      var cardGap = 6;
-      var cardH = Math.floor((stackH - cardGap * 3) / 4);
+      var stackH = h + 4 - 44;                 /* minus the Front and Back labels */
+      var cardGap = 8;
+      var cardH = Math.min(70, Math.floor((stackH - cardGap * 3) / 4));
       cardStep = cardH + cardGap;
       Object.keys(cards).forEach(function (k) { cards[k].style.height = cardH + "px"; });
+      /* The Back label sits right under the bottom card; the column is centred on the poster. */
+      var colH = 44 + 4 * cardH + 3 * cardGap;
+      var shift = Math.max(0, Math.round((h + 4 - colH) / 2));
+      stackCol.style.height = colH + "px";
+      ctl.style.height = colH + "px";
+      stackCol.style.marginTop = shift + "px";
+      ctl.style.marginTop = shift + "px";
+
+      /* The handle travels from the Back place (third card) to the Front place (top card). */
+      var thumb = 34;
+      var len = 2 * cardStep + thumb;
+      var mid = 22 + cardStep + cardH / 2;      /* centre of the middle place */
+      [posInput, opInput].forEach(function (inp) {
+        inp.style.width = len + "px";
+        inp.style.top = mid + "px";
+      });
       render();
     }
 
-    Explorer.init({
-      unlockAfter: 5,
-      onReset: function () {
-        pos = START_POS;
-        opacity = 100;
-        posInput.value = pos;
-        opInput.value = opacity;
-        layout();
+    function resetAll() {
+      pos = START_POS;
+      opacity = 100;
+      posInput.value = pos;
+      opInput.value = opacity;
+      setOpMode(false);
+      layout();
+    }
+
+    Explorer.setup({
+      pulse: "#lo-pos",
+      success: function () { return pos === 0; },
+      successText: "The title is back.",
+      hint: "Try moving the photo to the back.",
+      hintAfter: 60,
+      onShow: layout,
+      onReset: resetAll,
+      challenge: {
+        text: "Put the photo in front, then make it see-through.",
+        start: function () { setOpMode(false); render(); },
+        success: function () { return pos === FRONT && opacity <= 50; },
+        successText: "The title shows through the photo.",
+        hint: function () { return pos === FRONT ? "Slide it down to make it see-through." : "Slide the photo to the front."; },
+        pulse: "#lo-pos"
       }
     });
 
-    measureNextCard();
     layout();
     fitTitle();
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(function () { fitTitle(); measureNextCard(); layout(); });
-    }
-    if (window.ResizeObserver) new ResizeObserver(layout).observe(stage);
-    window.addEventListener("resize", function () { measureNextCard(); layout(); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitTitle(); layout(); });
+    if (window.ResizeObserver) new ResizeObserver(layout).observe(area);
+    window.addEventListener("resize", layout);
   })();
 </script>
 </body>

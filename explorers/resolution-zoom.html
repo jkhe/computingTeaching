@@ -10,92 +10,70 @@
 <link rel="stylesheet" href="shared/explorer.css?v=2">
 <style>
   /* Page-specific styles only. */
-  /* The stage takes exactly the space left over, so the page never scrolls.
-     The canvases are then sized in JS to fit the stage. */
-  .ex-main { min-height: 0; }
-  .ex-stage { flex: 1 1 0px; padding: 10px 16px; gap: 28px; align-items: flex-start; }
+  body { --hint: #6D28D9; }   /* hints in purple, so they never look like an error */
 
-  .rz-fig { display: flex; flex-direction: column; gap: 4px; }
-  .rz-cap {
-    font-size: 15px;
-    font-weight: 800;
-    line-height: 20px;
-    height: 20px;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-  .rz-cap strong { color: var(--text); font-weight: 800; }
+  #rz-big { display: block; flex-shrink: 0; border-radius: 6px; background: #17365D; }
+  /* The slider sits right under the poster it changes, the same width. */
+  .ex-v2 input[type="range"].ex-slider.rz-slider { flex-shrink: 0; margin: 6px 0 2px; }
 
-  #rz-big {
-    display: block;
-    border-radius: 6px;
-    background: #17365D;
-  }
+  /* Yes / No answers for the challenge, in the instruction row. */
+  .rz-answers { display: flex; gap: 10px; flex-shrink: 0; }
+  .rz-answers[hidden] { display: none; }
+  .rz-answers .ex-btn { min-width: 84px; }
 
-  .rz-realbox {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    background: #F3F4F6;
-    border: 2px dashed var(--line-strong);
-    border-radius: 6px;
+  /* ----- Start screen demo: slide right, the blocky poster turns sharp ----- */
+  .rz-d-pic { position: absolute; left: 100px; top: 14px; width: 120px; height: 90px; border-radius: 4px; image-rendering: pixelated; }
+  .rz-d-pic.sharp { animation: rz-d-sharp 3.4s ease-in-out infinite; }
+  .rz-d-track { position: absolute; left: 60px; right: 60px; top: 128px; height: 12px; border-radius: 999px; background: var(--line); }
+  .rz-d-thumb { position: absolute; left: 50px; top: 119px; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); border: 4px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3); animation: rz-d-thumb 3.4s ease-in-out infinite; }
+  .rz-d-thumb .ex-ghost { left: 8px; top: 10px; }
+  .rz-d-arrow { display: none; }
+  @keyframes rz-d-thumb { 0%, 15% { transform: none; } 60%, 88% { transform: translateX(170px); } 100% { transform: none; } }
+  @keyframes rz-d-sharp { 0%, 35% { opacity: 0; } 60%, 88% { opacity: 1; } 100% { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .rz-d-thumb, .rz-d-pic.sharp { animation: none !important; }
+    .rz-d-pic.sharp { opacity: 0; }
+    .rz-d-arrow { display: block; position: absolute; left: 96px; top: 160px; width: 120px; height: 4px; background: var(--accent); }
+    .rz-d-arrow::after { content: ""; position: absolute; right: -12px; top: -8px; border: 10px solid transparent; border-right: 0; border-left: 14px solid var(--accent); }
   }
-  #rz-real {
-    display: block;
-    flex-shrink: 0;
-    image-rendering: pixelated;
-  }
-
-  .ex-controls input[type="range"].ex-slider { width: min(460px, 38vw); }
-  .ex-readout { min-width: 15.5em; text-align: left; font-variant-numeric: tabular-nums; }
 </style>
 </head>
-<body class="unit-2">
+<body class="unit-2 ex-v2">
 
-<header class="ex-header">
-  <div>
-    <p class="ex-unit">Working with Text and Images</p>
-    <h1>Resolution</h1>
+<!-- SCREEN 1: Start -->
+<section class="ex-screen ex-start" id="ex-start">
+  <h1>Resolution</h1>
+  <p class="ex-why">Too few pixels make your photos look blocky.</p>
+  <div class="ex-demo" aria-hidden="true">
+    <canvas class="rz-d-pic" id="rz-d-low"></canvas>
+    <canvas class="rz-d-pic sharp" id="rz-d-high"></canvas>
+    <span class="rz-d-track"></span>
+    <span class="rz-d-arrow"></span>
+    <span class="rz-d-thumb">
+      <svg class="ex-ghost" viewBox="0 0 24 24"><path d="M5 2l14 11h-7.2l4 7.6-3 1.6-4-7.7L5 19z"/></svg>
+    </span>
   </div>
-  <button type="button" class="ex-btn small ex-reset" id="ex-reset">Start again</button>
-</header>
+  <p class="ex-how">Move the slider.</p>
+  <button type="button" class="ex-btn primary big" id="ex-go">Start</button>
+</section>
 
-<main class="ex-main">
-  <section class="ex-goal" aria-label="Your goal">
-    <span class="ex-goal-label">Your goal</span>
-    <p>Find the fewest pixels where you can still read every word.</p>
-  </section>
-
-  <section class="ex-stage" id="rz-stage">
-    <div class="rz-fig">
-      <p class="rz-cap"><strong>Poster size</strong></p>
-      <canvas id="rz-big" role="img" aria-label="A poster shown large."></canvas>
+<!-- SCREEN 2: Explore -->
+<section class="ex-screen" id="ex-explore" hidden>
+  <div class="ex-top">
+    <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
+    <p class="ex-instruction" id="ex-instruction">Find the fewest pixels where you can read every word.</p>
+    <div class="rz-answers" id="rz-answers" hidden>
+      <button type="button" class="ex-btn" id="rz-yes">Yes</button>
+      <button type="button" class="ex-btn" id="rz-no">No</button>
     </div>
-    <div class="rz-fig">
-      <p class="rz-cap" id="rz-realcap" aria-live="polite"><strong>Real size</strong></p>
-      <div class="rz-realbox" id="rz-realbox">
-        <canvas id="rz-real" aria-hidden="true"></canvas>
-      </div>
-    </div>
-  </section>
-
-  <section class="ex-controls" aria-label="Control">
-    <label class="ex-control-label" for="rz-slider">Pixels across</label>
-    <input class="ex-slider" type="range" id="rz-slider" min="0" max="12" step="1" value="0">
-    <span class="ex-readout" id="rz-readout" aria-live="polite"></span>
-  </section>
-
-  <section class="ex-next" id="ex-next" aria-live="polite">
-    <span class="ex-next-label">Next challenge</span>
-    <p>More pixels make a bigger file. Why not always use the most pixels?</p>
-  </section>
-</main>
-
-<footer class="ex-footer">
-  <span class="ex-answer">Answer the question in Nearpod.</span>
-  <span>Working with Text and Images</span>
-</footer>
+    <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
+  </div>
+  <div class="ex-area" id="rz-area">
+    <canvas id="rz-big" role="img" aria-label="A poster."></canvas>
+    <input class="ex-slider rz-slider" type="range" id="rz-slider" min="0" max="12" step="1" value="0" aria-label="Pixels across">
+    <p class="ex-status" id="ex-status" role="status"></p>
+  </div>
+</section>
 
 <script src="shared/explorer.js?v=2"></script>
 <script>
@@ -109,21 +87,23 @@
     var SRC_W = 1536, SRC_H = 1152;
     var STEPS = [8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512];
     var START_INDEX = 0;
-    var NEXT_CARD_HEIGHT = 51;   // height of the one-line Next challenge card in px
+    var LOW = 48, HIGH = 96;     /* step 1: been at 48 or fewer AND at 96 or more */
     var FONT_STACK = '"Arial Rounded MT Bold", "Arial Rounded MT", "Nunito", Arial, sans-serif';
 
-    var stage = document.getElementById("rz-stage");
+    var area = document.getElementById("rz-area");
     var big = document.getElementById("rz-big");
-    var real = document.getElementById("rz-real");
-    var realBox = document.getElementById("rz-realbox");
-    var realCap = document.getElementById("rz-realcap");
     var slider = document.getElementById("rz-slider");
-    var readout = document.getElementById("rz-readout");
+    var statusEl = document.getElementById("ex-status");
+    var answers = document.getElementById("rz-answers");
+    var yesBtn = document.getElementById("rz-yes");
+    var noBtn = document.getElementById("rz-no");
 
     var srcData = null;      // Uint8ClampedArray of the full-size poster
     var cache = {};          // N -> small canvas holding the N-pixel-wide image
     var lastIndex = START_INDEX;
-    var view = { w: 0, h: 0, boxW: 0, boxH: 0 };
+    var view = { w: 0, h: 0 };
+    var beenLow = false, beenHigh = false;
+    var answer = "";         // "yes" or "no" in the challenge
 
     function commas(n) {
       return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -209,96 +189,131 @@
       return c;
     }
 
+    /* The poster takes the space left above the slider and the status line. */
     function layout() {
-      var cs = getComputedStyle(stage);
-      var innerH = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
-      var innerW = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
-      var gap = parseFloat(cs.columnGap) || 28;
-      // Keep room for the Next challenge card before it appears, so the poster
-      // stays the same size when the card arrives (a size change would change
-      // how easy the words are to read part-way through the task).
-      var nextCard = document.getElementById("ex-next");
-      if (!nextCard.classList.contains("show")) {
-        var mainGap = parseFloat(getComputedStyle(stage.parentNode).rowGap) || 12;
-        innerH -= NEXT_CARD_HEIGHT + mainGap;
-      }
-      var h = Math.max(150, Math.min(330, Math.floor(innerH - 24)));
+      if (!area.clientHeight) return;
+      var cs = getComputedStyle(area);
+      var gap = parseFloat(cs.rowGap) || 10;
+      var availW = area.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      var availH = area.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)
+                   - slider.offsetHeight - 8 - statusEl.offsetHeight - gap * 2 - 4;
+      var h = Math.max(150, Math.min(440, Math.floor(availH)));
       var w = Math.round(h * 4 / 3);
-      if (w > innerW * 0.5) { w = Math.floor(innerW * 0.5); h = Math.round(w * 3 / 4); }
-      var boxW = Math.max(120, Math.min(540, Math.floor(innerW - w - gap)));
-      view = { w: w, h: h, boxW: boxW - 4, boxH: h - 4 };   // minus the dashed border
+      if (w > availW) { w = Math.floor(availW); h = Math.round(w * 3 / 4); }
+      view = { w: w, h: h };
       big.style.width = w + "px";
       big.style.height = h + "px";
-      realBox.style.width = boxW + "px";
-      realBox.style.height = h + "px";
+      slider.style.width = Math.max(300, w) + "px";
+      render();
     }
 
     function render() {
-      if (!srcData) return;
+      if (!srcData || !view.w) return;
       var n = STEPS[Number(slider.value)];
       var img = lowRes(n);
       var m = img.height;
       var dpr = window.devicePixelRatio || 1;
 
-      // Big view: the small image stretched to the same poster size every time.
+      /* The small image stretched to the same poster size every time. */
       var bw = Math.round(view.w * dpr), bh = Math.round(view.h * dpr);
       if (big.width !== bw || big.height !== bh) { big.width = bw; big.height = bh; }
       var bctx = big.getContext("2d");
-      // Smoothing stays OFF whenever the image is being stretched, so each pixel
-      // shows as a block. It is only on when the image has more pixels than the
-      // space on screen and has to be shrunk to fit.
+      /* Smoothing stays OFF whenever the image is being stretched, so each pixel
+         shows as a block. It is only on when the image has more pixels than the
+         space on screen and has to be shrunk to fit. */
       bctx.imageSmoothingEnabled = n > bw;
       bctx.imageSmoothingQuality = "high";
       bctx.clearRect(0, 0, bw, bh);
       bctx.drawImage(img, 0, 0, n, m, 0, 0, bw, bh);
 
-      // Real size: one image pixel on one screen pixel.
-      real.width = n;
-      real.height = m;
-      real.getContext("2d").drawImage(img, 0, 0);
-      var cw = n / dpr, ch = m / dpr;
-      real.style.width = cw + "px";
-      real.style.height = ch + "px";
-      var tooBig = cw > view.boxW || ch > view.boxH;
-      var cap = tooBig ? "<strong>Real size</strong> (too big to fit here)" : "<strong>Real size</strong>";
-      if (realCap.innerHTML !== cap) realCap.innerHTML = cap;
+      Explorer.status(n + " pixels across");
+      slider.setAttribute("aria-valuetext", n + " pixels across, " + commas(n * m) + " pixels in all");
+      big.setAttribute("aria-label", "The poster made from " + n + " pixels across, shown at poster size.");
+    }
 
-      var text = n + " × " + m + " = " + commas(n * m) + " pixels";
-      readout.textContent = text;
-      slider.setAttribute("aria-valuetext", n + " by " + m + ", " + commas(n * m) + " pixels");
-      big.setAttribute("aria-label", "The poster drawn with " + n + " pixels across, stretched to poster size.");
+    /* Start screen demo: the real 8-pixel and 128-pixel posters. */
+    function drawDemo() {
+      [["rz-d-low", 8], ["rz-d-high", 128]].forEach(function (d) {
+        var c = document.getElementById(d[0]);
+        var img = lowRes(d[1]);
+        c.width = 240; c.height = 180;
+        var ctx = c.getContext("2d");
+        ctx.imageSmoothingEnabled = d[1] > 240;
+        ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, 240, 180);
+      });
+    }
+
+    function note() {
+      var n = STEPS[Number(slider.value)];
+      if (n <= LOW) beenLow = true;
+      if (n >= HIGH) beenHigh = true;
     }
 
     slider.addEventListener("input", function () {
       var i = Number(slider.value);
       if (i === lastIndex) return;
       lastIndex = i;
+      note();
       render();
-      Explorer.track();
+      Explorer.used();
     });
 
-    Explorer.init({
-      unlockAfter: 8,
+    function pick(which) {
+      answer = which;
+      yesBtn.setAttribute("aria-pressed", which === "yes" ? "true" : "false");
+      noBtn.setAttribute("aria-pressed", which === "no" ? "true" : "false");
+      Explorer.used();
+      if (which === "yes") Explorer.hint("Bigger files are slower to send. Look at the words again.");
+    }
+    yesBtn.addEventListener("click", function () { pick("yes"); });
+    noBtn.addEventListener("click", function () { pick("no"); });
+
+    /* The Yes / No buttons sit straight after the challenge sentence. */
+    var instruction = document.getElementById("ex-instruction");
+    function showAnswers(on) {
+      answers.hidden = !on;
+      if (on) instruction.parentNode.insertBefore(answers, instruction.nextSibling);
+      yesBtn.removeAttribute("aria-pressed");
+      noBtn.removeAttribute("aria-pressed");
+      answer = "";
+    }
+
+    Explorer.setup({
+      pulse: "#rz-slider",
+      success: function () { return beenLow && beenHigh; },
+      successText: "Stop where you can read every word.",
+      hint: "Slide right until the words are clear.",
+      hintAfter: 60,
+      onShow: layout,
       onReset: function () {
         slider.value = START_INDEX;
         lastIndex = START_INDEX;
+        beenLow = false; beenHigh = false;
+        note();
+        showAnswers(false);
         render();
+      },
+      challenge: {
+        text: "More pixels make a bigger file. Is the biggest always best?",
+        start: function () { showAnswers(true); render(); },
+        success: function () { return answer === "no"; },
+        successText: "No. Enough pixels to read it clearly is best.",
+        hint: "Look at the words, then choose Yes or No.",
+        pulse: "#rz-answers .ex-btn"
       }
     });
+    note();
 
-    if (window.ResizeObserver) {
-      new ResizeObserver(function () { layout(); render(); }).observe(stage);
-    } else {
-      window.addEventListener("resize", function () { layout(); render(); });
-    }
+    if (window.ResizeObserver) new ResizeObserver(layout).observe(area);
+    window.addEventListener("resize", layout);
 
-    // Draw straight away with whatever font is ready, then again once the
-    // rounded font has loaded so the poster text matches the page.
-    layout();
+    /* Draw straight away with whatever font is ready, then again once the
+       rounded font has loaded so the poster text matches the page. */
     drawPoster();
-    render();
+    drawDemo();
+    layout();
     if (document.fonts && document.fonts.ready) {
-      var redraw = function () { drawPoster(); render(); };
+      var redraw = function () { drawPoster(); drawDemo(); render(); };
       document.fonts.ready.then(redraw);
       if (document.fonts.load) {
         document.fonts.load('800 100px "Nunito"').then(redraw, function () {});
