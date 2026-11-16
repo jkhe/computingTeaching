@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/explorer.css?v=2">
+<link rel="stylesheet" href="shared/explorer.css?v=3">
 <style>
   /* Page-specific styles only. */
   body { --hint: #6D28D9; }   /* hints in purple, so they never look like an error */
@@ -75,7 +75,7 @@
   </div>
 </section>
 
-<script src="shared/explorer.js?v=2"></script>
+<script src="shared/explorer.js?v=3"></script>
 <script>
   (function () {
     "use strict";
@@ -279,6 +279,7 @@
     }
 
     Explorer.setup({
+      keyword: { word: "Resolution", meaning: "How many pixels a picture has.", tile: "shared/tiles/resolution.png" },
       pulse: "#rz-slider",
       success: function () { return beenLow && beenHigh; },
       successText: "Stop where you can read every word.",
