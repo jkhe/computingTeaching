@@ -217,7 +217,7 @@
     el.start.insertBefore(card, why || el.start.querySelector(".ex-demo"));
   }
 
-  /* ----- "Now in the real tool": links the idea to the button pupils use.
+  /* ----- "Later, in the real tool": shows the button pupils will use in the Main task.
      cfg.bridge = { title: "Now in Canva", img: "shared/canva/text-toolbar.png",
                     imgW: 1720, imgH: 88, crop: [x, w], focus: [x, w],
                     text: "Click the text. Click Position." } */
@@ -229,8 +229,14 @@
     s.id = "ex-bridge";
     s.hidden = true;
     var h = document.createElement("h1");
-    h.textContent = b.title || "Now in Canva";
+    h.textContent = b.title || "Later, in Canva";
     s.appendChild(h);
+    /* This screen comes before the Main task, so it looks ahead.
+       Pupils should not open Canva yet: they go back to Nearpod next. */
+    var lead = document.createElement("p");
+    lead.className = "ex-bridge-lead";
+    lead.textContent = b.lead || "You will use this button in the Main task.";
+    s.appendChild(lead);
     var crop = b.crop || [0, b.imgW];
     var frame = document.createElement("div");
     frame.className = "ex-shot";

@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/explorer.css?v=5">
+<link rel="stylesheet" href="shared/explorer.css?v=6">
 <style>
   /* Page-specific styles only. */
   body { --hint: #6D28D9; }   /* hints in purple, so they never look like an error */
@@ -75,7 +75,7 @@
   </div>
 </section>
 
-<script src="shared/explorer.js?v=5"></script>
+<script src="shared/explorer.js?v=6"></script>
 <script>
   (function () {
     "use strict";
@@ -301,7 +301,6 @@
 
     Explorer.setup({
       keyword: { word: "Resolution", meaning: "How many pixels a picture has.", tile: "shared/tiles/resolution.png" },
-      bridge: { title: "Now in Canva", img: "shared/canva/download-size.png", imgW: 818, imgH: 145, crop: [0, 818], focus: [14, 790], alt: "Canva Download panel with the Size slider ringed", text: "Click Share. Click Download. Size shows the pixels." },
       pulse: "#rz-slider",
       success: function () { return beenLow && STEPS[Number(slider.value)] === CLEAR; },
       successText: "128 pixels: the fewest where every word is clear.",
