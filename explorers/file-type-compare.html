@@ -17,6 +17,9 @@
 
   .ft-tray { display: flex; flex-direction: column; gap: 14px; }
   .ft-traycap { font-size: 16px; font-weight: 800; color: var(--muted); }
+  .ft-key { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; color: var(--text); margin-top: -6px; }
+  .ft-key i { width: 22px; height: 22px; border: 1px solid var(--line-strong); border-radius: 3px;
+    background: conic-gradient(#C9CDD4 25%, #fff 0 50%, #C9CDD4 0 75%, #fff 0) 0 0 / 11px 11px; }
   .ft-file {
     display: flex; align-items: center; gap: 14px;
     padding: 8px 16px 8px 8px;
@@ -85,6 +88,7 @@
       <canvas class="ft-poster" id="ft-poster" role="img" aria-label="The Games Club poster."></canvas>
       <div class="ft-tray" id="ft-tray">
         <span class="ft-traycap">Your files</span>
+        <span class="ft-key"><i aria-hidden="true"></i>Squares mean see-through</span>
         <button type="button" class="ft-file" data-file="png"><canvas width="168" height="168"></canvas>controller.png</button>
         <button type="button" class="ft-file" data-file="jpg"><canvas width="168" height="168"></canvas>controller.jpg</button>
         <button type="button" class="ft-file" data-file="fake" hidden><canvas width="168" height="168"></canvas>web-download.png</button>
