@@ -217,52 +217,6 @@
     el.start.insertBefore(card, why || el.start.querySelector(".ex-demo"));
   }
 
-  /* ----- Read aloud: uses the device's built-in voice, so reading is
-     never the barrier. Reads the Start screen, or the current instruction. */
-  var canSpeak = "speechSynthesis" in window && typeof SpeechSynthesisUtterance === "function";
-  function say(text) {
-    if (!canSpeak || !text) return;
-    window.speechSynthesis.cancel();
-    var u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-GB";
-    u.rate = 0.9;
-    var voices = window.speechSynthesis.getVoices() || [];
-    for (var i = 0; i < voices.length; i++) {
-      if (/^en-GB/i.test(voices[i].lang)) { u.voice = voices[i]; break; }
-    }
-    window.speechSynthesis.speak(u);
-  }
-  function speakButton(getText) {
-    var b = document.createElement("button");
-    b.type = "button";
-    b.className = "ex-speak";
-    b.setAttribute("aria-label", "Read aloud");
-    b.title = "Read aloud";
-    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/>' +
-      '<path d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
-    b.addEventListener("click", function () { say(getText()); });
-    return b;
-  }
-  function textOf(node) { return node && !node.hidden ? node.textContent.trim() : ""; }
-  function buildSpeak() {
-    if (!canSpeak) return;
-    var h = el.start && el.start.querySelector("h1");
-    if (h) {
-      var row = document.createElement("div");
-      row.className = "ex-title-row";
-      h.parentNode.insertBefore(row, h);
-      row.appendChild(h);
-      row.appendChild(speakButton(function () {
-        var k = cfg.keyword ? cfg.keyword.word + ". " + cfg.keyword.meaning + " " : "";
-        return k + textOf(el.start.querySelector(".ex-why")) + " " + textOf(el.start.querySelector(".ex-how"));
-      }));
-    }
-    var top = el.instruction.parentNode;
-    top.insertBefore(speakButton(function () {
-      return el.instruction.hidden ? "Try the challenge, or I'm finished." : el.instruction.textContent;
-    }), el.instruction);
-  }
-
   /* ----- "Now in the real tool": links the idea to the button pupils use.
      cfg.bridge = { title: "Now in Canva", img: "shared/canva/text-toolbar.png",
                     imgW: 1720, imgH: 88, crop: [x, w], focus: [x, w],
@@ -297,10 +251,6 @@
     var p = document.createElement("p");
     p.textContent = b.text;
     s.appendChild(p);
-    if (canSpeak) {
-      var sp = speakButton(function () { return b.text; });
-      p.appendChild(sp);
-    }
     s.appendChild(button("ex-btn primary big", "Done", function () { show("finished"); }));
     document.body.appendChild(s);
     el.bridge = s;
@@ -347,7 +297,6 @@
     el.finishedTitle = f.querySelector("h1");
 
     buildKeyword();
-    buildSpeak();
     buildBridge();
 
     $("ex-go").addEventListener("click", function () { show("explore"); });
