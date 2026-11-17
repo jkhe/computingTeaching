@@ -473,6 +473,7 @@ body.ex-v2 { display: block; height: 100%; min-height: 0; overflow: hidden; }
 .ex-v2 .ex-bridge { justify-content: center; gap: 18px; padding: 16px 24px; text-align: center; }
 .ex-v2 .ex-bridge h1 { font-size: 40px; line-height: 1.1; }
 .ex-v2 .ex-bridge p { font-size: 24px; font-weight: 800; display: flex; align-items: center; gap: 12px; justify-content: center; }
+.ex-v2 .ex-bridge p.ex-bridge-lead { font-weight: 700; color: var(--muted); }
 .ex-v2 .ex-shot {
   position: relative; width: min(1000px, 92vw); overflow: hidden;
   border: 2px solid var(--line-strong); border-radius: 14px; background: #fff;
