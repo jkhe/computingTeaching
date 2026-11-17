@@ -264,10 +264,10 @@
     function statusText(n) {
       var base = n + " pixels across. File: " + fileKB(n) + ".";
       if (Explorer.step() !== 1) return base;
-      if (n < 96) return base;
-      if (n === 96) return base + " Nearly. Some letters are still fuzzy.";
+      if (n < 96) return base + " Too blocky to read. Slide right.";
+      if (n === 96) return base + " Some letters are still fuzzy. Slide right.";
       if (n === CLEAR) return base + " Every word is clear.";
-      return base + " Clear. Can you use fewer?";
+      return base + " Clear, but more pixels than you need. Slide left.";
     }
 
     slider.addEventListener("input", function () {
