@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/explorer.css?v=3">
+<link rel="stylesheet" href="shared/explorer.css?v=4">
 <style>
   /* Page-specific styles only. */
   .st-box {
@@ -128,7 +128,7 @@
 <section class="ex-screen" id="ex-explore" hidden>
   <div class="ex-top">
     <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
-    <p class="ex-instruction" id="ex-instruction">Pick the film. Which way should you send it?</p>
+    <p class="ex-instruction" id="ex-instruction">Pick the film. Send it to a friend in another town.</p>
     <div class="st-answers" id="st-answers" role="group" aria-label="Answers" hidden>
       <button type="button" class="ex-btn small" data-a="offline">No internet</button>
       <button type="button" class="ex-btn small" data-a="town">Sending to another town</button>
@@ -190,7 +190,7 @@
   </div>
 </section>
 
-<script src="shared/explorer.js?v=3"></script>
+<script src="shared/explorer.js?v=4"></script>
 <script>
   (function () {
     "use strict";
@@ -293,6 +293,7 @@
         if (mb !== picked) way = "";
         picked = mb;
         paint(true);
+        Explorer.status(mb === FILM_MB ? "Now pick a way to send it." : "");
         Explorer.used();
       });
     });
@@ -302,8 +303,8 @@
       btn.addEventListener("click", function () {
         way = btn.getAttribute("data-way");
         paint(false);
+        Explorer.answer();
         if (GUIDE[way]) Explorer.hint(GUIDE[way]);
-        Explorer.used();
       });
     });
 
@@ -312,8 +313,8 @@
       btn.addEventListener("click", function () {
         answer = btn.getAttribute("data-a");
         paintAnswers();
+        Explorer.answer();
         if (answer !== "offline") Explorer.hint("Think about what email and cloud links need.");
-        Explorer.used();
       });
     });
 

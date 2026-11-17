@@ -21,6 +21,7 @@
      });
 
      Explorer.used();              // call after every change the pupil makes
+     Explorer.answer();            // the same, for a click that picks an answer
      Explorer.status(text, kind);  // the ONE feedback line. kind: "" or "good"
      Explorer.hint(text);          // show one piece of guidance in that line
      Explorer.success(text);       // only if you detect success yourself
@@ -109,10 +110,26 @@
     for (var j = 0; j < now.length; j++) now[j].classList.add("ex-pulse");
   }
 
+  /* Every pupil action calls this. The pupil's newest action always wins:
+     any held line (hint or success) is let go, and the page's newest status
+     is shown. If this action puts the page into the success state, the
+     success line is shown, every time, even if the step was solved before
+     (so Yes, No, Yes, No always answers the last click). */
+  var lastOk = false;
   function used() {
     if (!usedYet) { usedYet = true; setPulse(false); }
-    if (!solved && part().success && part().success()) success();
+    if (holdUntil) {
+      holdUntil = 0;
+      if (waiting) { paint(waiting[0], waiting[1]); waiting = null; }
+    }
+    var ok = !!(part().success && part().success());
+    if (ok && !solved) success();
+    else if (ok && !lastOk && part().successText) hold(part().successText, "good", SUCCESS_HOLD);
+    lastOk = ok;
   }
+  /* For a click that answers (a button, a file, a chart, a block): the
+     answer always gets its feedback, even if it was given before. */
+  function answer() { lastOk = false; used(); }
 
   /* ----- Success: feedback first, then the choice in the same place ----- */
   function success(text) {
@@ -141,6 +158,7 @@
     usedYet = false;
     holdUntil = 0;
     waiting = null;
+    lastOk = false;
     el.choice.hidden = true;
     el.instruction.hidden = false;
     el.instruction.textContent = n === 2 ? cfg.challenge.text : el.goalText;
@@ -383,7 +401,7 @@
 
   window.Explorer = {
     /* version 2 */
-    setup: setup, used: used, status: status, hint: hint, success: success,
+    setup: setup, used: used, answer: answer, status: status, hint: hint, success: success,
     step: function () { return step; },
     /* version 1 */
     init: init, track: track, unlock: unlock, reset: reset

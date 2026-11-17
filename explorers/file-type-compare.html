@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/explorer.css?v=3">
+<link rel="stylesheet" href="shared/explorer.css?v=4">
 <style>
   /* Page-specific styles only. */
   body { --hint: #6D28D9; }   /* the pink accent reads like an error, so hints are purple */
@@ -94,7 +94,7 @@
   </div>
 </section>
 
-<script src="shared/explorer.js?v=3"></script>
+<script src="shared/explorer.js?v=4"></script>
 <script>
   (function () {
     "use strict";
@@ -274,10 +274,10 @@
         if (placed === "jpg") Explorer.status("JPG has no see-through, so it brings a white box.");
         else if (placed === "png") Explorer.status("PNG keeps the see-through part.");
         if (placed === "fake") {
-          answers.hidden = false;
-          Explorer.status("Is it really see-through?");
+          if (answer === "no") Explorer.status("The squares are painted in. It only looked see-through.", "good");
+          else { answers.hidden = false; Explorer.status("Is it really see-through?"); }
         }
-        Explorer.used();          // stops the pulse and checks for success
+        Explorer.answer();        // stops the pulse and checks for success
       });
     }
 
@@ -287,9 +287,9 @@
         if (a === "no") {
           answer = "no";
           answers.hidden = true;     // makes room for "I'm finished" in the same row
-          Explorer.used();
+          Explorer.answer();
         } else {
-          Explorer.used();
+          Explorer.answer();
           Explorer.hint("Look at the poster round the controller.");
         }
       });
