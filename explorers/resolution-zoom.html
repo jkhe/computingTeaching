@@ -63,8 +63,7 @@
     <span class="ex-steps" id="ex-steps" aria-hidden="true"><i></i><i></i></span>
     <p class="ex-instruction" id="ex-instruction">Slide until you can read every word.</p>
     <div class="rz-answers" id="rz-answers" hidden>
-      <button type="button" class="ex-btn" id="rz-yes">Yes</button>
-      <button type="button" class="ex-btn" id="rz-no">No</button>
+      <button type="button" class="ex-btn" id="rz-bigger">Make it twice as big</button>
     </div>
     <button type="button" class="ex-quiet" id="ex-reset">Start again</button>
   </div>
@@ -87,8 +86,13 @@
     var SRC_W = 1536, SRC_H = 1152;
     var STEPS = [8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512];
     var START_INDEX = 0;
-    var CLEAR = 128;             /* from here up, every word is clear (checked by eye) */
-    var LOW = 64;                /* step 1 also needs the pupil to have seen it blurry */
+    /* The poster is shown at half size in step 1 and twice as big in the
+       challenge. The same picture needs more pixels to look sharp when it is
+       shown bigger. Both thresholds were checked by eye. */
+    var CLEAR_SMALL = 96, FUZZY_SMALL = 64;     /* small poster */
+    var CLEAR_BIG = 192, FUZZY_BIG = 96;        /* twice as big: twice the pixels across */
+    var scale = 1;                               /* 1 = small, 2 = twice as big */
+    var LOW = 32;                /* step 1 also needs the pupil to have seen it blurry */
     var FONT_STACK = '"Arial Rounded MT Bold", "Arial Rounded MT", "Nunito", Arial, sans-serif';
 
     var area = document.getElementById("rz-area");
@@ -96,16 +100,13 @@
     var slider = document.getElementById("rz-slider");
     var statusEl = document.getElementById("ex-status");
     var answers = document.getElementById("rz-answers");
-    var yesBtn = document.getElementById("rz-yes");
-    var noBtn = document.getElementById("rz-no");
+    var biggerBtn = document.getElementById("rz-bigger");
 
     var srcData = null;      // Uint8ClampedArray of the full-size poster
     var cache = {};          // N -> small canvas holding the N-pixel-wide image
     var lastIndex = START_INDEX;
     var view = { w: 0, h: 0 };
     var beenLow = false;
-    var sizes = {};          // N -> real PNG file size in bytes
-    var answer = "";         // "yes" or "no" in the challenge
 
     function commas(n) {
       return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -202,10 +203,12 @@
       var h = Math.max(150, Math.min(440, Math.floor(availH)));
       var w = Math.round(h * 4 / 3);
       if (w > availW) { w = Math.floor(availW); h = Math.round(w * 3 / 4); }
+      var fullW = w;
+      if (scale === 1) { w = Math.round(w / 2); h = Math.round(h / 2); }
       view = { w: w, h: h };
       big.style.width = w + "px";
       big.style.height = h + "px";
-      slider.style.width = Math.max(300, w) + "px";
+      slider.style.width = Math.max(300, fullW) + "px";
       render();
     }
 
@@ -228,7 +231,7 @@
       bctx.clearRect(0, 0, bw, bh);
       bctx.drawImage(img, 0, 0, n, m, 0, 0, bw, bh);
 
-      Explorer.status(statusText(n), n >= CLEAR && Explorer.step() === 1 ? "good" : "");
+      Explorer.status(statusText(n), n >= clearAt() ? "good" : "");
       slider.setAttribute("aria-valuetext", n + " pixels across, " + commas(n * m) + " pixels in all");
       big.setAttribute("aria-label", "The poster made from " + n + " pixels across, shown at poster size.");
     }
@@ -250,23 +253,14 @@
       if (n <= LOW) beenLow = true;
     }
 
-    /* The real size of this image saved as a PNG. */
-    function fileKB(n) {
-      if (!sizes[n]) {
-        var url = lowRes(n).toDataURL("image/png");
-        sizes[n] = Math.round((url.length - url.indexOf(",") - 1) * 3 / 4);
-      }
-      var k = sizes[n] / 1000;
-      return (k < 10 ? Math.round(k * 10) / 10 : Math.round(k)) + " KB";
-    }
+    function clearAt() { return scale === 2 ? CLEAR_BIG : CLEAR_SMALL; }
+    function fuzzyAt() { return scale === 2 ? FUZZY_BIG : FUZZY_SMALL; }
 
-    /* Step 1: the pixels and what you can see. One idea: too few pixels is blurry.
-       Step 2 (the challenge) adds the file size. */
+    /* What the pupil can see: the pixels and how the words look at this size. */
     function statusText(n) {
       var px = n + " pixels across.";
-      if (Explorer.step() !== 1) return px + " File: " + fileKB(n) + ".";
-      if (n < 96) return px + " Too blocky to read.";
-      if (n < CLEAR) return px + " Some letters are still fuzzy.";
+      if (n < fuzzyAt()) return px + " Too blocky to read.";
+      if (n < clearAt()) return px + " Some letters are fuzzy.";
       return px + " Every word is clear.";
     }
 
@@ -279,30 +273,26 @@
       Explorer.used();
     });
 
-    function pick(which) {
-      answer = which;
-      yesBtn.setAttribute("aria-pressed", which === "yes" ? "true" : "false");
-      noBtn.setAttribute("aria-pressed", which === "no" ? "true" : "false");
+    /* The challenge button: same picture, same pixels, shown twice as big. */
+    biggerBtn.addEventListener("click", function () {
+      scale = 2;
+      showBigger(false);
+      layout();
+      var n = STEPS[Number(slider.value)];
+      if (n < CLEAR_BIG) Explorer.status(n + " pixels across. Twice as big, same pixels: some letters are fuzzy again.");
       Explorer.answer();
-      if (which === "yes") Explorer.hint("Compare 128 and 512. Are the words any clearer? Look at the file size.");
-    }
-    yesBtn.addEventListener("click", function () { pick("yes"); });
-    noBtn.addEventListener("click", function () { pick("no"); });
+    });
 
-    /* The Yes / No buttons sit straight after the challenge sentence. */
     var instruction = document.getElementById("ex-instruction");
-    function showAnswers(on) {
+    function showBigger(on) {
       answers.hidden = !on;
       if (on) instruction.parentNode.insertBefore(answers, instruction.nextSibling);
-      yesBtn.removeAttribute("aria-pressed");
-      noBtn.removeAttribute("aria-pressed");
-      answer = "";
     }
 
     Explorer.setup({
       keyword: { word: "Resolution", meaning: "How many pixels a picture has.", tile: "shared/tiles/resolution.png" },
       pulse: "#rz-slider",
-      success: function () { return beenLow && STEPS[Number(slider.value)] >= CLEAR; },
+      success: function () { return beenLow && STEPS[Number(slider.value)] >= CLEAR_SMALL; },
       successText: "Every word is clear. More pixels show more detail.",
       hint: "Slide right.",
       hintAfter: 60,
@@ -312,16 +302,24 @@
         lastIndex = START_INDEX;
         beenLow = false;
         note();
-        showAnswers(false);
-        render();
+        scale = 1;
+        showBigger(false);
+        layout();
       },
       challenge: {
-        text: "Are the most pixels always best?",
-        start: function () { showAnswers(true); render(); },
-        success: function () { return answer === "no"; },
-        successText: "No. Once the words are clear, more pixels only make a bigger file.",
-        hint: "Move the slider. Watch the words and the file size.",
-        pulse: "#rz-answers .ex-btn"
+        text: "Make the poster twice as big. Is it still sharp?",
+        start: function () {
+          /* Start from the small poster's sharp point, so doubling it shows the blur. */
+          scale = 1;
+          slider.value = STEPS.indexOf(CLEAR_SMALL);
+          lastIndex = Number(slider.value);
+          showBigger(true);
+          layout();
+        },
+        success: function () { return scale === 2 && STEPS[Number(slider.value)] >= CLEAR_BIG; },
+        successText: "Sharp again. A bigger picture needs more pixels.",
+        hint: function () { return scale === 1 ? "Click Make it twice as big." : "Slide right."; },
+        pulse: "#rz-bigger"
       }
     });
     note();
