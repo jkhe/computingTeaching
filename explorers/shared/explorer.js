@@ -241,6 +241,10 @@
     var frame = document.createElement("div");
     frame.className = "ex-shot";
     frame.style.aspectRatio = crop[1] + " / " + b.imgH;
+    /* Never show the screenshot bigger than its real pixels, or it goes blurry. */
+    frame.style.maxWidth = crop[1] + "px";
+    frame.style.marginLeft = "auto";
+    frame.style.marginRight = "auto";
     var img = document.createElement("img");
     img.src = b.img; img.alt = b.alt || "";
     img.style.width = (b.imgW / crop[1] * 100) + "%";
