@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/explorer.css?v=3">
+<link rel="stylesheet" href="shared/explorer.css?v=4">
 <style>
   body { --hint: #6D28D9; }   /* purple hints, so they are not confused with the green success line */
   :root {
@@ -157,7 +157,7 @@
   </div>
 </section>
 
-<script src="shared/explorer.js?v=3"></script>
+<script src="shared/explorer.js?v=4"></script>
 <script>
   (function () {
     "use strict";
@@ -297,7 +297,7 @@
       else { sortCol = col; ascending = true; }
       render(true);
       Explorer.status("Top row: " + body.firstElementChild.firstElementChild.textContent + ".");
-      Explorer.used();
+      Explorer.answer();
     }
 
     /* Rows grow to fill the space between the instruction and the status line. */

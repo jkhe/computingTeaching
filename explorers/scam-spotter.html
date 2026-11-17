@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/explorer.css?v=3">
+<link rel="stylesheet" href="shared/explorer.css?v=4">
 <style>
   /* Page-specific styles only. */
   body { --pulse: #4338CA; }
@@ -132,7 +132,7 @@
   </div>
 </section>
 
-<script src="shared/explorer.js?v=3"></script>
+<script src="shared/explorer.js?v=4"></script>
 <script>
   (function () {
     "use strict";
@@ -216,8 +216,12 @@
         Explorer.used();
         return;
       }
-      if (found[part.sign]) return;
       var msg = MESSAGES[current];
+      if (found[part.sign]) {
+        Explorer.used();
+        Explorer.status(msg.signs[part.sign].label + ": already found. " + countText() + ".");
+        return;
+      }
       found[part.sign] = true;
       el.classList.add("found");
       el.setAttribute("aria-label", el.getAttribute("data-name") + ". Warning sign: " + msg.signs[part.sign].label);
