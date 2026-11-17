@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared/explorer.css?v=3">
+<link rel="stylesheet" href="shared/explorer.css?v=4">
 <style>
   /* Page-specific styles only. */
   body { --hint: #6D28D9; }   /* hints in purple, so they never look like an error */
@@ -75,7 +75,7 @@
   </div>
 </section>
 
-<script src="shared/explorer.js?v=3"></script>
+<script src="shared/explorer.js?v=4"></script>
 <script>
   (function () {
     "use strict";
@@ -87,7 +87,8 @@
     var SRC_W = 1536, SRC_H = 1152;
     var STEPS = [8, 12, 16, 24, 32, 48, 64, 96, 128, 192, 256, 384, 512];
     var START_INDEX = 0;
-    var LOW = 48, HIGH = 96;     /* step 1: been at 48 or fewer AND at 96 or more */
+    var CLEAR = 128;             /* the fewest pixels where every word is clear (checked by eye) */
+    var LOW = 64;                /* step 1 also needs the pupil to have seen it blurry */
     var FONT_STACK = '"Arial Rounded MT Bold", "Arial Rounded MT", "Nunito", Arial, sans-serif';
 
     var area = document.getElementById("rz-area");
@@ -102,7 +103,8 @@
     var cache = {};          // N -> small canvas holding the N-pixel-wide image
     var lastIndex = START_INDEX;
     var view = { w: 0, h: 0 };
-    var beenLow = false, beenHigh = false;
+    var beenLow = false;
+    var sizes = {};          // N -> real PNG file size in bytes
     var answer = "";         // "yes" or "no" in the challenge
 
     function commas(n) {
@@ -226,7 +228,7 @@
       bctx.clearRect(0, 0, bw, bh);
       bctx.drawImage(img, 0, 0, n, m, 0, 0, bw, bh);
 
-      Explorer.status(n + " pixels across");
+      Explorer.status(statusText(n), n === CLEAR && Explorer.step() === 1 ? "good" : "");
       slider.setAttribute("aria-valuetext", n + " pixels across, " + commas(n * m) + " pixels in all");
       big.setAttribute("aria-label", "The poster made from " + n + " pixels across, shown at poster size.");
     }
@@ -246,7 +248,26 @@
     function note() {
       var n = STEPS[Number(slider.value)];
       if (n <= LOW) beenLow = true;
-      if (n >= HIGH) beenHigh = true;
+    }
+
+    /* The real size of this image saved as a PNG. */
+    function fileKB(n) {
+      if (!sizes[n]) {
+        var url = lowRes(n).toDataURL("image/png");
+        sizes[n] = Math.round((url.length - url.indexOf(",") - 1) * 3 / 4);
+      }
+      var k = sizes[n] / 1000;
+      return (k < 10 ? Math.round(k * 10) / 10 : Math.round(k)) + " KB";
+    }
+
+    /* One line: the pixels, the file size, and (in step 1) where they are. */
+    function statusText(n) {
+      var base = n + " pixels across. File: " + fileKB(n) + ".";
+      if (Explorer.step() !== 1) return base;
+      if (n < 96) return base;
+      if (n === 96) return base + " Nearly. Some letters are still fuzzy.";
+      if (n === CLEAR) return base + " Every word is clear.";
+      return base + " Clear. Can you use fewer?";
     }
 
     slider.addEventListener("input", function () {
@@ -262,8 +283,8 @@
       answer = which;
       yesBtn.setAttribute("aria-pressed", which === "yes" ? "true" : "false");
       noBtn.setAttribute("aria-pressed", which === "no" ? "true" : "false");
-      Explorer.used();
-      if (which === "yes") Explorer.hint("Bigger files are slower to send. Look at the words again.");
+      Explorer.answer();
+      if (which === "yes") Explorer.hint("Compare 128 and 512. Are the words any clearer? Look at the file size.");
     }
     yesBtn.addEventListener("click", function () { pick("yes"); });
     noBtn.addEventListener("click", function () { pick("no"); });
@@ -282,25 +303,25 @@
       keyword: { word: "Resolution", meaning: "How many pixels a picture has.", tile: "shared/tiles/resolution.png" },
       bridge: { title: "Now in Canva", img: "shared/canva/download-size.png", imgW: 818, imgH: 145, crop: [0, 818], focus: [14, 790], alt: "Canva Download panel with the Size slider ringed", text: "Click Share. Click Download. Size shows the pixels." },
       pulse: "#rz-slider",
-      success: function () { return beenLow && beenHigh; },
-      successText: "Stop where you can read every word.",
-      hint: "Slide right until the words are clear.",
+      success: function () { return beenLow && STEPS[Number(slider.value)] === CLEAR; },
+      successText: "128 pixels: the fewest where every word is clear.",
+      hint: function () { return STEPS[Number(slider.value)] > CLEAR ? "Slide left until just before the words go fuzzy." : "Slide right until every word is clear."; },
       hintAfter: 60,
       onShow: layout,
       onReset: function () {
         slider.value = START_INDEX;
         lastIndex = START_INDEX;
-        beenLow = false; beenHigh = false;
+        beenLow = false;
         note();
         showAnswers(false);
         render();
       },
       challenge: {
-        text: "More pixels make a bigger file. Is the biggest always best?",
+        text: "Are the most pixels always best?",
         start: function () { showAnswers(true); render(); },
         success: function () { return answer === "no"; },
-        successText: "No. Enough pixels to read it clearly is best.",
-        hint: "Look at the words, then choose Yes or No.",
+        successText: "No. Once the words are clear, more pixels only make a bigger file.",
+        hint: "Move the slider. Watch the words and the file size.",
         pulse: "#rz-answers .ex-btn"
       }
     });
