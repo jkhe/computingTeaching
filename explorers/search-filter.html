@@ -59,6 +59,7 @@
   .sf-type.video { color: #6D28D9; background: #F5F3FF; }
   .sf-type.article { color: #374151; background: #F3F4F6; }
   .sf-type.shop { color: var(--ok); background: var(--ok-soft); }
+  .sf-type.images { color: #0E7490; background: #ECFEFF; }
   .sf-snip { font-size: 17px; line-height: 1.3; color: var(--text); }
   /* A green tick on each result that answers the question. */
   .sf-yes { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; }
@@ -135,7 +136,7 @@
         <button type="button" class="ex-btn" data-c="uk" aria-pressed="false"><span class="sf-plus" aria-hidden="true">+</span>UK</button>
         <span class="sf-divider" aria-hidden="true"></span>
         <!-- Filters carry a funnel icon so they look different from words. -->
-        <button type="button" class="ex-btn" data-c="video" aria-pressed="false" aria-label="Filter: Videos only"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg>Videos only</button>
+        <button type="button" class="ex-btn" data-c="image" aria-pressed="false" aria-label="Filter: Images only"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg>Images only</button>
         <button type="button" class="ex-btn" data-c="recent" aria-pressed="false" aria-label="Filter: Past year"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h18l-7 8.5V19l-4 2v-8.5z"/></svg>Past year</button>
       </div>
       <div class="sf-results" id="sf-results" aria-label="Top 4 results"></div>
@@ -154,14 +155,14 @@
 
        The search "dogs" starts at about 2,400,000 results. Each criterion
        that is switched on divides the count by a fixed factor:
-         puppy 6, teach 8, sit 5, UK 3, Videos only 4, Past year 3
+         puppy 6, teach 8, sit 5, UK 3, Images only 4, Past year 3
        The answer is rounded to two significant figures and shown as
        "About N results". All six on gives about 280.
        ------------------------------------------------------------------ */
     var START_COUNT = 2400000;
-    var FACTOR = { puppy: 6, teach: 8, sit: 5, uk: 3, video: 4, recent: 3 };
-    var ORDER = ["puppy", "teach", "sit", "uk", "video", "recent"];
-    var BAR_TEXT = { puppy: "puppy", teach: "teach", sit: "sit", uk: "UK", video: "Videos only", recent: "Past year" };
+    var FACTOR = { puppy: 6, teach: 8, sit: 5, uk: 3, image: 4, recent: 3 };
+    var ORDER = ["puppy", "teach", "sit", "uk", "image", "recent"];
+    var BAR_TEXT = { puppy: "puppy", teach: "teach", sit: "sit", uk: "UK", image: "Images only", recent: "Past year" };
 
     /* Invented results, in ranked order. Every site name is made up.
        k = search words the result matches, uk = UK result,
@@ -216,7 +217,18 @@
       R("Teach a puppy to sit: common mistakes", "Dog Help Hub", "Video", "What to do if your puppy jumps up.", "puppy teach sit", false, 1, true),
       R("Advert: we teach your puppy to sit", "Wagging School", "Video", "A short advert for puppy classes.", "puppy teach sit", true, 4),
       R("Open day: watch us teach a puppy to sit", "Wagging School", "Video", "Come and visit our puppy school.", "puppy teach sit", true, 3),
-      R("Dog show: can he teach his puppy to sit?", "ClipBarn", "Video", "A funny clip from a village show.", "puppy teach sit", true, 10)
+      R("Dog show: can he teach his puppy to sit?", "ClipBarn", "Video", "A funny clip from a village show.", "puppy teach sit", true, 10),
+
+      /* Image results (the Images only filter). Pupils can use image
+         search at school but not video results. */
+      R("Dog photos", "PicPlace", "Images", "Thousands of dog pictures.", "", false, 6),
+      R("Puppy pictures", "PicPlace", "Images", "Puppies asleep in baskets.", "puppy", false, 3),
+      R("Dog sitting at the window", "PicPlace", "Images", "Photos of dogs looking outside.", "sit", true, 5),
+      R("Pictures: teach a puppy to sit, step by step", "Dog Help Hub", "Images", "Four photos, one for each step.", "puppy teach sit", false, 5, true),
+      R("Puppy sit: hand signal pictures", "Pawsitive Training", "Images", "The hand signal, then the treat.", "puppy teach sit", false, 8, true),
+      R("Step photos: a puppy learns to sit", "Vet Corner", "Images", "A vet's photos of each step.", "puppy teach sit", true, 6, true),
+      R("Teach your puppy to sit: picture guide", "The Kennel Guide", "Images", "One picture for each step.", "puppy teach sit", true, 9, true),
+      R("Poster: we teach puppies to sit", "Wagging School", "Images", "A poster for puppy classes.", "puppy teach sit", true, 2)
     ];
 
     var on = {};
@@ -234,7 +246,7 @@
       if (on.teach && words.indexOf(" teach ") < 0) return false;
       if (on.sit && words.indexOf(" sit ") < 0) return false;
       if (on.uk && !r.uk) return false;
-      if (on.video && r.type !== "Video") return false;
+      if (on.image && r.type !== "Images") return false;
       if (on.recent && r.m > 12) return false;
       return true;
     }
@@ -284,7 +296,7 @@
       ["puppy", "teach", "sit", "uk"].forEach(function (k) {
         if (on[k]) barEl.appendChild(el("span", "sf-term added", BAR_TEXT[k]));
       });
-      ["video", "recent"].forEach(function (k) {
+      ["image", "recent"].forEach(function (k) {
         if (on[k]) barEl.appendChild(el("span", "sf-term filter", BAR_TEXT[k]));
       });
       barEl.appendChild(el("span", "sf-count", "About " + countText() + " results"));
@@ -313,8 +325,8 @@
 
       /* The one feedback line: the verdict. */
       if (answers === 4) {
-        /* In the challenge, green only once a video filter is on too. */
-        Explorer.status("These results answer the question.", (Explorer.step() === 1 || on.video) ? "good" : "");
+        /* In the challenge, green only once the Images filter is on too. */
+        Explorer.status("These results answer the question.", (Explorer.step() === 1 || on.image) ? "good" : "");
       } else if (answers >= 2) {
         /* Adding a criterion can push good results out of the top four.
            That is not "closer", so say so. */
@@ -356,16 +368,16 @@
         justAdded = false;
         render();
       },
-      /* Step 2: Videos only is on and the results still answer it. */
+      /* Step 2: Images only is on and the results still answer it. */
       challenge: {
-        text: "You want to watch how it’s done. Add one filter.",
+        text: "You want pictures of each step. Add one filter.",
         /* The words stay. Any filter already on is taken off, so there is
            one to add. */
-        start: function () { on.video = false; on.recent = false; render(); },
-        success: function () { return !!on.video && good(); },
-        successText: "Every result is a video that answers it.",
+        start: function () { on.image = false; on.recent = false; render(); },
+        success: function () { return !!on.image && good(); },
+        successText: "Every result shows pictures that answer it.",
         hint: "Try the filters on the right.",
-        pulse: '#sf-chips [data-c="video"], #sf-chips [data-c="recent"]'
+        pulse: '#sf-chips [data-c="image"], #sf-chips [data-c="recent"]'
       }
     });
 
